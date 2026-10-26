@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://civicpulse.dev/schemas/closure_verification.schema.json",
+  "title": "ClosureVerification",
+  "description": "Stored in resolutions.verification by the orchestrator (stage `closure`). Same spec as the intake, SAM 3.1 on both photos, homography registration, classifier on pairs of crops, asymmetric decision (plan §5.4 B). The panel draws its figures from this object. When in doubt, never resolved.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "before_report_id", "before_photo_id", "after_photo_id", "catalog_version", "registration", "region_checks", "ai_status", "models", "created_at"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "before_report_id": {"type": "string", "format": "uuid"},
+    "before_photo_id": {"type": "string", "format": "uuid"},
+    "after_photo_id": {"type": "string", "format": "uuid"},
+    "catalog_version": {"type": "integer", "minimum": 1, "description": "Taken from the BEFORE report's spec, so both photos are checked with the same prompts."},
+    "registration": {
+      "type": "object", "additionalProperties": false, "required": ["ok"],
+      "description": "An accepted registration only enables the comparison; it never certifies anything.",
+      "properties": {
+        "ok": {"type": "boolean"},
+        "reason": {"type": ["string", "null"]},
+        "inliers": {"type": ["integer", "null"]},
+        "inlier_ratio": {"type": ["number", "null"]},
+        "context_overlap_iou": {"type": ["number", "null"]}
+      }
+    },
+    "region_checks": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["region_id", "prompt", "status"],
+        "properties": {
+          "region_id": {"type": "integer", "minimum": 1},
+          "prompt": {"type": "string"},
+          "initial_confidence": {"type": "number"},
+          "initial_area_px": {"type": "integer"},
+          "crop_box_xyxy": {"type": "array", "items": {"type": "number"}, "minItems": 4, "maxItems": 4},
+          "region_visible_after": {"type": "number", "minimum": 0, "maximum": 1},
+          "remaining_issue_ratio": {"type": "number", "minimum": 0, "maximum": 1},
+          "resolved_evidence_coverage": {"type": "number", "minimum": 0, "maximum": 1},
+          "confuser_region_coverage": {"type": "number", "minimum": 0, "maximum": 1},
+          "confuser_matches_resolved_iou": {"type": "number", "minimum": 0, "maximum": 1},
+          "classifier": {
+            "oneOf": [
+              {"type": "null"},
+              {
+                "type": "object", "additionalProperties": false,
+                "properties": {
+                  "model": {"type": ["string", "null"]},
+                  "before": {"$ref": "#/$defs/pair_side"},
+                  "after": {"$ref": "#/$defs/pair_side"},
+                  "reason": {"type": ["string", "null"], "maxLength": 300},
+                  "error": {"type": ["string", "null"], "maxLength": 300}
+                }
+              }
+            ]
+          },
+          "status": {"$ref": "#/$defs/region_status"},
+          "figure_paths": {
+            "type": "object", "additionalProperties": false,
+            "description": "Anonymized crops for the panel (public or sandbox bucket).",
+            "properties": {"before": {"type": ["string", "null"]}, "after_aligned": {"type": ["string", "null"]}}
+          }
+        }
+      }
+    },
+    "ai_status": {"$ref": "#/$defs/ai_status"},
+    "figures": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "masks_before": {"type": ["string", "null"]},
+        "masks_after": {"type": ["string", "null"]},
+        "alignment": {"type": ["string", "null"]}
+      }
+    },
+    "models": {
+      "type": "object", "additionalProperties": false, "required": ["segmentation"],
+      "properties": {"segmentation": {"type": "string"}, "classifier": {"type": ["string", "null"]}}
+    },
+    "note": {"type": "string", "default": "Visual support for inspection, not a guarantee of repair. When in doubt the system does not declare resolved."},
+    "created_at": {"type": "string", "format": "date-time"}
+  },
+  "$defs": {
+    "pair_side": {
+      "type": "object", "additionalProperties": false, "required": ["label", "confidence"],
+      "properties": {
+        "label": {"enum": ["issue_present", "no_issue", "shadow", "water_or_wet_surface", "occlusion", "not_visible", "uncertain"]},
+        "confidence": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    },
+    "region_status": {
+      "description": "Per-region outcome. Includes the three NOT_VERIFIABLE_* values the notebook already emits that are missing from the E-R v2 CHECK list.",
+      "enum": [
+        "PERSISTENT_ISSUE",
+        "NOT_VERIFIABLE_REGION_NOT_VISIBLE",
+        "NOT_VERIFIABLE_CONFUSER_OR_OCCLUSION",
+        "NOT_VERIFIABLE_REPAIR_VS_CONFUSER_CONFLICT",
+        "NOT_VERIFIABLE_CLASSIFIER_UNAVAILABLE",
+        "NOT_VERIFIABLE_INITIAL_ISSUE_NOT_CONFIRMED",
+        "NOT_VERIFIABLE_INSUFFICIENT_EVIDENCE",
+        "RESOLVED_CANDIDATE_REQUIRES_HUMAN_REVIEW"
+      ]
+    },
+    "ai_status": {
+      "description": "resolutions.ai_status. Rule: any region PERSISTENT_ISSUE → PERSISTENT_ISSUE; else all regions RESOLVED_CANDIDATE → RESOLVED_CANDIDATE_REQUIRES_HUMAN_REVIEW; else the first NOT_VERIFIABLE_* in decision order. No regions or failed registration → NOT_VERIFIABLE_REGION_NOT_VISIBLE.",
+      "enum": [
+        "pending",
+        "PERSISTENT_ISSUE",
+        "NOT_VERIFIABLE_REGION_NOT_VISIBLE",
+        "NOT_VERIFIABLE_CONFUSER_OR_OCCLUSION",
+        "NOT_VERIFIABLE_REPAIR_VS_CONFUSER_CONFLICT",
+        "NOT_VERIFIABLE_CLASSIFIER_UNAVAILABLE",
+        "NOT_VERIFIABLE_INITIAL_ISSUE_NOT_CONFIRMED",
+        "NOT_VERIFIABLE_INSUFFICIENT_EVIDENCE",
+        "RESOLVED_CANDIDATE_REQUIRES_HUMAN_REVIEW"
+      ]
+    }
+  }
+}

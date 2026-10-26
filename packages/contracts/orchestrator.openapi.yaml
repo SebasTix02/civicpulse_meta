@@ -1,0 +1,322 @@
+openapi: 3.1.0
+info:
+  title: CivicPulse orchestrator (Modal, FastAPI)
+  version: 0.3.0-draft
+  summary: Webhooks from Supabase to the Modal orchestrator, plus ops endpoints.
+  description: |
+    Draft contract, 2026-10-24 (plan v3.2 §3.1–§3.4, E-R v2). Spanish explainer: README.md.
+
+    **How work arrives.** Supabase Database Webhooks (pg_net, after commit) POST the
+    standard webhook payload for four events:
+
+    | Table | Event | What the orchestrator does |
+    |---|---|---|
+    | `reports` | INSERT | Ingestion flow A from `received` |
+    | `report_photos` | INSERT | Only when `record.version > 1`: re-run `sam_ground`, `classify`, `cluster` for the new photo. Version 1 is ignored (already covered by the `reports` INSERT). |
+    | `resolutions` | INSERT | Closure flow B |
+    | `dispatches` | INSERT | Only when `record.brief` is null (created by `redispatch_cluster`, v0.2): run the `brief` stage for that stakeholder. Dispatches the orchestrator creates itself already carry a brief and are ignored. |
+
+    The endpoint answers `202` fast and runs the job with `Function.spawn()`. If a webhook
+    is lost or Modal is cold past the webhook timeout, the **sweeper** (Modal cron, every
+    minute, not HTTP) picks the row up: reports in a non-final status not updated for 2 min,
+    and resolutions with `ai_status = 'pending'` older than 3 min. After 5 failed attempts
+    at the same stage the report goes to `failed` (resolutions stay `pending` and show up in
+    the panel as "verification failed, review manually").
+
+    **Idempotency.** A job is keyed by `(report_id, photo_version)` or `resolution_id`.
+    Each stage first looks for an `ok` row in `stage_runs` for that key and stage and skips it
+    if found. Status moves use compare-and-set
+    (`update reports set status = :next where id = :id and status = :prev`). So duplicate
+    webhooks, sweeper retries and manual reprocessing are all safe.
+
+    **What only the orchestrator writes** (service_role): `reports.spec`, `domain_id`,
+    `category_id`, `catalog_version`, `severity`, `raw_text_redacted`, `intake`, `intake_status`,
+    `consistency_score`, `model_versions`, `status`, `cluster_id`; `photos.sha256`, `phash`,
+    `public_path`; `clusters`, `cluster_events`; `dispatches`; `stage_runs`;
+    `resolutions.verification`, `ai_status`; `device_trust_events` caused by the AI.
+
+    **Moderation flags (v0.2).** The orchestrator opens `moderation_flags` rows (never closes
+    them): `reused_photo` at `phash`, `impossible_gps` at `geofence`, `personal_data` at `spec`
+    when `contains_personal_data` is true, `low_trust_device` when a trust event leaves the
+    device under 0.3. `assign_cluster` and the `weighted_support` recompute skip reports with
+    `moderation_status = 'hidden'`; briefs never cite hidden reports.
+
+    Internal Modal method calls to `SAMService` (GPU) are Python calls, not HTTP; their
+    payloads are documented under `components.schemas.Sam*` so both sides agree.
+servers:
+  - url: https://{workspace}--civicpulse-orchestrator-api.modal.run
+    variables:
+      workspace:
+        default: civicpulse
+tags:
+  - name: webhooks
+  - name: ops
+paths:
+  /webhooks/supabase:
+    post:
+      tags: [webhooks]
+      operationId: receiveSupabaseWebhook
+      summary: Database Webhook receiver for reports, report_photos, resolutions and dispatches
+      description: |
+        Configured in Supabase as four Database Webhooks (one per table, INSERT only), with
+        HTTP header `Authorization: Bearer <ORCHESTRATOR_WEBHOOK_SECRET>` and timeout 5000 ms.
+        The secret lives in Supabase Vault and in a Modal Secret; compared in constant time.
+
+        The orchestrator never trusts the `record` beyond its ids: it re-reads the row with
+        service_role before each stage, so a stale or forged body cannot inject data.
+        `record.is_sandbox` is only used to pick the job queue.
+      security:
+        - webhookSecret: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/DatabaseWebhookPayload'}
+            examples:
+              report_created:
+                value:
+                  type: INSERT
+                  table: reports
+                  schema: public
+                  record:
+                    id: 2c9a8f1e-3b4d-4e5f-8a9b-0c1d2e3f4a5b
+                    is_sandbox: false
+                    status: received
+                    current_photo_version: 1
+                    created_at: '2026-10-28T15:04:05Z'
+                  old_record: null
+              photo_replaced:
+                value:
+                  type: INSERT
+                  table: report_photos
+                  schema: public
+                  record:
+                    report_id: 2c9a8f1e-3b4d-4e5f-8a9b-0c1d2e3f4a5b
+                    version: 2
+                    photo_id: 5e6f7a8b-9c0d-4e1f-a2b3-c4d5e6f7a8b9
+                    replaced_at: null
+                  old_record: null
+              resolution_created:
+                value:
+                  type: INSERT
+                  table: resolutions
+                  schema: public
+                  record:
+                    id: 8b7a6c5d-4e3f-4a2b-9c1d-0e9f8a7b6c5d
+                    is_sandbox: false
+                    cluster_id: 0b7c2f5e-6c1a-4a8e-9a4e-2f1d3c4b5a69
+                    closure_path: community
+                    ai_status: pending
+                  old_record: null
+      responses:
+        '202':
+          description: Accepted. Work runs in the background.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/WebhookAck'}
+        '200':
+          description: Ignored on purpose (e.g. `report_photos` version 1, or a non-INSERT event).
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/WebhookAck'}
+        '401':
+          description: Missing or wrong secret.
+        '422':
+          description: Unknown table or malformed payload. Logged; Supabase does not retry, the sweeper is the safety net.
+
+  /ops/reprocess:
+    post:
+      tags: [ops]
+      operationId: reprocess
+      summary: Re-run a report or resolution from a given stage (ops, demos)
+      description: |
+        Deletes the `stage_runs` rows from `from_stage` onwards for that key and spawns the job
+        again. With `from_stage = spec` the spec is rebuilt with the current catalog version.
+        Used by repo scripts, never by the browser.
+      security:
+        - opsSecret: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [kind, id]
+              properties:
+                kind: {enum: [report, resolution]}
+                id: {type: string, format: uuid}
+                from_stage: {$ref: '#/components/schemas/Stage'}
+                force_category_id: {type: string, description: 'Skip the LLM and build the spec from this category (spec.source = catalog).'}
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/WebhookAck'}
+        '401': {description: Wrong ops secret}
+        '404': {description: Row not found}
+
+  /healthz:
+    get:
+      tags: [ops]
+      operationId: health
+      summary: Liveness plus provider circuit-breaker state
+      security: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok, version]
+                properties:
+                  ok: {type: boolean}
+                  version: {type: string, description: Git SHA of the deploy.}
+                  catalog_cache_age_s: {type: number}
+                  demo:
+                    type: object
+                    description: Backup demo state (v0.3). Same level rules as rpc get_demo_status.
+                    properties:
+                      level: {type: integer, minimum: 0, maximum: 3}
+                      sandbox_spend_usd: {type: number}
+                      sandbox_cap_usd: {type: number}
+                  providers:
+                    type: object
+                    description: Circuit breaker per LLM provider.
+                    additionalProperties:
+                      type: object
+                      properties:
+                        state: {enum: [closed, open, half_open]}
+                        open_until: {type: ['string', 'null'], format: date-time}
+                        recent_failures: {type: integer}
+                  sam: {enum: [warm, cold, unknown]}
+
+components:
+  securitySchemes:
+    webhookSecret:
+      type: http
+      scheme: bearer
+      description: Shared secret ORCHESTRATOR_WEBHOOK_SECRET, sent by Supabase Database Webhooks.
+    opsSecret:
+      type: http
+      scheme: bearer
+      description: ORCHESTRATOR_OPS_SECRET, different from the webhook secret.
+
+  schemas:
+    DatabaseWebhookPayload:
+      type: object
+      description: Standard Supabase Database Webhook body.
+      required: [type, table, schema, record]
+      properties:
+        type: {enum: [INSERT, UPDATE, DELETE]}
+        table: {enum: [reports, report_photos, resolutions, dispatches]}
+        schema: {const: public}
+        record:
+          type: object
+          description: The new row as JSON. Only ids and `is_sandbox` / `version` are read.
+          additionalProperties: true
+        old_record: {type: ['object', 'null']}
+
+    WebhookAck:
+      type: object
+      required: [accepted]
+      properties:
+        accepted: {type: boolean}
+        job_key: {type: string, examples: ['report:2c9a8f1e-…:v1', 'resolution:8b7a6c5d-…']}
+        deduplicated: {type: boolean, description: True if a job for the same key is already running.}
+        ignored_reason: {type: ['string', 'null'], examples: [report_photo_version_1]}
+
+    Stage:
+      description: Matches stage_runs.stage (E-R v2). `sam_ground` covers the grounding call and count_and_anonymize.
+      enum: [geofence, phash, spec, sam_ground, classify, cluster, brief, closure]
+
+    StageRun:
+      type: object
+      description: One row of stage_runs, written at the end of every stage (also on error).
+      required: [stage, status, started_at]
+      properties:
+        report_id: {type: ['string', 'null'], format: uuid}
+        photo_version: {type: ['integer', 'null']}
+        resolution_id: {type: ['string', 'null'], format: uuid}
+        stage: {$ref: '#/components/schemas/Stage'}
+        status: {enum: [ok, error, skipped]}
+        provider:
+          type: ['string', 'null']
+          description: 'LLM stages: baseten, fireworks, modal_endpoints, meta_model_api, keywords. Vision: modal_l4, cache.'
+        model: {type: ['string', 'null']}
+        latency_ms: {type: ['integer', 'null']}
+        error: {type: ['string', 'null'], maxLength: 1000}
+        started_at: {type: string, format: date-time}
+
+    SamGroundRequest:
+      type: object
+      description: 'SAMService.ground(image_bytes, spec, budget). image_bytes is passed as bytes, not shown here.'
+      required: [spec, budget]
+      properties:
+        spec: {$ref: 'schemas/report_spec.schema.json'}
+        budget: {enum: [intake, widened]}
+        hint_box: {type: ['object', 'null'], description: Normalized exemplar box from reports.hint_box.}
+        image_sha256: {type: string, description: Cache key together with each prompt.}
+
+    SamGroundResult:
+      type: object
+      required: [zone_found, candidates, global_detections, latency_ms]
+      properties:
+        zone_found: {type: boolean}
+        candidates:
+          type: array
+          maxItems: 5
+          items:
+            type: object
+            required: [prompt, score, box_xyxy, mask_rle]
+            properties:
+              prompt: {type: string}
+              score: {type: number}
+              box_xyxy: {type: array, items: {type: number}, minItems: 4, maxItems: 4}
+              area_px: {type: integer}
+              mask_rle: {type: string, description: COCO RLE of the mask, so crops can be cut on CPU.}
+              main_confuser: {type: ['string', 'null']}
+              confuser_overlap: {type: ['number', 'null']}
+        global_detections:
+          type: array
+          items: {type: object, properties: {prompt: {type: string}, score: {type: number}, zone_coverage: {type: number}}}
+        cache_hits: {type: integer}
+        latency_ms: {type: integer}
+
+    SamCountAnonymizeResult:
+      type: object
+      description: 'SAMService.count_and_anonymize(image_bytes, count_prompts). Returns the blurred JPEG as bytes plus these fields.'
+      required: [faces, plates]
+      properties:
+        people_count: {type: ['integer', 'null']}
+        faces: {type: integer}
+        plates: {type: integer}
+        latency_ms: {type: integer}
+
+    SamSegmentPairResult:
+      type: object
+      description: 'SAMService.segment_pair(before, after, spec). Masks per prompt role for both photos; registration and decision run on CPU in the orchestrator.'
+      required: [before, after]
+      properties:
+        before: {$ref: '#/components/schemas/SamRoleMasks'}
+        after: {$ref: '#/components/schemas/SamRoleMasks'}
+        latency_ms: {type: integer}
+
+    SamRoleMasks:
+      type: object
+      properties:
+        context: {type: array, items: {$ref: '#/components/schemas/SamDetection'}}
+        issue: {type: array, items: {$ref: '#/components/schemas/SamDetection'}}
+        resolved: {type: array, items: {$ref: '#/components/schemas/SamDetection'}}
+        confuser: {type: array, items: {$ref: '#/components/schemas/SamDetection'}}
+
+    SamDetection:
+      type: object
+      required: [prompt, score, mask_rle]
+      properties:
+        prompt: {type: string}
+        score: {type: number}
+        box_xyxy: {type: array, items: {type: number}, minItems: 4, maxItems: 4}
+        mask_rle: {type: string}

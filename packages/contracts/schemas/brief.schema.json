@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://civicpulse.dev/schemas/brief.schema.json",
+  "title": "Brief",
+  "description": "Stored in dispatches.brief (stage `brief`). Deterministic SQL builds the context, one LLM call writes the text in the stakeholder's brief_lang and brief_profile, and a validator checks every cited id and every action. Keys are English; `title` and `body_markdown` are in `lang` because a person reads them. Citizen text is never copied into a brief.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "lang", "profile", "title", "body_markdown", "actions", "citations", "validator", "model", "generated_at"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "lang": {"enum": ["es", "en"]},
+    "profile": {"enum": ["operational", "technical", "citizen", "press"]},
+    "title": {"type": "string", "maxLength": 140},
+    "body_markdown": {"type": "string", "maxLength": 6000, "description": "Every factual sentence ends with one or more citations in square brackets, e.g. [r_1a2b3c4d] or [osm_4412]."},
+    "actions": {
+      "type": "array", "maxItems": 5,
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["action_id", "rationale", "citations"],
+        "properties": {
+          "action_id": {"type": "string", "description": "Must be in domains.action_catalog of the cluster's domain."},
+          "rationale": {"type": "string", "maxLength": 400},
+          "citations": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/citation_id"}}
+        }
+      }
+    },
+    "citations": {
+      "type": "array",
+      "description": "Index of every id used in the text, so the panel can link it.",
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["id", "kind", "ref"],
+        "properties": {
+          "id": {"$ref": "#/$defs/citation_id"},
+          "kind": {"enum": ["report", "geo_feature", "cluster", "metric"]},
+          "ref": {"type": "string", "description": "reports.id, geo_features.source_ref, clusters.id, or a metric key."}
+        }
+      }
+    },
+    "validator": {
+      "type": "object", "additionalProperties": false, "required": ["ok"],
+      "properties": {
+        "ok": {"type": "boolean"},
+        "unknown_ids": {"type": "array", "items": {"type": "string"}},
+        "invalid_actions": {"type": "array", "items": {"type": "string"}},
+        "retries": {"type": "integer", "minimum": 0}
+      }
+    },
+    "model": {
+      "type": "object", "additionalProperties": false,
+      "properties": {"provider": {"type": ["string", "null"]}, "model": {"type": ["string", "null"]}}
+    },
+    "generated_at": {"type": "string", "format": "date-time"}
+  },
+  "$defs": {
+    "citation_id": {
+      "type": "string",
+      "pattern": "^(r_[0-9a-f]{8}|c_[0-9a-f]{8}|osm_[0-9]+|naufest_[A-Za-z0-9_]+|m_[a-z_]+)$",
+      "description": "r_ = first 8 hex of a report id (unique inside one brief), c_ = cluster, osm_/naufest_ = geo_features.source_ref, m_ = computed metric (e.g. m_people_count)."
+    }
+  }
+}

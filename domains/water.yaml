@@ -1,0 +1,9 @@
+# Added live in the demo video (plan §4.2). Kept as draft until then.
+id: water
+display_name: {en: "Water", es: "Agua"}
+status: draft
+categories: [water_leak, flooding, clogged_drain, service_outage]
+count_prompts: []
+spatial_layers: [neighborhoods]
+stakeholder_kinds: [utility, government, neighborhood]
+action_catalog: [dispatch_water_truck, repair_leak, scheduled_outage_notice, drain_cleaning]

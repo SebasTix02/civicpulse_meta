@@ -1,0 +1,48 @@
+"""Thin PostgREST client with the service_role key. The orchestrator is the only writer of
+spec, intake, clusters, dispatches and stage_runs (API contract, orchestrator.openapi.yaml)."""
+
+from __future__ import annotations
+
+from typing import Any
+
+import httpx
+
+
+class Db:
+    def __init__(self, url: str, service_key: str, client: httpx.Client | None = None):
+        self.base = url.rstrip("/") + "/rest/v1"
+        self.client = client or httpx.Client(timeout=15.0)
+        self.headers = {"apikey": service_key, "Authorization": f"Bearer {service_key}"}
+
+    def select_one(self, table: str, **eq: Any) -> dict | None:
+        params = {k: f"eq.{v}" for k, v in eq.items()} | {"limit": "1"}
+        resp = self.client.get(f"{self.base}/{table}", params=params, headers=self.headers)
+        resp.raise_for_status()
+        rows = resp.json()
+        return rows[0] if rows else None
+
+    def insert(self, table: str, row: dict) -> None:
+        resp = self.client.post(f"{self.base}/{table}", json=row, headers=self.headers | {"Prefer": "return=minimal"})
+        resp.raise_for_status()
+
+    def compare_and_set(self, table: str, id_: str, expected_status: str, patch: dict) -> bool:
+        """update ... where id = :id and status = :expected. False if another worker moved it."""
+        resp = self.client.patch(
+            f"{self.base}/{table}",
+            params={"id": f"eq.{id_}", "status": f"eq.{expected_status}"},
+            json=patch,
+            headers=self.headers | {"Prefer": "return=representation"},
+        )
+        resp.raise_for_status()
+        return bool(resp.json())
+
+    def stage_done(self, stage: str, *, report_id: str | None = None, photo_version: int | None = None,
+                   resolution_id: str | None = None) -> bool:
+        params = {"stage": f"eq.{stage}", "status": "eq.ok", "limit": "1"}
+        if report_id:
+            params |= {"report_id": f"eq.{report_id}", "photo_version": f"eq.{photo_version}"}
+        else:
+            params |= {"resolution_id": f"eq.{resolution_id}"}
+        resp = self.client.get(f"{self.base}/stage_runs", params=params, headers=self.headers)
+        resp.raise_for_status()
+        return bool(resp.json())

@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://civicpulse.dev/schemas/intake_result.schema.json",
+  "title": "IntakeResult",
+  "description": "Stored in reports.intake for the current photo (stage `sam_ground` + `classify`). Same shape as the notebook's intake payload, minus the copy of the spec. Pixel coordinates refer to the stored image (longest side about 1600 px). A photo never rejects a report: `NOT_VERIFIABLE_*` means `not verifiable with this photo`.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "photo_version", "photo_id", "intake_status", "consistency_score", "candidates", "models", "created_at"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "photo_version": {"type": "integer", "minimum": 1},
+    "photo_id": {"type": "string", "format": "uuid"},
+    "image_size": {
+      "type": "object", "additionalProperties": false, "required": ["width", "height"],
+      "properties": {"width": {"type": "integer"}, "height": {"type": "integer"}}
+    },
+    "intake_status": {"$ref": "#/$defs/intake_status"},
+    "consistency_score": {"type": "number", "minimum": 0, "maximum": 1, "description": "1.0 confirmed by photo, 0.7 requires review, 0.5 not verifiable or no-photo category (initial values from plan §5.5, to calibrate)."},
+    "budget": {"enum": ["intake", "widened"], "description": "widened = main prompts found nothing, so tiles + extra prompts were used."},
+    "sam_cache_hit": {"type": "boolean", "description": "True when the result came from the SHA-256(image)+prompt cache (sandbox samples)."},
+    "candidates": {
+      "type": "array", "maxItems": 5,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["candidate_id", "prompt", "sam_score", "box_xyxy"],
+        "properties": {
+          "candidate_id": {"type": "integer", "minimum": 1},
+          "prompt": {"type": "string"},
+          "sam_score": {"type": "number", "minimum": 0, "maximum": 1},
+          "area_px": {"type": "integer", "minimum": 0},
+          "box_xyxy": {"$ref": "#/$defs/box"},
+          "crop_box_xyxy": {"$ref": "#/$defs/box"},
+          "main_confuser": {"type": ["string", "null"]},
+          "confuser_overlap": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+          "classifier": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/crop_answer"}]},
+          "crop_public_path": {"type": ["string", "null"], "description": "Anonymized crop with the magenta outline, in the public (or sandbox) bucket."}
+        }
+      }
+    },
+    "global_detections": {
+      "type": "array",
+      "description": "Masks covering more than half of the zone: global conditions (shadow, water), not regions.",
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["prompt", "score", "zone_coverage"],
+        "properties": {"prompt": {"type": "string"}, "score": {"type": "number"}, "zone_coverage": {"type": "number"}}
+      }
+    },
+    "whole_image_check": {
+      "description": "One classifier call on the whole photo when no candidate was confirmed.",
+      "oneOf": [{"type": "null"}, {"$ref": "#/$defs/crop_answer"}]
+    },
+    "people_count": {"type": ["integer", "null"], "minimum": 0, "description": "From count_prompts; null when the domain does not count."},
+    "anonymization": {
+      "type": "object", "additionalProperties": false,
+      "properties": {"faces": {"type": "integer"}, "plates": {"type": "integer"}, "public_path": {"type": ["string", "null"]}}
+    },
+    "models": {
+      "type": "object", "additionalProperties": false, "required": ["segmentation"],
+      "properties": {
+        "segmentation": {"type": "string", "examples": ["facebook/sam3.1 (sam3.1_multiplex.pt)"]},
+        "classifier": {"type": ["string", "null"], "description": "null = classifier off or down: statuses stay in *_REQUIRES_REVIEW."}
+      }
+    },
+    "created_at": {"type": "string", "format": "date-time"}
+  },
+  "$defs": {
+    "intake_status": {
+      "enum": [
+        "REPORT_CONFIRMED_BY_PHOTO",
+        "ISSUE_VISIBLE_NOT_LOCALIZED_REQUIRES_REVIEW",
+        "CANDIDATE_REGIONS_FOUND_REQUIRES_REVIEW",
+        "NOT_VERIFIABLE_ISSUE_NOT_FOUND_IN_PHOTO",
+        "NOT_VERIFIABLE_NO_VISUAL_SPEC",
+        "NOT_PHOTO_VERIFIABLE_CATEGORY"
+      ]
+    },
+    "box": {"type": "array", "items": {"type": "number"}, "minItems": 4, "maxItems": 4, "description": "[x0, y0, x1, y1] in pixels."},
+    "crop_answer": {
+      "type": "object", "additionalProperties": false, "required": ["label", "confidence"],
+      "properties": {
+        "model": {"type": ["string", "null"]},
+        "label": {"enum": ["issue_present", "no_issue", "shadow", "water_or_wet_surface", "occlusion", "not_visible", "uncertain"]},
+        "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+        "where": {"type": ["string", "null"]},
+        "reason": {"type": ["string", "null"], "maxLength": 300},
+        "error": {"type": ["string", "null"], "maxLength": 300}
+      }
+    }
+  }
+}

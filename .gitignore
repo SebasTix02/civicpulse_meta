@@ -1,0 +1,29 @@
+# Private data: source exports, photo links, raw and anonymized photos
+data/private/
+*.xlsx
+*.xls
+
+# Env and secrets
+.env
+.env.*
+!.env.example
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# Node
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+
+# Supabase local
+supabase/.temp/
+supabase/.branches/
+
+.DS_Store

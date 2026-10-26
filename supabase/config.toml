@@ -1,0 +1,26 @@
+# Supabase CLI config (local stack: `supabase start`). Only the parts we change.
+project_id = "civicpulse"
+
+[api]
+schemas = ["public"]
+extra_search_path = ["public", "extensions"]
+
+[db]
+major_version = 16
+
+[db.seed]
+enabled = true
+sql_paths = ["./seed/catalog.sql", "./seed/ambato.sql"]
+
+[auth]
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["http://localhost:3000/auth/callback"]
+enable_anonymous_sign_ins = true
+enable_signup = false
+
+[auth.hook.custom_access_token]
+enabled = true
+uri = "pg-functions://postgres/public/custom_access_token_hook"
+
+[storage]
+file_size_limit = "3MiB"

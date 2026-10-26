@@ -1,0 +1,10 @@
+# Catch-all so every catalog category (and `other`) belongs to a domain: reports and
+# clusters reference (domain_id, category_id). Routed to the city government by default.
+id: general
+display_name: {en: "Public space and services", es: "Espacio público y servicios"}
+status: active
+categories: [garbage, fallen_tree, broken_streetlight, fallen_power_line, damaged_traffic_sign, traffic_light_out, graffiti_vandalism, noise, other]
+count_prompts: []
+spatial_layers: [neighborhoods]
+stakeholder_kinds: [government, utility, neighborhood]
+action_catalog: [waste_collection, tree_removal, streetlight_repair, power_line_isolation, sign_replacement, traffic_light_repair, graffiti_cleanup, noise_inspection]

@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://civicpulse.dev/schemas/spec_llm_output.schema.json",
+  "title": "SpecLLMOutput",
+  "description": "What the LLMRouter must return when it turns a citizen report into a spec (stage `spec`, text model). This is the raw model answer, validated with Pydantic before anything is stored. It is never stored as is: the orchestrator merges it with the catalog row (see report_spec.schema.json). All values are English. Unknown keys are a validation failure (one retry with the error, then next provider).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["category_id", "summary_en", "severity", "sam_prompts", "photo_verifiable", "confidence", "contains_personal_data"],
+  "properties": {
+    "category_id": {
+      "description": "One id from the active catalog list given in the prompt, or `other`. An id that is not in the list is treated as a validation failure.",
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{1,47}$"
+    },
+    "domain_id": {
+      "description": "Optional. Only read when the category belongs to more than one domain (domain_categories). Ignored if the pair (domain_id, category_id) does not exist.",
+      "type": ["string", "null"],
+      "pattern": "^[a-z][a-z0-9_]{1,31}$"
+    },
+    "summary_en": {
+      "description": "One short English sentence describing the problem and the place. Never copied into a brief.",
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 300
+    },
+    "severity": {
+      "description": "Model's severity proposal, 1 (minor) to 5 (danger to life). The final reports.severity combines it with deterministic signals.",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5
+    },
+    "entities": {
+      "description": "Optional structured details the text mentions. Free strings are short and English.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "line": {"type": ["string", "null"], "maxLength": 60, "description": "Transit line or route, e.g. `Line 10`."},
+        "landmark": {"type": ["string", "null"], "maxLength": 120, "description": "Named place near the problem, e.g. `Mercado Mayorista`."},
+        "street": {"type": ["string", "null"], "maxLength": 120},
+        "time_bucket": {
+          "type": ["string", "null"],
+          "enum": ["early_morning", "peak_morning", "midday", "peak_evening", "night", "unknown", null]
+        },
+        "people_affected_hint": {"type": ["integer", "null"], "minimum": 0, "maximum": 100000}
+      }
+    },
+    "sam_prompts": {
+      "description": "Up to 4 short English noun phrases (1 to 5 words, lowercase letters, spaces and hyphens) describing what the problem looks like in a photo. Added to the catalog target_prompts, never replacing them. Phrases that fail the pattern are dropped, not the whole answer.",
+      "type": "array",
+      "maxItems": 4,
+      "items": {"type": "string", "pattern": "^[a-z][a-z -]{0,39}$"}
+    },
+    "photo_verifiable": {
+      "description": "Only used when category_id = `other`: false turns photo_verifiability into `none` for this report.",
+      "type": "boolean"
+    },
+    "confidence": {
+      "description": "0 to 1. Below 0.40, the keyword result is preferred if the keywords found a category.",
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "contains_personal_data": {
+      "description": "True if the text includes names, phone numbers, plates or other personal data. The orchestrator then never shows raw_text outside the device that wrote it.",
+      "type": "boolean"
+    }
+  },
+  "examples": [
+    {
+      "category_id": "informal_stop",
+      "domain_id": "transit",
+      "summary_en": "People wait for the bus at a corner far from the official stop near Mercado Mayorista",
+      "severity": 3,
+      "entities": {"line": "Line 10", "landmark": "Mercado Mayorista", "time_bucket": "peak_morning"},
+      "sam_prompts": ["people waiting at curb"],
+      "photo_verifiable": true,
+      "confidence": 0.82,
+      "contains_personal_data": false
+    }
+  ]
+}

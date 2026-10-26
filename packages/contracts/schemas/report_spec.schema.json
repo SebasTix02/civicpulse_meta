@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://civicpulse.dev/schemas/report_spec.schema.json",
+  "title": "ReportSpec",
+  "description": "The verification spec stored in reports.spec once the report reaches `spec_ready`. Built by `spec_from_category`: the catalog row (frozen as category_versions.snapshot for catalog_version) plus what the LLM added. Every later step reads only this object: SAM grounding, the intake classifier, consensus, routing and the before/after closure. It is written once by the orchestrator (service_role) and reused when the photo is replaced or a closure is checked. All strings are English.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "category_id", "domain_id", "catalog_version", "display_name", "photo_verifiability",
+    "issue_can_be_global", "issue_description", "resolved_description", "vlm_hints",
+    "context_prompts", "target_prompts", "extra_target_prompts", "resolved_prompts", "confuser_prompts", "count_prompts",
+    "added_prompts", "summary_en", "severity_proposed", "source", "created_at"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "category_id": {"type": "string", "pattern": "^[a-z][a-z0-9_]{1,47}$"},
+    "domain_id": {"type": "string", "pattern": "^[a-z][a-z0-9_]{1,31}$", "description": "The pair (domain_id, category_id) exists in domain_categories."},
+    "catalog_version": {"type": "integer", "minimum": 1, "description": "category_versions.version used to build this spec."},
+    "category_status": {"enum": ["active", "draft"], "description": "A `draft` category gives empty target_prompts and intake_status NOT_VERIFIABLE_NO_VISUAL_SPEC."},
+    "display_name": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["en", "es"],
+      "properties": {"en": {"type": "string"}, "es": {"type": "string"}}
+    },
+    "photo_verifiability": {"enum": ["full", "partial", "none"]},
+    "verifiability_note": {"type": ["string", "null"]},
+    "issue_can_be_global": {"type": "boolean"},
+    "issue_description": {"type": "string", "description": "What the problem looks like, read by the classifier."},
+    "resolved_description": {"type": "string", "description": "What `resolved` looks like, read by the closure classifier."},
+    "vlm_hints": {"type": "string"},
+    "context_prompts": {"$ref": "#/$defs/prompts", "description": "Where to look (road, sidewalk). The zone is the convex hull of these masks. Empty = whole image."},
+    "target_prompts": {"$ref": "#/$defs/prompts", "description": "Catalog target prompts followed by added_prompts."},
+    "extra_target_prompts": {"$ref": "#/$defs/prompts", "description": "Wider deterioration phrases. Run only on the BEFORE photo and in widened search."},
+    "resolved_prompts": {"$ref": "#/$defs/prompts", "description": "Evidence of a fix, used on the AFTER photo."},
+    "confuser_prompts": {"$ref": "#/$defs/prompts", "description": "Shadow, water, vehicles: things that hide or mimic the problem."},
+    "count_prompts": {"$ref": "#/$defs/prompts", "description": "From domains.count_prompts (e.g. `person` for transit). Empty = no counting."},
+    "added_prompts": {"type": "array", "maxItems": 4, "items": {"$ref": "#/$defs/prompt"}, "description": "The LLM's sam_prompts that survived validation and were appended to target_prompts. Kept apart so the catalog prompts stay auditable."},
+    "summary_en": {"type": ["string", "null"], "maxLength": 300},
+    "severity_proposed": {"type": ["integer", "null"], "minimum": 1, "maximum": 5, "description": "The LLM's proposal. The final value lives in reports.severity."},
+    "entities": {"$ref": "spec_llm_output.schema.json#/properties/entities"},
+    "contains_personal_data": {"type": "boolean", "default": false},
+    "source": {"enum": ["llm", "keywords", "catalog"], "description": "llm = model answer accepted; keywords = deterministic catalog keyword match (fallback, or model confidence < 0.40); catalog = category forced (sandbox sample, admin reprocess)."},
+    "llm": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "description": "Present when a model was called, even if its answer was not used.",
+      "properties": {
+        "provider": {"enum": ["baseten", "fireworks", "modal_endpoints", "meta_model_api", null]},
+        "model": {"type": ["string", "null"], "examples": ["muse-spark-open", "llama-4-scout-17b-16e-instruct"]},
+        "confidence": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+        "proposed_category_id": {"type": ["string", "null"]},
+        "used": {"type": "boolean"},
+        "error": {"type": ["string", "null"], "maxLength": 300}
+      }
+    },
+    "keyword_category": {"type": ["string", "null"], "description": "What the keyword matcher chose, for comparison."},
+    "keyword_scores": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 0}},
+    "created_at": {"type": "string", "format": "date-time"}
+  },
+  "$defs": {
+    "prompt": {"type": "string", "pattern": "^[a-z][a-z -]{0,39}$", "description": "Short English noun phrase for SAM 3.1 (lowercase, 1 to 5 words, no instructions)."},
+    "prompts": {"type": "array", "maxItems": 16, "items": {"$ref": "#/$defs/prompt"}}
+  },
+  "examples": [
+    {
+      "schema_version": "1.0",
+      "category_id": "pothole",
+      "domain_id": "roads",
+      "catalog_version": 1,
+      "category_status": "active",
+      "display_name": {"en": "Pothole", "es": "Bache"},
+      "photo_verifiability": "full",
+      "verifiability_note": null,
+      "issue_can_be_global": false,
+      "issue_description": "a hole or broken depression in the asphalt with visible depth, loose material or exposed base",
+      "resolved_description": "the hole is filled: a flush asphalt patch or intact asphalt, with no depression",
+      "vlm_hints": "A fresh dark patch and a cast shadow look alike, and water inside a hole hides its depth. If unsure, answer uncertain.",
+      "context_prompts": ["road", "asphalt road"],
+      "target_prompts": ["pothole", "road crack", "deep pothole"],
+      "extra_target_prompts": ["worn asphalt", "pavement distress", "asphalt deterioration", "sunken pavement"],
+      "resolved_prompts": ["asphalt patch", "repaired pothole", "fresh asphalt patch"],
+      "confuser_prompts": ["shadow", "wet asphalt", "puddle", "manhole cover", "bus", "car", "person"],
+      "count_prompts": [],
+      "added_prompts": ["deep pothole"],
+      "summary_en": "Deep pothole in the right lane of Av. Cevallos near the market",
+      "severity_proposed": 4,
+      "entities": {"street": "Av. Cevallos", "landmark": "Mercado Central", "time_bucket": null},
+      "contains_personal_data": false,
+      "source": "llm",
+      "llm": {"provider": "baseten", "model": "muse-spark-open", "confidence": 0.91, "proposed_category_id": "pothole", "used": true, "error": null},
+      "keyword_category": "pothole",
+      "keyword_scores": {"pothole": 1},
+      "created_at": "2026-10-28T15:04:11Z"
+    }
+  ]
+}

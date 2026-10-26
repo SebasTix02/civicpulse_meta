@@ -1,0 +1,11 @@
+# Domain pack: who cares and what can be done. SAM prompts live in the catalog, not here.
+id: transit
+display_name: {en: "Public transit", es: "Transporte público"}
+status: active
+# informal_stop, crowded_stop, bus_stop_blocked_by_vehicle, missing_stop_marking and
+# stop_infrastructure are added to the catalog on day 2; the sync skips missing ids with a warning.
+categories: [informal_stop, crowded_stop, bus_stop_blocked_by_vehicle, missing_stop_marking, stop_infrastructure, transit_delay]
+count_prompts: ["person"]
+spatial_layers: [transit_stops, transit_routes]
+stakeholder_kinds: [transit_operator, government, neighborhood, university]
+action_catalog: [adjust_peak_frequency, relocate_stop, formalize_de_facto_stop, add_stop_signage, paint_stop_marking, enforce_stop_parking, peak_hour_reinforcement]

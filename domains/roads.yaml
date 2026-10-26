@@ -1,0 +1,8 @@
+id: roads
+display_name: {en: "Roads and sidewalks", es: "Vías y veredas"}
+status: active
+categories: [pothole, road_cracks, damaged_pavers, broken_sidewalk, blocked_sidewalk, open_manhole, faded_road_markings]
+count_prompts: []
+spatial_layers: [roads]
+stakeholder_kinds: [government, neighborhood, media]
+action_catalog: [pothole_patching, resurfacing, paver_relaying, sidewalk_repair, obstruction_removal, temporary_signage]

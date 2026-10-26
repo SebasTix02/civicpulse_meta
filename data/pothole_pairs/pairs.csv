@@ -1,0 +1,1263 @@
+pair_id,status,has_before,has_after,parish,zone,institution,crew,lat_approx,lon_approx,reported_on,attended_on,days_to_attend
+bach_0001,attended,1,1,Matriz,urban,city,city_crew,-1.256,-78.636,2025-12-17,2026-04-20,124
+bach_0002,attended,1,1,Celiano Monge,urban,city,city_crew,-1.269,-78.621,2025-12-18,2026-01-22,35
+bach_0003,attended,1,1,Celiano Monge,urban,city,city_crew,-1.268,-78.628,2025-12-19,2026-01-23,35
+bach_0004,attended,1,1,La Merced,urban,city,city_crew,-1.236,-78.626,2025-12-19,2026-04-20,122
+bach_0005,attended,1,1,La Merced,urban,city,city_crew,-1.233,-78.619,2025-12-19,2026-04-20,122
+bach_0006,attended,1,1,Atahualpa (Chisalata),urban,city,city_crew,-1.212,-78.594,2025-12-19,2026-01-29,41
+bach_0007,attended,1,1,Atahualpa (Chisalata),urban,city,city_crew,-1.212,-78.595,2025-12-19,2026-01-29,41
+bach_0008,attended,1,1,Atahualpa (Chisalata),urban,city,city_crew,-1.214,-78.598,2025-12-19,2026-01-29,41
+bach_0009,attended,1,1,Atahualpa (Chisalata),urban,city,city_crew,-1.215,-78.597,2025-12-19,2026-01-29,41
+bach_0010,attended,1,1,Atahualpa (Chisalata),urban,city,city_crew,-1.217,-78.599,2025-12-19,2026-01-29,41
+bach_0011,attended,1,1,Atahualpa (Chisalata),urban,city,city_crew,-1.22,-78.615,2025-12-19,2026-01-28,40
+bach_0012,attended,1,1,Atahualpa (Chisalata),urban,city,city_crew,-1.224,-78.604,2025-12-19,2026-01-30,42
+bach_0013,attended,1,1,Huachi Grande,urban,city,city_crew,-1.298,-78.636,2025-12-19,2026-04-20,122
+bach_0014,attended,1,1,Huachi Grande,urban,city,city_crew,-1.294,-78.619,2025-12-19,2026-04-20,122
+bach_0015,attended,1,1,Huachi Grande,urban,city,city_crew,-1.286,-78.624,2025-12-19,2026-04-20,122
+bach_0016,attended,1,1,Celiano Monge,urban,city,city_crew,-1.285,-78.623,2025-12-19,2026-04-20,122
+bach_0017,attended,1,1,Celiano Monge,urban,city,city_crew,-1.285,-78.622,2025-12-19,2026-04-20,122
+bach_0018,attended,1,1,Pishilata,urban,city,city_crew,-1.277,-78.61,2025-12-19,2026-04-20,122
+bach_0019,attended,1,1,Huachi Grande,urban,city,city_crew,-1.288,-78.607,2025-12-19,2026-04-20,122
+bach_0020,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.248,-78.617,2025-12-19,2026-04-20,122
+bach_0021,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.243,-78.618,2025-12-19,2026-04-20,122
+bach_0022,attended,1,1,Matriz,urban,city,city_crew,-1.245,-78.63,2025-12-19,2026-04-20,122
+bach_0023,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.244,-78.626,2025-12-19,2026-04-20,122
+bach_0024,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.244,-78.625,2025-12-19,2026-04-20,122
+bach_0025,attended,1,1,Atahualpa (Chisalata),urban,city,city_crew,-1.21,-78.601,2025-12-22,2026-01-29,38
+bach_0026,attended,1,1,Huachi Chico,urban,city,city_crew,-1.284,-78.634,2025-12-23,2026-04-20,118
+bach_0027,attended,1,1,Celiano Monge,urban,city,city_crew,-17.651,-78.651,2025-12-23,2026-02-18,57
+bach_0028,reassigned,1,0,Huachi Grande,rural,province,province_crew,-1.322,-78.66,2025-12-26,,
+bach_0029,attended,1,1,Huachi Chico,urban,city,city_crew,-1.284,-78.634,2025-12-28,2026-04-20,113
+bach_0030,attended,1,1,Huachi Chico,urban,city,city_crew,-1.284,-78.634,2025-12-30,2026-04-20,111
+bach_0031,reassigned,1,0,Atahualpa (Chisalata),urban,water_utility,water_crew,-1.216,-78.614,2025-12-30,,
+bach_0032,reassigned,1,0,Atahualpa (Chisalata),urban,water_utility,water_crew,-1.212,-78.599,2026-01-02,,
+bach_0033,attended,1,1,Atahualpa (Chisalata),urban,city,city_crew,-1.206,-78.604,2026-01-04,2026-04-20,106
+bach_0034,attended,1,1,Huachi Chico,urban,city,road_association,-1.264,-78.636,2026-01-08,2026-04-20,102
+bach_0035,attended,1,1,Atahualpa (Chisalata),urban,city,city_crew,-1.212,-78.599,2026-01-12,2026-04-20,98
+bach_0036,attended,1,1,Huachi Chico,urban,city,city_crew,-1.284,-78.634,2026-01-13,2026-04-20,97
+bach_0037,attended,1,1,Atahualpa (Chisalata),urban,city,city_crew,-1.224,-78.604,2026-01-14,2026-01-29,15
+bach_0038,attended,1,1,Atahualpa (Chisalata),urban,city,city_crew,-1.224,-78.604,2026-01-14,2026-02-18,35
+bach_0039,reassigned,1,0,Atahualpa (Chisalata),urban,water_utility,water_crew,-1.223,-78.605,2026-01-14,,
+bach_0040,reassigned,1,0,Atahualpa (Chisalata),urban,water_utility,water_crew,-1.223,-78.605,2026-01-14,,
+bach_0041,attended,1,1,Atahualpa (Chisalata),urban,city,city_crew,-1.221,-78.609,2026-01-14,2026-01-29,15
+bach_0042,attended,1,1,Atahualpa (Chisalata),urban,city,city_crew,-1.221,-78.609,2026-01-14,2026-01-30,16
+bach_0043,attended,1,1,Atahualpa (Chisalata),urban,city,city_crew,-1.22,-78.61,2026-01-14,2026-01-29,15
+bach_0044,attended,1,1,Atahualpa (Chisalata),urban,city,city_crew,-1.218,-78.611,2026-01-14,2026-01-30,16
+bach_0045,reassigned,1,0,Atahualpa (Chisalata),urban,water_utility,water_crew,-1.217,-78.612,2026-01-14,,
+bach_0046,reassigned,1,0,Atahualpa (Chisalata),urban,water_utility,water_crew,-1.217,-78.612,2026-01-14,,
+bach_0047,attended,1,1,Atahualpa (Chisalata),urban,city,city_crew,-1.217,-78.612,2026-01-14,2026-01-29,15
+bach_0048,attended,1,1,Atahualpa (Chisalata),urban,city,city_crew,-1.216,-78.613,2026-01-14,2026-01-28,14
+bach_0049,attended,1,1,Atahualpa (Chisalata),urban,city,city_crew,-1.216,-78.613,2026-01-14,2026-01-28,14
+bach_0050,attended,1,1,Atahualpa (Chisalata),urban,city,city_crew,-1.216,-78.613,2026-01-14,2026-01-28,14
+bach_0051,attended,1,1,Atahualpa (Chisalata),urban,city,city_crew,-1.216,-78.614,2026-01-14,2026-02-18,35
+bach_0052,attended,1,1,Atahualpa (Chisalata),urban,city,city_crew,-1.216,-78.614,2026-01-14,2026-01-28,14
+bach_0053,attended,1,1,Atahualpa (Chisalata),urban,city,city_crew,-1.261,-78.622,2026-01-15,2026-04-20,95
+bach_0054,attended,1,1,Celiano Monge,urban,city,city_crew,-1.26,-78.622,2026-01-15,2026-04-20,95
+bach_0055,attended,1,1,Celiano Monge,urban,city,city_crew,-1.258,-78.623,2026-01-15,2026-04-20,95
+bach_0056,attended,1,1,Celiano Monge,urban,city,city_crew,-1.253,-78.623,2026-01-15,2026-04-20,95
+bach_0057,attended,1,1,La Merced,urban,city,city_crew,-1.238,-78.614,2026-01-15,2026-04-20,95
+bach_0058,attended,1,1,Izamba,urban,city,city_crew,-1.227,-78.589,2026-01-15,2026-02-18,34
+bach_0059,attended,1,1,Izamba,urban,city,city_crew,-1.216,-78.584,2026-01-15,2026-02-18,34
+bach_0060,attended,1,1,Izamba,urban,city,city_crew,-1.218,-78.587,2026-01-15,2026-02-03,19
+bach_0061,attended,1,1,Izamba,urban,city,city_crew,-1.218,-78.587,2026-01-15,2026-02-18,34
+bach_0062,attended,1,1,La Península,urban,city,city_crew,-1.245,-78.609,2026-01-15,2026-04-20,95
+bach_0063,attended,1,1,La Península,urban,city,city_crew,-1.245,-78.61,2026-01-15,2026-04-20,95
+bach_0064,attended,1,1,Pishilata,urban,city,city_crew,-1.275,-78.589,2026-01-15,2026-04-20,95
+bach_0065,attended,1,1,Huachi Chico,urban,city,city_crew,-1.293,-78.635,2026-01-15,2026-04-20,95
+bach_0066,attended,1,1,Huachi Chico,urban,city,city_crew,-1.293,-78.635,2026-01-15,2026-04-20,95
+bach_0067,attended,1,1,Celiano Monge,urban,city,city_crew,-1.293,-78.635,2026-01-15,2026-04-20,95
+bach_0068,attended,1,1,Huachi Chico,urban,city,city_crew,-1.281,-78.64,2026-01-15,2026-04-20,95
+bach_0069,reassigned,1,0,Huachi Chico,urban,water_utility,water_crew,-1.278,-78.633,2026-01-15,,
+bach_0070,attended,1,1,Pishilata,urban,city,city_crew,-1.278,-78.61,2026-01-18,2026-04-20,92
+bach_0071,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.247,-78.623,2026-01-19,2026-04-20,91
+bach_0072,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.247,-78.623,2026-01-19,2026-04-20,91
+bach_0073,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.247,-78.624,2026-01-19,2026-04-20,91
+bach_0074,attended,1,1,La Merced,urban,city,city_crew,-1.233,-78.626,2026-01-19,2026-04-20,91
+bach_0075,attended,1,1,La Merced,urban,city,city_crew,-1.233,-78.626,2026-01-19,2026-04-20,91
+bach_0076,attended,1,1,La Merced,urban,city,city_crew,-1.233,-78.627,2026-01-19,2026-04-20,91
+bach_0077,attended,1,1,Matriz,urban,city,city_crew,-1.244,-78.632,2026-01-19,2026-04-20,91
+bach_0078,attended,1,1,Matriz,urban,city,city_crew,-1.245,-78.634,2026-01-19,2026-04-20,91
+bach_0079,attended,1,1,Matriz,urban,city,city_crew,-1.245,-78.634,2026-01-19,2026-04-20,91
+bach_0080,attended,1,1,Matriz,urban,city,city_crew,-1.248,-78.637,2026-01-19,2026-04-20,91
+bach_0081,attended,1,1,Matriz,urban,city,city_crew,-1.256,-78.644,2026-01-19,2026-04-20,91
+bach_0082,attended,1,1,Matriz,urban,city,city_crew,-1.259,-78.64,2026-01-19,2026-04-20,91
+bach_0083,attended,1,1,Matriz,urban,city,city_crew,-1.259,-78.64,2026-01-19,2026-04-20,91
+bach_0084,attended,1,1,Matriz,urban,city,city_crew,-1.258,-78.64,2026-01-19,2026-04-20,91
+bach_0085,attended,1,1,Celiano Monge,urban,city,city_crew,-1.264,-78.626,2026-01-19,2026-04-20,91
+bach_0086,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.616,2026-01-19,2026-04-20,91
+bach_0087,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.615,2026-01-19,2026-04-20,91
+bach_0088,attended,1,1,Matriz,urban,city,city_crew,-1.272,-78.615,2026-01-19,2026-04-20,91
+bach_0089,attended,1,1,Matriz,urban,city,city_crew,-1.284,-78.608,2026-01-19,2026-04-20,91
+bach_0090,attended,1,1,Huachi Grande,urban,city,city_crew,-1.286,-78.607,2026-01-19,2026-04-20,91
+bach_0091,attended,1,1,Huachi Grande,urban,city,city_crew,-1.286,-78.607,2026-01-19,2026-04-20,91
+bach_0092,attended,1,1,Huachi Grande,urban,city,city_crew,-1.288,-78.607,2026-01-19,2026-04-20,91
+bach_0093,attended,1,1,Huachi Grande,urban,city,city_crew,-1.294,-78.619,2026-01-19,2026-04-20,91
+bach_0094,attended,1,1,Huachi Grande,urban,city,city_crew,-1.292,-78.62,2026-01-19,2026-04-20,91
+bach_0095,attended,1,1,Huachi Grande,urban,city,city_crew,-1.286,-78.624,2026-01-19,2026-04-20,91
+bach_0096,attended,1,1,Celiano Monge,urban,city,city_crew,-1.268,-78.628,2026-01-20,2026-02-18,29
+bach_0097,attended,1,1,Huachi Grande,urban,city,city_crew,-1.304,-78.642,2026-01-21,2026-04-20,89
+bach_0098,attended,1,1,Huachi Grande,urban,city,city_crew,-1.304,-78.645,2026-01-21,2026-04-20,89
+bach_0099,attended,1,1,Huachi Grande,urban,city,city_crew,-1.287,-78.614,2026-01-22,2026-04-20,88
+bach_0100,attended,1,1,La Península,urban,city,city_crew,-1.236,-78.608,2026-01-22,2026-04-20,88
+bach_0101,reassigned,1,0,Atahualpa (Chisalata),urban,water_utility,water_crew,-1.218,-78.606,2026-01-23,,
+bach_0102,reassigned,1,0,Unamuncho,rural,province,province_crew,-1.167,-78.604,2026-01-23,,
+bach_0103,reassigned,1,0,Unamuncho,rural,province,province_crew,-1.167,-78.603,2026-01-23,,
+bach_0104,attended,1,1,Unamuncho,urban,city,city_crew,-1.16,-78.601,2026-01-23,2026-04-20,87
+bach_0105,reassigned,1,0,Unamuncho,urban,water_utility,water_crew,-1.158,-78.6,2026-01-23,,
+bach_0106,attended,1,1,Unamuncho,urban,city,city_crew,-1.158,-78.6,2026-01-23,2026-04-20,87
+bach_0107,attended,1,1,Unamuncho,urban,city,city_crew,-1.163,-78.602,2026-01-23,2026-04-20,87
+bach_0108,reassigned,1,0,Unamuncho,rural,province,province_crew,-1.167,-78.607,2026-01-23,,
+bach_0109,reassigned,1,0,Augusto N. Martínez (Mundugleo),rural,province,province_crew,-1.212,-78.613,2026-01-23,,
+bach_0110,attended,1,1,Augusto N. Martínez (Mundugleo),urban,city,road_association,-1.22,-78.615,2026-01-23,2026-04-20,87
+bach_0111,attended,1,1,Santa Rosa,urban,city,city_crew,-1.287,-78.668,2026-01-23,2026-04-20,87
+bach_0112,attended,1,1,Santa Rosa,urban,city,city_crew,-1.288,-78.669,2026-01-23,2026-04-20,87
+bach_0113,attended,1,1,Santa Rosa,urban,city,city_crew,-1.288,-78.669,2026-01-23,2026-04-20,87
+bach_0114,attended,1,1,Santa Rosa,urban,city,city_crew,-1.288,-78.67,2026-01-23,2026-04-20,87
+bach_0115,reassigned,1,0,Santa Rosa,rural,province,province_crew,-1.288,-78.671,2026-01-23,,
+bach_0116,reassigned,1,0,Santa Rosa,rural,province,province_crew,-1.292,-78.682,2026-01-23,,
+bach_0117,reassigned,1,0,Juan Benigno Vela,rural,province,province_crew,-1.304,-78.695,2026-01-23,,
+bach_0118,reassigned,1,0,Juan Benigno Vela,rural,province,province_crew,-1.307,-78.694,2026-01-23,,
+bach_0119,reassigned,1,0,Juan Benigno Vela,rural,province,province_crew,-1.316,-78.697,2026-01-23,,
+bach_0120,reassigned,1,0,Juan Benigno Vela,rural,province,province_crew,-1.317,-78.698,2026-01-23,,
+bach_0121,reassigned,1,0,Juan Benigno Vela,rural,province,province_crew,-1.317,-78.698,2026-01-23,,
+bach_0122,reassigned,1,0,Juan Benigno Vela,rural,province,province_crew,-1.315,-78.699,2026-01-23,,
+bach_0123,reassigned,1,0,Juan Benigno Vela,rural,province,province_crew,-1.311,-78.7,2026-01-23,,
+bach_0124,attended,1,1,Juan Benigno Vela,urban,city,city_crew,-1.302,-78.697,2026-01-23,2026-04-20,87
+bach_0125,attended,1,1,Juan Benigno Vela,urban,city,city_crew,-1.303,-78.697,2026-01-23,2026-04-20,87
+bach_0126,attended,1,1,Santa Rosa,urban,city,city_crew,-1.283,-78.666,2026-01-23,2026-04-20,87
+bach_0127,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.243,-78.626,2026-01-26,2026-04-20,84
+bach_0128,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.25,-78.632,2026-01-26,2026-04-20,84
+bach_0129,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.249,-78.632,2026-01-26,2026-04-20,84
+bach_0130,attended,1,1,Huachi Loreto,urban,city,road_association,-1.249,-78.632,2026-01-26,2026-04-20,84
+bach_0131,attended,1,1,Huachi Loreto,urban,city,road_association,-1.249,-78.632,2026-01-26,2026-04-20,84
+bach_0132,attended,1,1,San Francisco,urban,city,city_crew,-1.239,-78.627,2026-01-26,2026-04-21,85
+bach_0133,attended,1,1,San Francisco,urban,city,city_crew,-1.239,-78.628,2026-01-26,2026-04-21,85
+bach_0134,attended,1,1,San Francisco,urban,city,city_crew,-1.239,-78.628,2026-01-26,2026-04-20,84
+bach_0135,attended,1,1,San Francisco,urban,city,city_crew,-1.239,-78.628,2026-01-26,2026-04-20,84
+bach_0136,attended,1,1,San Francisco,urban,city,city_crew,-1.239,-78.628,2026-01-26,2026-04-21,85
+bach_0137,attended,1,1,San Francisco,urban,city,city_crew,-1.237,-78.627,2026-01-26,2026-04-20,84
+bach_0138,attended,1,1,La Merced,urban,city,road_association,-1.235,-78.625,2026-01-26,2026-04-20,84
+bach_0139,attended,1,1,La Merced,urban,city,road_association,-1.236,-78.625,2026-01-26,2026-04-21,85
+bach_0140,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.243,-78.626,2026-01-26,2026-04-21,85
+bach_0141,attended,1,1,La Merced,urban,city,city_crew,-1.233,-78.623,2026-01-26,2026-04-20,84
+bach_0142,attended,1,1,La Merced,urban,city,city_crew,-1.233,-78.623,2026-01-26,2026-04-20,84
+bach_0143,attended,1,1,La Península,urban,city,city_crew,-1.233,-78.604,2026-01-26,2026-04-21,85
+bach_0144,attended,1,1,La Península,urban,city,city_crew,-1.235,-78.603,2026-01-26,2026-04-20,84
+bach_0145,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.239,-78.613,2026-01-26,2026-04-21,85
+bach_0146,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.243,-78.614,2026-01-26,2026-04-20,84
+bach_0147,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.244,-78.614,2026-01-26,2026-04-21,85
+bach_0148,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.246,-78.615,2026-01-26,2026-04-21,85
+bach_0149,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.247,-78.615,2026-01-26,2026-04-21,85
+bach_0150,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.254,-78.611,2026-01-26,2026-04-20,84
+bach_0151,attended,1,1,Pishilata,urban,city,city_crew,-1.254,-78.606,2026-01-26,2026-04-20,84
+bach_0152,reassigned,1,0,Totoras,rural,province,province_crew,-1.305,-78.608,2026-01-26,,
+bach_0153,reassigned,1,0,Totoras,rural,province,province_crew,-1.306,-78.611,2026-01-26,,
+bach_0154,reassigned,1,0,Totoras,rural,province,province_crew,-1.307,-78.61,2026-01-26,,
+bach_0155,reassigned,1,0,Totoras,rural,province,province_crew,-1.308,-78.61,2026-01-26,,
+bach_0156,reassigned,1,0,Totoras,rural,province,province_crew,-1.308,-78.614,2026-01-26,,
+bach_0157,reassigned,1,0,Totoras,rural,province,province_crew,-1.305,-78.614,2026-01-26,,
+bach_0158,reassigned,1,0,Totoras,rural,province,province_crew,-1.305,-78.614,2026-01-26,,
+bach_0159,reassigned,1,0,Totoras,rural,province,province_crew,-1.305,-78.614,2026-01-26,,
+bach_0160,reassigned,1,0,Totoras,rural,province,province_crew,-1.303,-78.615,2026-01-26,,
+bach_0161,reassigned,1,0,Totoras,rural,province,province_crew,-1.301,-78.616,2026-01-26,,
+bach_0162,reassigned,1,0,Totoras,rural,province,province_crew,-1.301,-78.616,2026-01-26,,
+bach_0163,reassigned,1,0,Totoras,rural,province,province_crew,-1.299,-78.618,2026-01-26,,
+bach_0164,reassigned,1,0,Totoras,rural,province,province_crew,-1.299,-78.618,2026-01-26,,
+bach_0165,reassigned,1,0,Huachi Grande,rural,province,province_crew,-1.298,-78.619,2026-01-26,,
+bach_0166,attended,1,1,Pishilata,urban,city,city_crew,-1.253,-78.592,2026-01-26,2026-04-20,84
+bach_0167,attended,1,1,Pishilata,urban,city,city_crew,-1.25,-78.587,2026-01-26,2026-04-21,85
+bach_0168,attended,1,1,Pishilata,urban,city,city_crew,-1.25,-78.587,2026-01-26,2026-04-21,85
+bach_0169,attended,1,1,Pishilata,urban,city,city_crew,-1.252,-78.584,2026-01-26,2026-04-21,85
+bach_0170,attended,1,1,Pishilata,urban,city,city_crew,-1.252,-78.584,2026-01-26,2026-04-21,85
+bach_0171,attended,1,1,Pishilata,urban,city,city_crew,-1.253,-78.583,2026-01-26,2026-04-20,84
+bach_0172,attended,1,1,Pishilata,urban,city,city_crew,-1.255,-78.577,2026-01-26,2026-04-20,84
+bach_0173,attended,1,1,Pishilata,urban,city,city_crew,-1.256,-78.583,2026-01-26,2026-04-20,84
+bach_0174,attended,1,1,Pishilata,urban,city,city_crew,-1.256,-78.583,2026-01-26,2026-04-20,84
+bach_0175,reassigned,1,0,Pishilata,urban,city,city_crew,-1.256,-78.583,2026-01-26,,
+bach_0176,attended,1,1,Pishilata,urban,city,city_crew,-1.258,-78.582,2026-01-26,2026-04-20,84
+bach_0177,attended,1,1,Pishilata,urban,city,road_association,-1.259,-78.582,2026-01-26,2026-04-21,85
+bach_0178,attended,1,1,Pishilata,urban,city,city_crew,-1.275,-78.586,2026-01-26,2026-04-21,85
+bach_0179,attended,1,1,Picaihua,urban,city,city_crew,-1.276,-78.585,2026-01-26,2026-04-21,85
+bach_0180,attended,1,1,Picaihua,urban,city,city_crew,-1.277,-78.585,2026-01-26,2026-04-20,84
+bach_0181,attended,1,1,Picaihua,urban,city,city_crew,-1.276,-78.584,2026-01-26,2026-04-20,84
+bach_0182,attended,1,1,Picaihua,urban,city,city_crew,-1.276,-78.584,2026-01-26,2026-04-20,84
+bach_0183,attended,1,1,Picaihua,urban,city,city_crew,-1.276,-78.583,2026-01-26,2026-04-20,84
+bach_0184,attended,1,1,Picaihua,urban,city,city_crew,-1.275,-78.583,2026-01-26,2026-04-21,85
+bach_0185,reassigned,1,0,Picaihua,rural,province,province_crew,-1.27,-78.577,2026-01-26,,
+bach_0186,reassigned,1,0,Picaihua,rural,province,province_crew,-1.266,-78.574,2026-01-26,,
+bach_0187,reassigned,1,0,Picaihua,rural,province,province_crew,-1.273,-78.575,2026-01-26,,
+bach_0188,reassigned,1,0,Picaihua,rural,province,province_crew,-1.277,-78.583,2026-01-26,,
+bach_0189,attended,1,1,Pishilata,urban,city,city_crew,-1.274,-78.609,2026-01-26,2026-04-20,84
+bach_0190,attended,1,1,Celiano Monge,urban,city,city_crew,-1.255,-78.617,2026-01-27,2026-04-20,83
+bach_0191,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.252,-78.629,2026-01-27,2026-04-21,84
+bach_0192,attended,1,1,Huachi Loreto,urban,city,road_association,-1.254,-78.632,2026-01-27,2026-04-20,83
+bach_0193,attended,1,1,La Merced,urban,city,city_crew,-1.233,-78.611,2026-01-27,2026-04-20,83
+bach_0194,attended,1,1,La Merced,urban,city,planning_office,-1.231,-78.614,2026-01-27,2026-04-20,83
+bach_0195,attended,1,1,La Merced,urban,city,planning_office,-1.231,-78.614,2026-01-27,2026-04-21,84
+bach_0196,attended,1,1,Celiano Monge,urban,city,city_crew,-1.26,-78.619,2026-01-27,2026-04-20,83
+bach_0197,attended,1,1,La Merced,urban,city,city_crew,-1.231,-78.619,2026-01-27,2026-04-20,83
+bach_0198,attended,1,1,La Merced,urban,city,city_crew,-1.231,-78.619,2026-01-27,2026-04-20,83
+bach_0199,attended,1,1,Celiano Monge,urban,city,mobility_office,-1.273,-78.628,2026-01-27,2026-04-20,83
+bach_0200,attended,1,1,La Merced,urban,city,road_association,-1.231,-78.619,2026-01-27,2026-04-21,84
+bach_0201,attended,1,1,La Merced,urban,city,road_association,-1.231,-78.621,2026-01-27,2026-04-20,83
+bach_0202,attended,1,1,Huachi Chico,urban,city,mobility_office,-1.282,-78.641,2026-01-27,2026-04-20,83
+bach_0203,attended,1,1,La Merced,urban,city,city_crew,-1.232,-78.621,2026-01-27,2026-04-20,83
+bach_0204,attended,1,1,La Merced,urban,city,city_crew,-1.232,-78.621,2026-01-27,2026-04-20,83
+bach_0205,attended,1,1,La Merced,urban,city,city_crew,-1.232,-78.622,2026-01-27,2026-04-20,83
+bach_0206,attended,1,1,La Merced,urban,city,city_crew,-1.232,-78.622,2026-01-27,2026-04-21,84
+bach_0207,attended,1,1,Izamba,urban,city,city_crew,-1.227,-78.589,2026-01-27,2026-02-18,22
+bach_0208,attended,1,1,Izamba,urban,city,city_crew,-1.227,-78.589,2026-01-27,2026-02-03,7
+bach_0209,attended,1,1,Izamba,urban,city,city_crew,-1.228,-78.588,2026-01-27,2026-02-18,22
+bach_0210,attended,1,1,Izamba,urban,city,city_crew,-1.228,-78.588,2026-01-27,2026-02-18,22
+bach_0211,attended,1,1,Izamba,urban,city,city_crew,-1.225,-78.593,2026-01-27,2026-02-03,7
+bach_0212,attended,1,1,Izamba,urban,city,city_crew,-1.222,-78.59,2026-01-27,2026-04-20,83
+bach_0213,attended,1,1,Izamba,urban,city,city_crew,-1.216,-78.591,2026-01-27,2026-02-18,22
+bach_0214,attended,1,1,Atocha – Ficoa,urban,city,city_crew,-1.246,-78.639,2026-01-27,2026-04-21,84
+bach_0215,attended,1,1,Atocha – Ficoa,urban,city,city_crew,-1.246,-78.638,2026-01-27,2026-04-20,83
+bach_0216,attended,1,1,Atahualpa (Chisalata),urban,city,city_crew,-1.212,-78.594,2026-01-27,2026-02-19,23
+bach_0217,attended,1,1,Atahualpa (Chisalata),urban,city,city_crew,-1.212,-78.6,2026-01-27,2026-04-20,83
+bach_0218,attended,1,1,San Bartolomé De Pinllog,urban,city,city_crew,-1.234,-78.643,2026-01-27,2026-04-20,83
+bach_0219,attended,1,1,Atahualpa (Chisalata),urban,city,city_crew,-1.208,-78.603,2026-01-27,2026-04-21,84
+bach_0220,attended,1,1,Atahualpa (Chisalata),urban,city,city_crew,-1.208,-78.603,2026-01-27,2026-04-20,83
+bach_0221,reassigned,1,0,Augusto N. Martínez (Mundugleo),rural,province,province_crew,-1.211,-78.614,2026-01-27,,
+bach_0222,attended,1,1,Atocha – Ficoa,urban,city,city_crew,-1.224,-78.616,2026-01-27,2026-04-20,83
+bach_0223,attended,1,1,Augusto N. Martínez (Mundugleo),urban,city,city_crew,-1.217,-78.614,2026-01-27,2026-04-20,83
+bach_0224,attended,1,1,Augusto N. Martínez (Mundugleo),urban,city,city_crew,-1.219,-78.615,2026-01-27,2026-04-21,84
+bach_0225,attended,1,1,Atahualpa (Chisalata),urban,city,city_crew,-1.212,-78.613,2026-01-27,2026-04-20,83
+bach_0226,attended,1,1,Atahualpa (Chisalata),urban,city,city_crew,-1.208,-78.612,2026-01-27,2026-04-21,84
+bach_0227,attended,1,1,Huachi Chico,urban,city,city_crew,-1.255,-78.633,2026-01-27,2026-04-20,83
+bach_0228,attended,1,1,Huachi Chico,urban,city,city_crew,-1.255,-78.633,2026-01-27,2026-04-20,83
+bach_0229,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.255,-78.633,2026-01-27,2026-04-20,83
+bach_0230,attended,1,1,Atahualpa (Chisalata),rural,province,province_crew,-1.207,-78.595,2026-01-27,2026-02-12,16
+bach_0231,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.255,-78.633,2026-01-27,2026-04-20,83
+bach_0232,reassigned,1,0,Atahualpa (Chisalata),rural,province,province_crew,-1.208,-78.594,2026-01-27,,
+bach_0233,reassigned,1,0,Izamba,urban,water_utility,water_crew,-1.213,-78.593,2026-01-27,,
+bach_0234,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.254,-78.632,2026-01-27,2026-04-20,83
+bach_0235,attended,1,1,Huachi Chico,urban,city,city_crew,-1.25,-78.631,2026-01-27,2026-04-21,84
+bach_0236,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.25,-78.631,2026-01-27,2026-04-20,83
+bach_0237,attended,1,1,La Merced,urban,city,road_association,-1.237,-78.624,2026-01-27,2026-04-20,83
+bach_0238,attended,1,1,San Francisco,urban,city,city_crew,-1.239,-78.624,2026-01-27,2026-04-20,83
+bach_0239,attended,1,1,La Merced,urban,city,city_crew,-1.238,-78.624,2026-01-27,2026-04-20,83
+bach_0240,reassigned,1,0,Huachi Loreto,urban,water_utility,water_crew,-1.248,-78.617,2026-01-27,,
+bach_0241,attended,1,1,La Merced,urban,city,city_crew,-1.232,-78.625,2026-01-27,2026-04-20,83
+bach_0242,attended,1,1,La Merced,urban,city,city_crew,-1.233,-78.626,2026-01-27,2026-04-20,83
+bach_0243,attended,1,1,Pishilata,urban,city,city_crew,-1.265,-78.609,2026-01-27,2026-04-20,83
+bach_0244,attended,1,1,Pishilata,urban,city,city_crew,-1.265,-78.609,2026-01-27,2026-04-20,83
+bach_0245,attended,1,1,Huachi Loreto,urban,city,road_association,-1.242,-78.616,2026-01-27,2026-04-20,83
+bach_0246,attended,1,1,Izamba,urban,city,water_crew,-1.209,-78.594,2026-01-27,2026-04-21,84
+bach_0247,reassigned,1,0,Izamba,rural,province,province_crew,-1.187,-78.592,2026-01-27,,
+bach_0248,reassigned,1,0,Izamba,rural,province,province_crew,-1.186,-78.591,2026-01-27,,
+bach_0249,reassigned,1,0,Izamba,rural,province,province_crew,-1.185,-78.591,2026-01-27,,
+bach_0250,reassigned,1,0,Unamuncho,rural,province,province_crew,-1.18,-78.589,2026-01-27,,
+bach_0251,reassigned,1,0,Unamuncho,rural,province,province_crew,-1.177,-78.589,2026-01-27,,
+bach_0252,reassigned,1,0,Unamuncho,rural,province,province_crew,-1.177,-78.589,2026-01-27,,
+bach_0253,reassigned,1,0,Unamuncho,rural,province,province_crew,-1.177,-78.589,2026-01-27,,
+bach_0254,reassigned,1,0,Unamuncho,rural,province,province_crew,-1.176,-78.589,2026-01-27,,
+bach_0255,reassigned,1,0,Unamuncho,rural,province,province_crew,-1.175,-78.588,2026-01-27,,
+bach_0256,reassigned,1,0,Unamuncho,rural,province,province_crew,-1.174,-78.588,2026-01-27,,
+bach_0257,reassigned,1,0,Unamuncho,rural,province,province_crew,-1.173,-78.588,2026-01-27,,
+bach_0258,reassigned,1,0,Unamuncho,rural,province,province_crew,-1.165,-78.588,2026-01-27,,
+bach_0259,reassigned,1,0,Unamuncho,rural,province,province_crew,-1.169,-78.589,2026-01-27,,
+bach_0260,reassigned,1,0,Unamuncho,rural,province,province_crew,-1.162,-78.587,2026-01-27,,
+bach_0261,reassigned,1,0,Unamuncho,rural,province,province_crew,-1.17,-78.589,2026-01-27,,
+bach_0262,reassigned,1,0,Unamuncho,rural,province,province_crew,-1.16,-78.587,2026-01-27,,
+bach_0263,reassigned,1,0,Unamuncho,rural,province,province_crew,-1.16,-78.587,2026-01-27,,
+bach_0264,reassigned,1,0,Unamuncho,rural,province,province_crew,-1.159,-78.587,2026-01-27,,
+bach_0265,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.252,-78.629,2026-01-28,2026-04-21,83
+bach_0266,reassigned,1,0,Totoras,rural,province,province_crew,-1.298,-78.609,2026-01-28,,
+bach_0267,reassigned,1,0,Totoras,rural,province,province_crew,-1.299,-78.607,2026-01-28,,
+bach_0268,reassigned,1,0,Totoras,rural,province,province_crew,-1.3,-78.607,2026-01-28,,
+bach_0269,reassigned,1,0,Totoras,rural,province,province_crew,-1.303,-78.603,2026-01-28,,
+bach_0270,reassigned,1,0,Totoras,rural,province,province_crew,-1.305,-78.601,2026-01-28,,
+bach_0271,reassigned,1,0,Totoras,rural,province,province_crew,-1.305,-78.601,2026-01-28,,
+bach_0272,attended,1,1,Totoras,urban,city,city_crew,-1.316,-78.599,2026-01-28,2026-04-21,83
+bach_0273,attended,1,1,Totoras,urban,city,city_crew,-1.315,-78.599,2026-01-28,2026-04-20,82
+bach_0274,attended,1,1,Totoras,urban,city,city_crew,-1.317,-78.596,2026-01-28,2026-04-21,83
+bach_0275,reassigned,1,0,Montalvo,rural,province,province_crew,-1.325,-78.61,2026-01-28,,
+bach_0276,attended,1,1,Montalvo,urban,city,city_crew,-1.33,-78.626,2026-01-28,2026-04-20,82
+bach_0277,attended,1,1,Huachi Grande,urban,city,road_association,-1.29,-78.618,2026-01-28,2026-04-20,82
+bach_0278,attended,1,1,Huachi Grande,urban,city,city_crew,-1.289,-78.618,2026-01-28,2026-04-20,82
+bach_0279,attended,1,1,Celiano Monge,urban,city,city_crew,-1.292,-78.632,2026-01-28,2026-04-21,83
+bach_0280,attended,1,1,Huachi Grande,urban,city,city_crew,-1.293,-78.633,2026-01-28,2026-04-20,82
+bach_0281,attended,1,1,Totoras,urban,city,city_crew,-1.316,-78.597,2026-01-28,2026-02-24,27
+bach_0282,attended,1,1,Celiano Monge,urban,city,road_association,-1.295,-78.634,2026-01-28,2026-04-20,82
+bach_0283,attended,1,1,Huachi Grande,urban,city,city_crew,-1.295,-78.634,2026-01-28,2026-02-12,15
+bach_0284,attended,1,1,Celiano Monge,urban,city,city_crew,-1.291,-78.634,2026-01-28,2026-04-21,83
+bach_0285,attended,1,1,Celiano Monge,urban,city,city_crew,-1.291,-78.634,2026-01-28,2026-04-20,82
+bach_0286,attended,1,1,Celiano Monge,urban,city,city_crew,-1.291,-78.634,2026-01-28,2026-04-21,83
+bach_0287,attended,1,1,Celiano Monge,urban,city,city_crew,-1.288,-78.633,2026-01-28,2026-04-21,83
+bach_0288,attended,1,1,Celiano Monge,urban,city,city_crew,-1.287,-78.63,2026-01-28,2026-04-21,83
+bach_0289,attended,1,1,Celiano Monge,urban,city,city_crew,-1.288,-78.63,2026-01-28,2026-04-21,83
+bach_0290,attended,1,1,Celiano Monge,urban,city,city_crew,-1.281,-78.629,2026-01-28,2026-04-21,83
+bach_0291,attended,1,1,Celiano Monge,urban,city,city_crew,-1.276,-78.627,2026-01-28,2026-04-21,83
+bach_0292,attended,1,1,Celiano Monge,urban,city,city_crew,-1.273,-78.627,2026-01-28,2026-04-21,83
+bach_0293,attended,1,1,Pishilata,urban,city,city_crew,-1.266,-78.611,2026-01-28,2026-04-21,83
+bach_0294,attended,1,1,Pishilata,urban,city,city_crew,-1.266,-78.611,2026-01-28,2026-04-20,82
+bach_0295,attended,1,1,Pishilata,urban,city,city_crew,-1.266,-78.612,2026-01-28,2026-04-21,83
+bach_0296,attended,1,1,Pishilata,urban,city,city_crew,-1.266,-78.612,2026-01-28,2026-04-21,83
+bach_0297,attended,1,1,Pishilata,urban,city,city_crew,-1.261,-78.615,2026-01-28,2026-04-21,83
+bach_0298,attended,1,1,Pishilata,urban,city,city_crew,-1.261,-78.615,2026-01-28,2026-04-20,82
+bach_0299,attended,1,1,Pishilata,urban,city,city_crew,-1.26,-78.615,2026-01-28,2026-04-21,83
+bach_0300,attended,1,1,Pishilata,urban,city,road_association,-1.26,-78.616,2026-01-28,2026-04-21,83
+bach_0301,attended,1,1,Pishilata,urban,city,road_association,-1.26,-78.616,2026-01-28,2026-04-21,83
+bach_0302,attended,1,1,Pishilata,urban,city,road_association,-1.26,-78.616,2026-01-28,2026-04-20,82
+bach_0303,attended,1,1,Celiano Monge,urban,city,city_crew,-1.259,-78.617,2026-01-28,2026-04-21,83
+bach_0304,attended,1,1,Celiano Monge,urban,city,city_crew,-1.258,-78.617,2026-01-28,2026-04-21,83
+bach_0305,reassigned,1,0,Celiano Monge,urban,water_utility,water_crew,-1.256,-78.618,2026-01-28,,
+bach_0306,attended,1,1,Celiano Monge,urban,city,city_crew,-1.26,-78.623,2026-01-28,2026-04-20,82
+bach_0307,attended,1,1,Celiano Monge,urban,city,city_crew,-1.262,-78.622,2026-01-28,2026-04-21,83
+bach_0308,attended,1,1,Celiano Monge,urban,city,city_crew,-1.259,-78.621,2026-01-28,2026-04-20,82
+bach_0309,attended,1,1,Celiano Monge,urban,city,city_crew,-1.259,-78.621,2026-01-28,2026-04-21,83
+bach_0310,reassigned,1,0,Celiano Monge,urban,water_utility,water_crew,-1.257,-78.622,2026-01-28,,
+bach_0311,attended,1,1,Celiano Monge,urban,city,city_crew,-1.255,-78.627,2026-01-28,2026-04-21,83
+bach_0312,attended,1,1,Matriz,urban,city,city_crew,-1.26,-78.639,2026-01-28,2026-04-21,83
+bach_0313,attended,1,1,Matriz,urban,city,city_crew,-1.26,-78.64,2026-01-28,2026-04-21,83
+bach_0314,attended,1,1,Santa Rosa,urban,city,city_crew,-1.28,-78.659,2026-01-28,2026-04-21,83
+bach_0315,attended,1,1,Santa Rosa,urban,city,city_crew,-1.282,-78.659,2026-01-28,2026-04-21,83
+bach_0316,attended,1,1,Santa Rosa,urban,city,city_crew,-1.282,-78.659,2026-01-28,2026-04-21,83
+bach_0317,attended,1,1,Santa Rosa,urban,city,city_crew,-1.283,-78.661,2026-01-28,2026-04-21,83
+bach_0318,attended,1,1,Santa Rosa,urban,city,city_crew,-1.283,-78.661,2026-01-28,2026-04-21,83
+bach_0319,attended,1,1,Santa Rosa,urban,city,city_crew,-1.283,-78.662,2026-01-28,2026-04-21,83
+bach_0320,attended,1,1,Huachi Chico,urban,city,road_association,-1.269,-78.631,2026-01-28,2026-04-21,83
+bach_0321,attended,1,1,Huachi Chico,urban,city,city_crew,-1.263,-78.634,2026-01-28,2026-04-21,83
+bach_0322,attended,1,1,Huachi Chico,urban,city,city_crew,-1.262,-78.635,2026-01-28,2026-04-21,83
+bach_0323,attended,1,1,Huachi Chico,urban,city,city_crew,-1.262,-78.635,2026-01-28,2026-04-21,83
+bach_0324,attended,1,1,Huachi Chico,urban,city,city_crew,-1.262,-78.634,2026-01-28,2026-04-21,83
+bach_0325,attended,1,1,Huachi Chico,urban,city,city_crew,-1.262,-78.635,2026-01-28,2026-04-21,83
+bach_0326,attended,1,1,Huachi Chico,urban,city,city_crew,-1.261,-78.635,2026-01-28,2026-04-21,83
+bach_0327,attended,1,1,Huachi Chico,urban,city,city_crew,-1.261,-78.635,2026-01-28,2026-04-21,83
+bach_0328,attended,1,1,Huachi Chico,urban,city,city_crew,-1.262,-78.634,2026-01-28,2026-04-21,83
+bach_0329,attended,1,1,Huachi Chico,urban,city,city_crew,-1.262,-78.634,2026-01-28,2026-04-21,83
+bach_0330,attended,1,1,Huachi Chico,urban,city,city_crew,-1.264,-78.636,2026-01-28,2026-04-21,83
+bach_0331,attended,1,1,Huachi Chico,rural,city,road_association,-1.268,-78.632,2026-01-28,2026-04-21,83
+bach_0332,attended,1,1,Huachi Chico,urban,city,road_association,-1.268,-78.631,2026-01-28,2026-04-21,83
+bach_0333,attended,1,1,Huachi Chico,urban,city,road_association,-1.268,-78.631,2026-01-28,2026-04-21,83
+bach_0334,attended,1,1,Huachi Chico,urban,city,road_association,-1.267,-78.63,2026-01-28,2026-04-21,83
+bach_0335,attended,1,1,Huachi Chico,urban,city,road_association,-1.267,-78.63,2026-01-28,2026-04-21,83
+bach_0336,attended,1,1,Huachi Grande,urban,city,city_crew,-1.299,-78.632,2026-01-29,2026-04-21,82
+bach_0337,attended,1,1,Huachi Grande,urban,city,city_crew,-1.296,-78.635,2026-01-29,2026-01-29,0
+bach_0338,attended,1,1,La Merced,urban,city,city_crew,-1.238,-78.613,2026-01-29,2026-01-29,0
+bach_0339,attended,1,1,La Merced,urban,city,city_crew,-1.238,-78.612,2026-01-29,2026-01-29,0
+bach_0340,attended,1,1,La Merced,urban,city,city_crew,-1.236,-78.612,2026-01-29,2026-01-29,0
+bach_0341,attended,1,1,La Merced,urban,city,city_crew,-1.235,-78.611,2026-01-29,2026-01-29,0
+bach_0342,attended,1,1,La Merced,urban,city,city_crew,-1.234,-78.61,2026-01-29,2026-01-29,0
+bach_0343,attended,1,1,La Merced,urban,city,city_crew,-1.233,-78.61,2026-01-29,2026-01-29,0
+bach_0344,attended,1,1,La Merced,urban,city,city_crew,-1.233,-78.611,2026-01-29,2026-01-29,0
+bach_0345,attended,1,1,La Merced,urban,city,city_crew,-1.232,-78.61,2026-01-29,2026-01-29,0
+bach_0346,attended,1,1,La Merced,urban,city,city_crew,-1.232,-78.612,2026-01-29,2026-02-12,14
+bach_0347,attended,1,1,La Merced,urban,city,city_crew,-1.231,-78.612,2026-01-29,2026-01-29,0
+bach_0348,attended,1,1,La Merced,urban,city,city_crew,-1.231,-78.612,2026-01-29,2026-01-29,0
+bach_0349,attended,1,1,La Merced,urban,city,city_crew,-1.231,-78.612,2026-01-29,2026-01-29,0
+bach_0350,attended,1,1,La Merced,urban,city,city_crew,-1.231,-78.612,2026-01-29,2026-01-29,0
+bach_0351,attended,1,1,La Merced,urban,city,city_crew,-1.231,-78.613,2026-01-29,2026-01-29,0
+bach_0352,attended,1,1,La Merced,urban,city,city_crew,-1.231,-78.613,2026-01-29,2026-01-29,0
+bach_0353,attended,1,1,La Merced,urban,city,city_crew,-1.231,-78.613,2026-01-29,2026-01-29,0
+bach_0354,attended,1,1,La Merced,urban,city,city_crew,-1.231,-78.613,2026-01-29,2026-01-29,0
+bach_0355,attended,1,1,La Merced,urban,city,city_crew,-1.23,-78.613,2026-01-29,2026-01-29,0
+bach_0356,attended,1,1,La Merced,urban,city,city_crew,-1.231,-78.613,2026-01-29,2026-01-29,0
+bach_0357,attended,1,1,La Merced,urban,city,city_crew,-1.23,-78.613,2026-01-29,2026-01-29,0
+bach_0358,attended,1,1,La Península,urban,city,city_crew,-1.23,-78.613,2026-01-29,2026-01-29,0
+bach_0359,attended,1,1,La Península,urban,city,city_crew,-1.23,-78.612,2026-01-29,2026-01-29,0
+bach_0360,attended,1,1,La Península,urban,city,city_crew,-1.23,-78.613,2026-01-29,2026-01-29,0
+bach_0361,attended,1,1,La Península,urban,city,city_crew,-1.23,-78.612,2026-01-29,2026-01-29,0
+bach_0362,attended,1,1,La Merced,urban,city,city_crew,-1.23,-78.613,2026-01-29,2026-01-29,0
+bach_0363,attended,1,1,La Península,urban,city,city_crew,-1.23,-78.611,2026-01-29,2026-01-29,0
+bach_0364,attended,1,1,La Península,urban,city,city_crew,-1.23,-78.611,2026-01-29,2026-01-29,0
+bach_0365,attended,1,1,La Península,urban,city,city_crew,-1.23,-78.611,2026-01-29,2026-04-21,82
+bach_0366,attended,1,1,La Península,urban,city,city_crew,-1.23,-78.611,2026-01-29,2026-01-29,0
+bach_0367,attended,1,1,La Península,urban,city,city_crew,-1.231,-78.608,2026-01-29,2026-01-29,0
+bach_0368,attended,1,1,La Península,urban,city,city_crew,-1.231,-78.608,2026-01-29,2026-01-29,0
+bach_0369,attended,1,1,La Península,urban,city,city_crew,-1.237,-78.605,2026-01-29,2026-01-29,0
+bach_0370,attended,1,1,La Península,urban,city,city_crew,-1.237,-78.604,2026-01-29,2026-01-29,0
+bach_0371,attended,1,1,Matriz,urban,city,road_association,-1.251,-78.638,2026-01-29,2026-04-21,82
+bach_0372,attended,1,1,La Península,urban,city,city_crew,-1.237,-78.603,2026-01-29,2026-01-29,0
+bach_0373,attended,1,1,La Península,urban,city,city_crew,-1.237,-78.604,2026-01-29,2026-01-29,0
+bach_0374,attended,1,1,La Península,urban,city,city_crew,-1.237,-78.602,2026-01-29,2026-01-29,0
+bach_0375,attended,1,1,La Península,urban,city,city_crew,-1.237,-78.603,2026-01-29,2026-01-29,0
+bach_0376,attended,1,1,La Península,urban,city,city_crew,-1.236,-78.601,2026-01-29,2026-01-29,0
+bach_0377,attended,1,1,La Península,urban,city,city_crew,-1.236,-78.601,2026-01-29,2026-01-29,0
+bach_0378,attended,1,1,La Península,urban,city,city_crew,-1.236,-78.601,2026-01-29,2026-01-29,0
+bach_0379,attended,1,1,La Península,urban,city,city_crew,-1.236,-78.601,2026-01-29,2026-04-21,82
+bach_0380,attended,1,1,La Península,urban,city,city_crew,-1.236,-78.601,2026-01-29,2026-01-29,0
+bach_0381,attended,1,1,La Península,urban,city,city_crew,-1.236,-78.601,2026-01-29,2026-01-29,0
+bach_0382,attended,1,1,La Península,urban,city,city_crew,-1.235,-78.601,2026-01-29,2026-01-29,0
+bach_0383,attended,1,1,La Península,urban,city,city_crew,-1.235,-78.601,2026-01-29,2026-01-29,0
+bach_0384,attended,1,1,La Península,urban,city,city_crew,-1.235,-78.601,2026-01-29,2026-01-29,0
+bach_0385,attended,1,1,La Península,urban,city,city_crew,-1.234,-78.601,2026-01-29,2026-01-29,0
+bach_0386,attended,1,1,La Península,urban,city,city_crew,-1.233,-78.601,2026-01-29,2026-01-29,0
+bach_0387,attended,1,1,La Península,urban,city,city_crew,-1.233,-78.601,2026-01-29,2026-01-29,0
+bach_0388,attended,1,1,La Península,urban,city,city_crew,-1.233,-78.601,2026-01-29,2026-01-29,0
+bach_0389,attended,1,1,La Península,urban,city,city_crew,-1.233,-78.601,2026-01-29,2026-01-29,0
+bach_0390,attended,1,1,La Península,urban,city,city_crew,-1.234,-78.601,2026-01-29,2026-01-29,0
+bach_0391,attended,1,1,La Península,urban,city,city_crew,-1.233,-78.601,2026-01-29,2026-01-29,0
+bach_0392,attended,1,1,La Península,urban,city,city_crew,-1.233,-78.601,2026-01-29,2026-01-29,0
+bach_0393,attended,1,1,La Península,urban,city,city_crew,-1.233,-78.601,2026-01-29,2026-01-29,0
+bach_0394,attended,1,1,La Península,urban,city,city_crew,-1.233,-78.601,2026-01-29,2026-01-29,0
+bach_0395,attended,1,1,La Península,urban,city,city_crew,-1.233,-78.601,2026-01-29,2026-01-29,0
+bach_0396,attended,1,1,La Península,urban,city,city_crew,-1.233,-78.601,2026-01-29,2026-01-29,0
+bach_0397,attended,1,1,La Península,urban,city,city_crew,-1.233,-78.601,2026-01-29,2026-01-29,0
+bach_0398,attended,1,1,La Península,urban,city,city_crew,-1.232,-78.601,2026-01-29,2026-01-29,0
+bach_0399,attended,1,1,La Península,urban,city,city_crew,-1.232,-78.601,2026-01-29,2026-01-29,0
+bach_0400,attended,1,1,La Península,urban,city,city_crew,-1.232,-78.601,2026-01-29,2026-01-29,0
+bach_0401,attended,1,1,La Península,urban,city,city_crew,-1.231,-78.601,2026-01-29,2026-01-29,0
+bach_0402,attended,1,1,La Península,urban,city,city_crew,-1.23,-78.601,2026-01-29,2026-01-29,0
+bach_0403,attended,1,1,La Península,urban,city,city_crew,-1.23,-78.601,2026-01-29,2026-01-29,0
+bach_0404,attended,1,1,La Península,urban,city,city_crew,-1.23,-78.601,2026-01-29,2026-01-29,0
+bach_0405,attended,1,1,La Península,urban,city,city_crew,-1.23,-78.601,2026-01-29,2026-01-29,0
+bach_0406,attended,1,1,La Península,urban,city,city_crew,-1.23,-78.601,2026-01-29,2026-01-29,0
+bach_0407,attended,1,1,La Península,urban,city,city_crew,-1.23,-78.601,2026-01-29,2026-01-29,0
+bach_0408,attended,1,1,La Península,urban,city,city_crew,-1.23,-78.601,2026-01-29,2026-01-29,0
+bach_0409,attended,1,1,La Península,urban,city,city_crew,-1.229,-78.601,2026-01-29,2026-01-29,0
+bach_0410,attended,1,1,La Península,urban,city,city_crew,-1.23,-78.601,2026-01-29,2026-01-29,0
+bach_0411,attended,1,1,Izamba,urban,city,city_crew,-1.229,-78.601,2026-01-29,2026-01-29,0
+bach_0412,attended,1,1,La Península,urban,city,city_crew,-1.23,-78.601,2026-01-29,2026-01-29,0
+bach_0413,attended,1,1,Izamba,urban,city,city_crew,-1.229,-78.601,2026-01-29,2026-01-29,0
+bach_0414,attended,1,1,Izamba,urban,city,city_crew,-1.229,-78.601,2026-01-29,2026-01-29,0
+bach_0415,attended,1,1,La Península,urban,city,city_crew,-1.229,-78.601,2026-01-29,2026-01-29,0
+bach_0416,attended,1,1,La Península,urban,city,city_crew,-1.229,-78.601,2026-01-29,2026-01-29,0
+bach_0417,attended,1,1,La Península,urban,city,city_crew,-1.229,-78.601,2026-01-29,2026-01-29,0
+bach_0418,attended,1,1,Izamba,urban,city,city_crew,-1.229,-78.601,2026-01-29,2026-01-29,0
+bach_0419,attended,1,1,La Península,urban,city,city_crew,-1.229,-78.601,2026-01-29,2026-01-29,0
+bach_0420,attended,1,1,La Península,urban,city,city_crew,-1.229,-78.601,2026-01-29,2026-01-29,0
+bach_0421,attended,1,1,La Península,urban,city,city_crew,-1.229,-78.601,2026-01-29,2026-01-29,0
+bach_0422,attended,1,1,La Península,urban,city,city_crew,-1.229,-78.601,2026-01-29,2026-01-29,0
+bach_0423,attended,1,1,Izamba,urban,city,city_crew,-1.229,-78.601,2026-01-29,2026-01-29,0
+bach_0424,attended,1,1,La Península,urban,city,city_crew,-1.23,-78.601,2026-01-29,2026-01-29,0
+bach_0425,attended,1,1,La Península,urban,city,city_crew,-1.23,-78.601,2026-01-29,2026-01-29,0
+bach_0426,attended,1,1,La Península,urban,city,city_crew,-1.23,-78.601,2026-01-29,2026-01-29,0
+bach_0427,attended,1,1,Izamba,urban,city,city_crew,-1.229,-78.601,2026-01-29,2026-01-29,0
+bach_0428,attended,1,1,La Península,urban,city,city_crew,-1.23,-78.601,2026-01-29,2026-01-29,0
+bach_0429,attended,1,1,La Península,urban,city,city_crew,-1.23,-78.601,2026-01-29,2026-01-29,0
+bach_0430,attended,1,1,La Península,urban,city,city_crew,-1.23,-78.601,2026-01-29,2026-01-29,0
+bach_0431,attended,1,1,La Península,urban,city,city_crew,-1.23,-78.601,2026-01-29,2026-01-29,0
+bach_0432,attended,1,1,La Península,urban,city,city_crew,-1.231,-78.601,2026-01-29,2026-01-29,0
+bach_0433,attended,1,1,La Península,urban,city,city_crew,-1.23,-78.601,2026-01-29,2026-01-29,0
+bach_0434,attended,1,1,La Península,urban,city,city_crew,-1.231,-78.601,2026-01-29,2026-01-29,0
+bach_0435,attended,1,1,La Península,urban,city,city_crew,-1.231,-78.601,2026-01-29,2026-01-29,0
+bach_0436,attended,1,1,La Península,urban,city,city_crew,-1.231,-78.601,2026-01-29,2026-01-29,0
+bach_0437,attended,1,1,La Península,urban,city,city_crew,-1.232,-78.601,2026-01-29,2026-01-29,0
+bach_0438,attended,1,1,La Península,urban,city,city_crew,-1.232,-78.601,2026-01-29,2026-01-29,0
+bach_0439,attended,1,1,La Península,urban,city,city_crew,-1.233,-78.601,2026-01-29,2026-01-29,0
+bach_0440,attended,1,1,La Península,urban,city,city_crew,-1.233,-78.601,2026-01-29,2026-01-29,0
+bach_0441,attended,1,1,La Península,urban,city,city_crew,-1.233,-78.601,2026-01-29,2026-01-29,0
+bach_0442,attended,1,1,La Península,urban,city,city_crew,-1.233,-78.601,2026-01-29,2026-01-29,0
+bach_0443,attended,1,1,La Península,urban,city,city_crew,-1.233,-78.601,2026-01-29,2026-01-29,0
+bach_0444,attended,1,1,La Península,urban,city,city_crew,-1.233,-78.601,2026-01-29,2026-01-29,0
+bach_0445,attended,1,1,La Península,urban,city,city_crew,-1.234,-78.601,2026-01-29,2026-01-29,0
+bach_0446,attended,1,1,La Península,urban,city,city_crew,-1.234,-78.601,2026-01-29,2026-01-29,0
+bach_0447,attended,1,1,La Península,urban,city,city_crew,-1.234,-78.601,2026-01-29,2026-01-29,0
+bach_0448,attended,1,1,La Península,urban,city,city_crew,-1.234,-78.601,2026-01-29,2026-01-29,0
+bach_0449,attended,1,1,La Península,urban,city,city_crew,-1.234,-78.601,2026-01-29,2026-01-29,0
+bach_0450,attended,1,1,La Península,urban,city,city_crew,-1.234,-78.601,2026-01-29,2026-01-29,0
+bach_0451,attended,1,1,La Península,urban,city,city_crew,-1.234,-78.601,2026-01-29,2026-01-29,0
+bach_0452,attended,1,1,La Península,urban,city,city_crew,-1.235,-78.601,2026-01-29,2026-01-29,0
+bach_0453,attended,1,1,La Península,urban,city,city_crew,-1.235,-78.601,2026-01-29,2026-01-29,0
+bach_0454,attended,1,1,La Península,urban,city,city_crew,-1.235,-78.601,2026-01-29,2026-01-29,0
+bach_0455,attended,1,1,La Península,urban,city,city_crew,-1.236,-78.601,2026-01-29,2026-01-29,0
+bach_0456,attended,1,1,La Península,urban,city,city_crew,-1.236,-78.601,2026-01-29,2026-01-29,0
+bach_0457,attended,1,1,La Península,urban,city,city_crew,-1.236,-78.601,2026-01-29,2026-01-29,0
+bach_0458,attended,1,1,La Península,urban,city,city_crew,-1.236,-78.601,2026-01-29,2026-01-29,0
+bach_0459,attended,1,1,La Península,urban,city,city_crew,-1.236,-78.601,2026-01-29,2026-01-29,0
+bach_0460,attended,1,1,La Península,urban,city,city_crew,-1.237,-78.602,2026-01-29,2026-01-29,0
+bach_0461,attended,1,1,La Península,urban,city,city_crew,-1.237,-78.602,2026-01-29,2026-01-29,0
+bach_0462,attended,1,1,La Península,urban,city,city_crew,-1.236,-78.601,2026-01-29,2026-01-29,0
+bach_0463,attended,1,1,La Península,urban,city,city_crew,-1.237,-78.602,2026-01-29,2026-01-29,0
+bach_0464,attended,1,1,La Península,urban,city,city_crew,-1.237,-78.602,2026-01-29,2026-01-29,0
+bach_0465,attended,1,1,La Península,urban,city,city_crew,-1.237,-78.602,2026-01-29,2026-01-29,0
+bach_0466,attended,1,1,La Península,urban,city,city_crew,-1.237,-78.603,2026-01-29,2026-01-29,0
+bach_0467,attended,1,1,La Península,urban,city,city_crew,-1.237,-78.603,2026-01-29,2026-01-29,0
+bach_0468,attended,1,1,La Península,urban,city,city_crew,-1.237,-78.603,2026-01-29,2026-01-29,0
+bach_0469,attended,1,1,La Península,urban,city,city_crew,-1.237,-78.603,2026-01-29,2026-01-29,0
+bach_0470,attended,1,1,La Península,urban,city,city_crew,-1.237,-78.603,2026-01-29,2026-01-29,0
+bach_0471,attended,1,1,La Península,urban,city,city_crew,-1.237,-78.603,2026-01-29,2026-01-29,0
+bach_0472,attended,1,1,La Península,urban,city,city_crew,-1.237,-78.603,2026-01-29,2026-01-29,0
+bach_0473,attended,1,1,La Península,urban,city,city_crew,-1.237,-78.604,2026-01-29,2026-01-29,0
+bach_0474,attended,1,1,La Península,urban,city,city_crew,-1.237,-78.604,2026-01-29,2026-01-29,0
+bach_0475,attended,1,1,La Península,urban,city,city_crew,-1.237,-78.604,2026-01-29,2026-01-29,0
+bach_0476,attended,1,1,La Península,urban,city,city_crew,-1.237,-78.604,2026-01-29,2026-01-29,0
+bach_0477,attended,1,1,La Península,urban,city,city_crew,-1.237,-78.604,2026-01-29,2026-01-29,0
+bach_0478,attended,1,1,La Península,urban,city,city_crew,-1.237,-78.604,2026-01-29,2026-01-29,0
+bach_0479,attended,1,1,La Península,urban,city,city_crew,-1.237,-78.605,2026-01-29,2026-01-29,0
+bach_0480,attended,1,1,La Península,urban,city,city_crew,-1.237,-78.605,2026-01-29,2026-02-12,14
+bach_0481,attended,1,1,La Península,urban,city,city_crew,-1.237,-78.605,2026-01-29,2026-01-29,0
+bach_0482,attended,1,1,La Península,urban,city,city_crew,-1.236,-78.605,2026-01-29,2026-01-29,0
+bach_0483,attended,1,1,La Península,urban,city,city_crew,-1.236,-78.605,2026-01-29,2026-01-29,0
+bach_0484,attended,1,1,La Península,urban,city,city_crew,-1.236,-78.605,2026-01-29,2026-01-29,0
+bach_0485,attended,1,1,La Península,urban,city,city_crew,-1.235,-78.605,2026-01-29,2026-01-29,0
+bach_0486,attended,1,1,La Península,urban,city,city_crew,-1.235,-78.605,2026-01-29,2026-01-29,0
+bach_0487,attended,1,1,La Península,urban,city,city_crew,-1.235,-78.605,2026-01-29,2026-01-29,0
+bach_0488,attended,1,1,La Península,urban,city,city_crew,-1.236,-78.605,2026-01-29,2026-01-29,0
+bach_0489,attended,1,1,La Península,urban,city,city_crew,-1.234,-78.605,2026-01-29,2026-01-29,0
+bach_0490,attended,1,1,La Península,urban,city,city_crew,-1.234,-78.606,2026-01-29,2026-01-29,0
+bach_0491,attended,1,1,La Península,urban,city,city_crew,-1.234,-78.606,2026-01-29,2026-01-29,0
+bach_0492,attended,1,1,La Península,urban,city,city_crew,-1.234,-78.605,2026-01-29,2026-01-29,0
+bach_0493,attended,1,1,La Península,urban,city,city_crew,-1.234,-78.606,2026-01-29,2026-01-29,0
+bach_0494,attended,1,1,La Península,urban,city,city_crew,-1.233,-78.606,2026-01-29,2026-01-29,0
+bach_0495,attended,1,1,La Península,urban,city,city_crew,-1.233,-78.606,2026-01-29,2026-01-29,0
+bach_0496,attended,1,1,La Península,urban,city,city_crew,-1.233,-78.606,2026-01-29,2026-01-29,0
+bach_0497,attended,1,1,Huachi Grande,urban,city,city_crew,-1.291,-78.63,2026-01-30,2026-01-30,0
+bach_0498,attended,1,1,Huachi Grande,urban,city,city_crew,-1.291,-78.631,2026-01-30,2026-01-30,0
+bach_0499,attended,1,1,Huachi Grande,urban,city,city_crew,-1.29,-78.63,2026-01-30,2026-01-30,0
+bach_0500,attended,1,1,Huachi Grande,urban,city,city_crew,-1.291,-78.631,2026-01-30,2026-01-30,0
+bach_0501,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.616,2026-01-31,2026-02-03,3
+bach_0502,attended,1,1,Izamba,urban,city,city_crew,-1.203,-78.595,2026-02-02,2026-04-21,78
+bach_0503,reassigned,1,0,Huachi Grande,urban,water_utility,water_crew,-1.298,-78.632,2026-02-03,,
+bach_0504,attended,1,1,Atahualpa (Chisalata),urban,city,city_crew,-1.221,-78.613,2026-02-03,2026-02-18,15
+bach_0505,attended,1,1,Atahualpa (Chisalata),urban,city,city_crew,-1.218,-78.611,2026-02-03,2026-04-21,77
+bach_0506,attended,1,1,Matriz,urban,city,city_crew,-1.261,-78.638,2026-02-03,2026-04-21,77
+bach_0507,attended,1,1,Celiano Monge,urban,city,city_crew,-1.29,-78.631,2026-02-03,2026-02-03,0
+bach_0508,attended,1,1,Huachi Grande,urban,city,city_crew,-1.308,-78.64,2026-02-05,2026-04-21,75
+bach_0509,reassigned,1,1,Izamba,urban,water_utility,water_crew,-1.207,-78.595,2026-02-08,2026-02-12,4
+bach_0510,attended,1,1,Celiano Monge,urban,city,city_crew,-1.213,-78.593,2026-02-08,2026-04-21,72
+bach_0511,attended,1,1,Celiano Monge,urban,city,city_crew,-1.215,-78.593,2026-02-08,2026-04-21,72
+bach_0512,attended,1,1,Celiano Monge,urban,city,city_crew,-1.293,-78.635,2026-02-11,2026-04-21,69
+bach_0513,attended,1,1,Huachi Grande,urban,city,city_crew,-1.298,-78.636,2026-02-11,2026-02-12,1
+bach_0514,attended,1,1,Huachi Grande,urban,city,city_crew,-1.302,-78.638,2026-02-11,2026-02-12,1
+bach_0515,attended,1,1,Huachi Grande,urban,city,city_crew,-1.316,-78.636,2026-02-11,2026-02-12,1
+bach_0516,attended,1,1,Huachi Grande,urban,city,city_crew,-1.31,-78.636,2026-02-11,2026-02-12,1
+bach_0517,attended,1,1,Huachi Grande,urban,city,city_crew,-1.3,-78.637,2026-02-11,2026-02-12,1
+bach_0518,attended,1,1,Huachi Grande,urban,city,city_crew,-1.299,-78.636,2026-02-11,2026-02-12,1
+bach_0519,attended,1,1,Celiano Monge,urban,city,city_crew,-1.298,-78.636,2026-02-11,2026-02-12,1
+bach_0520,attended,1,1,Celiano Monge,urban,city,city_crew,-1.293,-78.635,2026-02-11,2026-02-12,1
+bach_0521,attended,1,1,Huachi Chico,urban,city,city_crew,-1.288,-78.633,2026-02-11,2026-04-21,69
+bach_0522,attended,1,1,Huachi Chico,urban,city,city_crew,-1.27,-78.629,2026-02-11,2026-02-12,1
+bach_0523,attended,1,1,Huachi Chico,urban,city,city_crew,-1.264,-78.628,2026-02-11,2026-04-21,69
+bach_0524,attended,1,1,Huachi Chico,urban,city,city_crew,-1.26,-78.629,2026-02-11,2026-04-21,69
+bach_0525,attended,1,1,Pishilata,urban,city,city_crew,-1.281,-78.609,2026-02-11,2026-04-21,69
+bach_0526,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.252,-78.633,2026-02-11,2026-04-21,69
+bach_0527,attended,1,1,Pishilata,urban,city,city_crew,-1.284,-78.608,2026-02-11,2026-04-21,69
+bach_0528,attended,1,1,Huachi Grande,urban,city,city_crew,-1.286,-78.607,2026-02-11,2026-04-21,69
+bach_0529,attended,1,1,Huachi Grande,urban,city,city_crew,-1.287,-78.607,2026-02-11,2026-04-21,69
+bach_0530,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.25,-78.632,2026-02-11,2026-04-21,69
+bach_0531,attended,1,1,Huachi Grande,urban,city,city_crew,-1.288,-78.607,2026-02-11,2026-04-21,69
+bach_0532,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.249,-78.632,2026-02-11,2026-04-21,69
+bach_0533,attended,1,1,Huachi Grande,urban,city,city_crew,-1.29,-78.606,2026-02-11,2026-04-21,69
+bach_0534,reassigned,1,0,Totoras,rural,province,province_crew,-1.29,-78.606,2026-02-11,,
+bach_0535,reassigned,1,0,Totoras,rural,province,province_crew,-1.294,-78.604,2026-02-11,,
+bach_0536,reassigned,1,0,Totoras,rural,province,province_crew,-1.296,-78.604,2026-02-11,,
+bach_0537,reassigned,1,0,Totoras,rural,province,province_crew,-1.305,-78.601,2026-02-11,,
+bach_0538,attended,1,1,Matriz,urban,city,city_crew,-1.253,-78.633,2026-02-11,2026-04-21,69
+bach_0539,reassigned,1,0,Totoras,rural,province,province_crew,-1.306,-78.601,2026-02-11,,
+bach_0540,reassigned,1,0,Totoras,rural,province,province_crew,-1.306,-78.601,2026-02-11,,
+bach_0541,reassigned,1,0,Totoras,rural,province,province_crew,-1.307,-78.6,2026-02-11,,
+bach_0542,attended,1,1,Totoras,urban,city,city_crew,-1.313,-78.598,2026-02-11,2026-04-21,69
+bach_0543,attended,1,1,Totoras,urban,city,city_crew,-1.316,-78.598,2026-02-11,2026-04-21,69
+bach_0544,attended,1,1,Totoras,urban,city,city_crew,-1.317,-78.596,2026-02-11,2026-02-24,13
+bach_0545,attended,1,1,Totoras,urban,city,city_crew,-1.316,-78.596,2026-02-11,2026-02-24,13
+bach_0546,reassigned,1,0,Totoras,urban,province,province_crew,-1.317,-78.596,2026-02-11,,
+bach_0547,reassigned,1,0,Celiano Monge,urban,water_utility,water_crew,-1.265,-78.622,2026-02-11,,
+bach_0548,reassigned,1,0,Totoras,rural,province,province_crew,-1.308,-78.6,2026-02-11,,
+bach_0549,reassigned,1,0,Totoras,rural,province,province_crew,-1.309,-78.6,2026-02-11,,
+bach_0550,reassigned,1,0,Totoras,rural,province,province_crew,-1.309,-78.599,2026-02-11,,
+bach_0551,reassigned,1,0,Totoras,rural,province,province_crew,-1.308,-78.601,2026-02-11,,
+bach_0552,reassigned,1,0,Totoras,rural,province,province_crew,-1.306,-78.601,2026-02-11,,
+bach_0553,reassigned,1,0,Totoras,rural,province,province_crew,-1.306,-78.601,2026-02-11,,
+bach_0554,reassigned,1,0,Totoras,rural,province,province_crew,-1.297,-78.603,2026-02-11,,
+bach_0555,reassigned,1,0,Totoras,rural,province,province_crew,-1.292,-78.604,2026-02-11,,
+bach_0556,attended,1,1,Picaihua,urban,city,city_crew,-1.289,-78.605,2026-02-11,2026-04-21,69
+bach_0557,attended,1,1,Santa Rosa,urban,city,city_crew,-1.28,-78.658,2026-02-11,2026-04-21,69
+bach_0558,attended,1,1,Celiano Monge,urban,city,city_crew,-1.269,-78.628,2026-02-11,2026-02-12,1
+bach_0559,attended,1,1,Celiano Monge,urban,city,city_crew,-1.268,-78.628,2026-02-11,2026-02-12,1
+bach_0560,attended,1,1,Celiano Monge,urban,city,city_crew,-1.269,-78.628,2026-02-11,2026-02-12,1
+bach_0561,attended,1,1,La Merced,urban,city,city_crew,-1.23,-78.615,2026-02-12,2026-02-12,0
+bach_0562,reassigned,1,1,Izamba,urban,water_utility,city_crew,-1.207,-78.595,2026-02-12,2026-02-12,0
+bach_0563,reassigned,1,1,Izamba,urban,water_utility,city_crew,-1.207,-78.595,2026-02-12,2026-02-12,0
+bach_0564,reassigned,1,1,Izamba,urban,water_utility,city_crew,-1.207,-78.595,2026-02-12,2026-02-12,0
+bach_0565,attended,1,1,Izamba,urban,city,city_crew,-1.207,-78.595,2026-02-12,2026-02-12,0
+bach_0566,attended,1,1,Izamba,urban,city,city_crew,-1.207,-78.595,2026-02-12,2026-02-12,0
+bach_0567,attended,1,1,Izamba,urban,city,city_crew,-1.207,-78.595,2026-02-12,2026-02-12,0
+bach_0568,attended,1,1,Izamba,urban,city,city_crew,-1.205,-78.595,2026-02-12,2026-02-12,0
+bach_0569,attended,1,1,Izamba,urban,city,city_crew,-1.204,-78.595,2026-02-12,2026-02-12,0
+bach_0570,attended,1,1,Izamba,urban,city,city_crew,-1.204,-78.596,2026-02-12,2026-02-12,0
+bach_0571,attended,1,1,Izamba,urban,city,city_crew,-1.202,-78.595,2026-02-12,2026-02-12,0
+bach_0572,attended,1,1,Izamba,urban,city,city_crew,-1.202,-78.595,2026-02-12,2026-02-12,0
+bach_0573,attended,1,1,Izamba,urban,city,city_crew,-1.205,-78.595,2026-02-12,2026-02-12,0
+bach_0574,attended,1,1,Izamba,urban,city,city_crew,-1.205,-78.595,2026-02-12,2026-02-12,0
+bach_0575,attended,1,1,Pishilata,urban,city,city_crew,-1.266,-78.607,2026-02-12,2026-02-12,0
+bach_0576,attended,1,1,Pishilata,urban,city,city_crew,-1.267,-78.607,2026-02-12,2026-02-12,0
+bach_0577,attended,1,1,Pishilata,urban,city,city_crew,-1.266,-78.607,2026-02-12,2026-02-12,0
+bach_0578,attended,1,1,Izamba,urban,city,city_crew,-1.204,-78.595,2026-02-12,2026-02-12,0
+bach_0579,attended,1,1,Pishilata,urban,city,city_crew,-1.266,-78.608,2026-02-12,2026-02-12,0
+bach_0580,attended,1,1,Pishilata,urban,city,city_crew,-1.266,-78.608,2026-02-12,2026-02-12,0
+bach_0581,attended,1,1,Pishilata,urban,city,city_crew,-1.266,-78.608,2026-02-12,2026-02-12,0
+bach_0582,attended,1,1,Pishilata,urban,city,city_crew,-1.266,-78.609,2026-02-12,2026-02-12,0
+bach_0583,attended,1,1,Izamba,urban,city,city_crew,-1.204,-78.595,2026-02-12,2026-02-12,0
+bach_0584,attended,1,1,Pishilata,urban,city,city_crew,-1.268,-78.609,2026-02-12,2026-02-12,0
+bach_0585,attended,1,1,Pishilata,urban,city,city_crew,-1.268,-78.608,2026-02-12,2026-02-12,0
+bach_0586,attended,1,1,Pishilata,urban,city,city_crew,-1.268,-78.608,2026-02-12,2026-02-12,0
+bach_0587,attended,1,1,Pishilata,urban,city,city_crew,-1.268,-78.608,2026-02-12,2026-02-12,0
+bach_0588,attended,1,1,Izamba,urban,city,city_crew,-1.204,-78.595,2026-02-12,2026-02-12,0
+bach_0589,attended,1,1,Pishilata,urban,city,city_crew,-1.269,-78.607,2026-02-12,2026-02-12,0
+bach_0590,attended,1,1,Pishilata,urban,city,city_crew,-1.271,-78.605,2026-02-12,2026-02-12,0
+bach_0591,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.608,2026-02-12,2026-02-12,0
+bach_0592,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.608,2026-02-12,2026-02-12,0
+bach_0593,attended,1,1,Pishilata,urban,city,city_crew,-1.27,-78.609,2026-02-12,2026-02-12,0
+bach_0594,attended,1,1,Pishilata,urban,city,city_crew,-1.27,-78.61,2026-02-12,2026-02-12,0
+bach_0595,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.608,2026-02-12,2026-02-12,0
+bach_0596,attended,1,1,Pishilata,urban,city,city_crew,-1.27,-78.608,2026-02-12,2026-02-12,0
+bach_0597,attended,1,1,Pishilata,urban,city,city_crew,-1.271,-78.608,2026-02-12,2026-02-12,0
+bach_0598,attended,1,1,Pishilata,urban,city,city_crew,-1.27,-78.608,2026-02-12,2026-02-12,0
+bach_0599,attended,1,1,Izamba,urban,city,city_crew,-1.204,-78.595,2026-02-12,2026-02-12,0
+bach_0600,attended,1,1,Pishilata,urban,city,city_crew,-1.271,-78.609,2026-02-12,2026-02-12,0
+bach_0601,attended,1,1,Izamba,urban,city,city_crew,-1.204,-78.596,2026-02-12,2026-02-12,0
+bach_0602,attended,1,1,Izamba,urban,city,city_crew,-1.293,-78.635,2026-02-12,2026-02-12,0
+bach_0603,attended,1,1,Izamba,urban,city,city_crew,-1.204,-78.596,2026-02-12,2026-02-12,0
+bach_0604,attended,1,1,Izamba,urban,city,city_crew,-1.202,-78.595,2026-02-12,2026-02-12,0
+bach_0605,attended,1,1,Izamba,urban,city,city_crew,-1.201,-78.595,2026-02-12,2026-04-21,68
+bach_0606,attended,1,1,Izamba,urban,city,city_crew,-1.202,-78.595,2026-02-12,2026-04-21,68
+bach_0607,attended,1,1,Izamba,urban,city,city_crew,-1.202,-78.595,2026-02-12,2026-04-21,68
+bach_0608,attended,1,1,Izamba,urban,city,city_crew,-1.201,-78.595,2026-02-12,2026-04-21,68
+bach_0609,reassigned,1,0,Huachi Grande,rural,province,province_crew,-1.31,-78.659,2026-02-12,,
+bach_0610,reassigned,1,0,Huachi Chico,urban,water_utility,water_crew,-1.289,-78.636,2026-02-13,,
+bach_0611,reassigned,1,0,Huachi Chico,urban,water_utility,water_crew,-1.306,-78.642,2026-02-14,,
+bach_0612,attended,1,1,Huachi Grande,urban,city,city_crew,-1.286,-78.624,2026-02-19,2026-04-21,61
+bach_0613,attended,1,1,Huachi Grande,urban,city,city_crew,-1.293,-78.62,2026-02-19,2026-04-21,61
+bach_0614,attended,1,1,La Merced,urban,city,city_crew,-1.232,-78.622,2026-02-19,2026-04-21,61
+bach_0615,attended,1,1,La Merced,urban,city,city_crew,-1.233,-78.624,2026-02-19,2026-04-21,61
+bach_0616,attended,1,1,La Merced,urban,city,city_crew,-1.232,-78.624,2026-02-19,2026-04-21,61
+bach_0617,attended,1,1,La Merced,urban,city,city_crew,-1.233,-78.624,2026-02-19,2026-04-21,61
+bach_0618,attended,1,1,Celiano Monge,urban,city,city_crew,-1.29,-78.63,2026-02-19,2026-03-11,20
+bach_0619,attended,1,1,Huachi Grande,urban,city,city_crew,-1.292,-78.63,2026-02-19,2026-03-11,20
+bach_0620,attended,1,1,Huachi Grande,urban,city,city_crew,-1.292,-78.63,2026-02-19,2026-03-11,20
+bach_0621,attended,1,1,Huachi Grande,urban,city,city_crew,-1.293,-78.63,2026-02-19,2026-03-11,20
+bach_0622,attended,1,1,Huachi Grande,urban,city,city_crew,-1.293,-78.63,2026-02-19,2026-03-11,20
+bach_0623,attended,1,1,Huachi Grande,urban,city,city_crew,-1.297,-78.631,2026-02-19,2026-03-11,20
+bach_0624,attended,1,1,Huachi Grande,urban,city,city_crew,-1.29,-78.63,2026-02-19,2026-03-11,20
+bach_0625,attended,1,1,Huachi Grande,urban,city,city_crew,-1.29,-78.63,2026-02-19,2026-03-11,20
+bach_0626,attended,1,1,Huachi Grande,urban,city,city_crew,-1.289,-78.63,2026-02-19,2026-03-11,20
+bach_0627,attended,1,1,Huachi Grande,urban,city,city_crew,-1.289,-78.63,2026-02-19,2026-03-11,20
+bach_0628,attended,1,1,Huachi Grande,urban,city,city_crew,-1.289,-78.63,2026-02-19,2026-03-11,20
+bach_0629,attended,1,1,Huachi Grande,urban,city,city_crew,-1.288,-78.629,2026-02-19,2026-03-11,20
+bach_0630,attended,1,1,Huachi Grande,urban,city,city_crew,-1.288,-78.629,2026-02-19,2026-03-11,20
+bach_0631,attended,1,1,Huachi Grande,urban,city,city_crew,-1.288,-78.629,2026-02-19,2026-03-11,20
+bach_0632,attended,1,1,Huachi Grande,urban,city,city_crew,-1.288,-78.629,2026-02-19,2026-03-11,20
+bach_0633,attended,1,1,Huachi Grande,urban,city,city_crew,-1.288,-78.629,2026-02-19,2026-03-11,20
+bach_0634,attended,1,1,Huachi Grande,urban,city,city_crew,-1.287,-78.629,2026-02-19,2026-03-11,20
+bach_0635,reassigned,1,0,Celiano Monge,urban,water_utility,water_crew,-1.261,-78.619,2026-02-19,,
+bach_0636,attended,1,1,Huachi Grande,urban,city,city_crew,-1.285,-78.609,2026-02-19,2026-03-11,20
+bach_0637,attended,1,1,Huachi Grande,urban,city,city_crew,-1.285,-78.609,2026-02-19,2026-03-11,20
+bach_0638,attended,1,1,Huachi Grande,urban,city,city_crew,-1.285,-78.61,2026-02-19,2026-03-11,20
+bach_0639,attended,1,1,Huachi Grande,urban,city,city_crew,-1.285,-78.61,2026-02-19,2026-03-11,20
+bach_0640,attended,1,1,Huachi Grande,urban,city,city_crew,-1.285,-78.61,2026-02-19,2026-03-11,20
+bach_0641,attended,1,1,Huachi Grande,urban,city,city_crew,-1.285,-78.611,2026-02-19,2026-03-11,20
+bach_0642,attended,1,1,Huachi Grande,urban,city,city_crew,-1.285,-78.611,2026-02-19,2026-03-11,20
+bach_0643,attended,1,1,Huachi Grande,urban,city,city_crew,-1.285,-78.621,2026-02-19,2026-03-11,20
+bach_0644,attended,1,1,Huachi Grande,urban,city,city_crew,-1.285,-78.621,2026-02-19,2026-03-11,20
+bach_0645,attended,1,1,Huachi Grande,urban,city,city_crew,-1.285,-78.621,2026-02-19,2026-03-11,20
+bach_0646,attended,1,1,Huachi Grande,urban,city,city_crew,-1.286,-78.623,2026-02-19,2026-03-11,20
+bach_0647,attended,1,1,Huachi Grande,urban,city,city_crew,-1.285,-78.621,2026-02-19,2026-03-11,20
+bach_0648,attended,1,1,Huachi Grande,urban,city,city_crew,-1.285,-78.623,2026-02-19,2026-03-11,20
+bach_0649,attended,1,1,Huachi Grande,urban,city,city_crew,-1.286,-78.623,2026-02-19,2026-03-11,20
+bach_0650,attended,1,1,Huachi Grande,urban,city,city_crew,-1.285,-78.623,2026-02-19,2026-03-11,20
+bach_0651,attended,1,1,Huachi Grande,urban,city,city_crew,-1.286,-78.626,2026-02-19,2026-03-11,20
+bach_0652,attended,1,1,Huachi Grande,urban,city,city_crew,-1.286,-78.627,2026-02-19,2026-03-11,20
+bach_0653,attended,1,1,Huachi Grande,urban,city,city_crew,-1.286,-78.627,2026-02-19,2026-03-11,20
+bach_0654,attended,1,1,Huachi Grande,urban,city,city_crew,-1.289,-78.63,2026-02-19,2026-03-11,20
+bach_0655,attended,1,1,Huachi Grande,urban,city,city_crew,-1.289,-78.63,2026-02-19,2026-03-11,20
+bach_0656,attended,1,1,Huachi Grande,urban,city,city_crew,-1.29,-78.63,2026-02-19,2026-03-11,20
+bach_0657,attended,1,1,Huachi Grande,urban,city,city_crew,-1.295,-78.633,2026-02-19,2026-03-11,20
+bach_0658,attended,1,1,Huachi Grande,urban,city,city_crew,-1.295,-78.634,2026-02-19,2026-03-11,20
+bach_0659,attended,1,1,Huachi Grande,urban,city,city_crew,-1.295,-78.634,2026-02-19,2026-03-11,20
+bach_0660,attended,1,1,Huachi Grande,urban,city,city_crew,-1.295,-78.634,2026-02-19,2026-03-11,20
+bach_0661,attended,1,1,Huachi Grande,urban,city,city_crew,-1.295,-78.633,2026-02-19,2026-03-11,20
+bach_0662,attended,1,1,Huachi Grande,urban,city,city_crew,-1.295,-78.633,2026-02-19,2026-03-11,20
+bach_0663,attended,1,1,Huachi Grande,urban,city,city_crew,-1.294,-78.633,2026-02-19,2026-03-11,20
+bach_0664,attended,1,1,Huachi Grande,urban,city,city_crew,-1.294,-78.633,2026-02-19,2026-03-11,20
+bach_0665,attended,1,1,Huachi Grande,urban,city,city_crew,-1.294,-78.633,2026-02-19,2026-03-11,20
+bach_0666,attended,1,1,Huachi Grande,urban,city,city_crew,-1.294,-78.633,2026-02-19,2026-04-21,61
+bach_0667,attended,1,1,Huachi Grande,urban,city,city_crew,-1.291,-78.631,2026-02-19,2026-03-11,20
+bach_0668,attended,1,1,Huachi Grande,urban,city,city_crew,-1.291,-78.631,2026-02-19,2026-03-11,20
+bach_0669,attended,1,1,Huachi Grande,urban,city,city_crew,-1.291,-78.631,2026-02-19,2026-03-11,20
+bach_0670,attended,1,1,Huachi Grande,urban,city,city_crew,-1.291,-78.631,2026-02-19,2026-03-11,20
+bach_0671,attended,1,1,Huachi Grande,urban,city,city_crew,-1.291,-78.63,2026-02-19,2026-03-11,20
+bach_0672,attended,1,1,Huachi Grande,urban,city,city_crew,-1.291,-78.63,2026-02-19,2026-03-11,20
+bach_0673,attended,1,1,Huachi Grande,urban,city,city_crew,-1.291,-78.63,2026-02-19,2026-03-11,20
+bach_0674,attended,1,1,Huachi Grande,urban,city,city_crew,-1.29,-78.63,2026-02-20,2026-03-11,19
+bach_0675,attended,1,1,Huachi Grande,urban,city,city_crew,-1.29,-78.63,2026-02-20,2026-03-11,19
+bach_0676,attended,1,1,Huachi Grande,urban,city,city_crew,-1.29,-78.63,2026-02-20,2026-03-11,19
+bach_0677,attended,1,1,Huachi Grande,urban,city,city_crew,-1.289,-78.63,2026-02-20,2026-03-11,19
+bach_0678,attended,1,1,Huachi Grande,urban,city,city_crew,-1.289,-78.63,2026-02-20,2026-03-11,19
+bach_0679,attended,1,1,Huachi Grande,urban,city,city_crew,-1.289,-78.63,2026-02-20,2026-03-11,19
+bach_0680,attended,1,1,Huachi Grande,urban,city,city_crew,-1.289,-78.63,2026-02-20,2026-03-11,19
+bach_0681,attended,1,1,Huachi Grande,urban,city,city_crew,-1.289,-78.63,2026-02-20,2026-03-11,19
+bach_0682,attended,1,1,Huachi Grande,urban,city,city_crew,-1.288,-78.629,2026-02-20,2026-03-11,19
+bach_0683,attended,1,1,Huachi Grande,urban,city,city_crew,-1.288,-78.629,2026-02-20,2026-03-11,19
+bach_0684,attended,1,1,Huachi Grande,urban,city,city_crew,-1.288,-78.629,2026-02-20,2026-03-11,19
+bach_0685,attended,1,1,Huachi Grande,urban,city,city_crew,-1.288,-78.629,2026-02-20,2026-03-11,19
+bach_0686,attended,1,1,Huachi Grande,urban,city,city_crew,-1.288,-78.629,2026-02-20,2026-03-11,19
+bach_0687,attended,1,1,Huachi Grande,urban,city,city_crew,-1.288,-78.629,2026-02-20,2026-03-11,19
+bach_0688,attended,1,1,Huachi Grande,urban,city,city_crew,-1.286,-78.627,2026-02-20,2026-03-11,19
+bach_0689,attended,1,1,Huachi Grande,urban,city,city_crew,-1.286,-78.626,2026-02-20,2026-03-11,19
+bach_0690,attended,1,1,Huachi Grande,urban,city,city_crew,-1.286,-78.625,2026-02-20,2026-03-11,19
+bach_0691,attended,1,1,Izamba,urban,city,city_crew,-1.197,-78.594,2026-02-20,2026-03-11,19
+bach_0692,attended,1,1,Izamba,urban,city,city_crew,-1.197,-78.594,2026-02-20,2026-03-11,19
+bach_0693,attended,1,1,Izamba,urban,city,city_crew,-1.197,-78.594,2026-02-20,2026-03-11,19
+bach_0694,attended,1,1,Izamba,urban,city,city_crew,-1.197,-78.594,2026-02-20,2026-03-11,19
+bach_0695,attended,1,1,Izamba,urban,city,city_crew,-1.197,-78.594,2026-02-20,2026-03-11,19
+bach_0696,attended,1,1,Izamba,urban,city,city_crew,-1.197,-78.594,2026-02-20,2026-03-11,19
+bach_0697,attended,1,1,Izamba,urban,city,city_crew,-1.198,-78.594,2026-02-20,2026-03-11,19
+bach_0698,attended,1,1,Izamba,urban,city,city_crew,-1.198,-78.594,2026-02-20,2026-03-11,19
+bach_0699,attended,1,1,Izamba,urban,city,city_crew,-1.198,-78.594,2026-02-20,2026-03-11,19
+bach_0700,attended,1,1,Izamba,urban,city,city_crew,-1.198,-78.594,2026-02-20,2026-03-11,19
+bach_0701,attended,1,1,Izamba,urban,city,city_crew,-1.198,-78.594,2026-02-20,2026-03-11,19
+bach_0702,attended,1,1,Izamba,urban,city,city_crew,-1.198,-78.594,2026-02-20,2026-03-11,19
+bach_0703,attended,1,1,Izamba,urban,city,city_crew,-1.198,-78.594,2026-02-20,2026-03-11,19
+bach_0704,attended,1,1,Izamba,urban,city,city_crew,-1.198,-78.594,2026-02-20,2026-03-11,19
+bach_0705,attended,1,1,Izamba,urban,city,city_crew,-1.198,-78.594,2026-02-20,2026-03-11,19
+bach_0706,attended,1,1,Izamba,urban,city,city_crew,-1.198,-78.594,2026-02-20,2026-03-11,19
+bach_0707,attended,1,1,Izamba,urban,city,city_crew,-1.198,-78.594,2026-02-20,2026-03-11,19
+bach_0708,attended,1,1,Izamba,urban,city,city_crew,-1.198,-78.593,2026-02-20,2026-03-11,19
+bach_0709,attended,1,1,Izamba,urban,city,city_crew,-1.199,-78.594,2026-02-20,2026-03-11,19
+bach_0710,attended,1,1,Izamba,urban,city,city_crew,-1.2,-78.595,2026-02-20,2026-03-11,19
+bach_0711,attended,1,1,Izamba,urban,city,city_crew,-1.201,-78.595,2026-02-20,2026-03-11,19
+bach_0712,attended,1,1,Izamba,urban,city,city_crew,-1.201,-78.595,2026-02-20,2026-03-11,19
+bach_0713,attended,1,1,Izamba,urban,city,city_crew,-1.201,-78.595,2026-02-20,2026-03-11,19
+bach_0714,attended,1,1,Izamba,urban,city,city_crew,-1.201,-78.595,2026-02-20,2026-03-11,19
+bach_0715,attended,1,1,Izamba,urban,city,city_crew,-1.201,-78.595,2026-02-20,2026-03-11,19
+bach_0716,attended,1,1,Izamba,urban,city,city_crew,-1.201,-78.595,2026-02-20,2026-03-11,19
+bach_0717,attended,1,1,Izamba,urban,city,city_crew,-1.207,-78.595,2026-02-20,2026-03-11,19
+bach_0718,attended,1,1,Izamba,urban,city,city_crew,-1.207,-78.595,2026-02-20,2026-03-11,19
+bach_0719,attended,1,1,Izamba,urban,city,city_crew,-1.208,-78.595,2026-02-20,2026-03-11,19
+bach_0720,attended,1,1,Izamba,urban,city,city_crew,-1.213,-78.593,2026-02-20,2026-03-11,19
+bach_0721,attended,1,1,Izamba,urban,city,city_crew,-1.214,-78.593,2026-02-20,2026-03-11,19
+bach_0722,attended,1,1,Izamba,urban,city,city_crew,-1.215,-78.593,2026-02-20,2026-03-11,19
+bach_0723,attended,1,1,Izamba,urban,city,city_crew,-1.228,-78.6,2026-02-20,2026-03-11,19
+bach_0724,attended,1,1,Izamba,urban,city,city_crew,-1.228,-78.6,2026-02-20,2026-03-11,19
+bach_0725,attended,1,1,Izamba,urban,city,city_crew,-1.228,-78.6,2026-02-20,2026-03-11,19
+bach_0726,attended,1,1,Izamba,urban,city,city_crew,-1.229,-78.601,2026-02-20,2026-03-11,19
+bach_0727,attended,1,1,La Península,urban,city,city_crew,-1.229,-78.601,2026-02-20,2026-03-11,19
+bach_0728,attended,1,1,Izamba,urban,city,city_crew,-1.23,-78.601,2026-02-20,2026-03-11,19
+bach_0729,attended,1,1,La Península,urban,city,city_crew,-1.23,-78.601,2026-02-20,2026-03-11,19
+bach_0730,attended,1,1,Izamba,rural,city,city_crew,-1.23,-78.601,2026-02-20,2026-03-11,19
+bach_0731,attended,1,1,La Península,urban,city,city_crew,-1.23,-78.601,2026-02-20,2026-03-11,19
+bach_0732,attended,1,1,La Península,urban,city,city_crew,-1.23,-78.601,2026-02-20,2026-03-11,19
+bach_0733,attended,1,1,La Península,urban,city,city_crew,-1.23,-78.601,2026-02-20,2026-03-11,19
+bach_0734,attended,1,1,La Península,urban,city,city_crew,-1.23,-78.601,2026-02-20,2026-03-11,19
+bach_0735,attended,1,1,Izamba,urban,city,city_crew,-1.23,-78.601,2026-02-20,2026-03-11,19
+bach_0736,attended,1,1,Izamba,urban,city,city_crew,-1.231,-78.601,2026-02-20,2026-03-11,19
+bach_0737,attended,1,1,La Península,urban,city,city_crew,-1.231,-78.601,2026-02-20,2026-03-11,19
+bach_0738,attended,1,1,Izamba,urban,city,city_crew,-1.231,-78.601,2026-02-20,2026-03-11,19
+bach_0739,attended,1,1,La Península,urban,city,city_crew,-1.231,-78.601,2026-02-20,2026-03-11,19
+bach_0740,attended,1,1,La Península,urban,city,city_crew,-1.234,-78.601,2026-02-20,2026-03-11,19
+bach_0741,attended,1,1,La Península,urban,city,city_crew,-1.234,-78.601,2026-02-20,2026-03-11,19
+bach_0742,attended,1,1,La Península,urban,city,city_crew,-1.234,-78.601,2026-02-20,2026-03-11,19
+bach_0743,attended,1,1,La Península,urban,city,city_crew,-1.235,-78.601,2026-02-20,2026-03-11,19
+bach_0744,attended,1,1,La Península,urban,city,city_crew,-1.234,-78.601,2026-02-20,2026-03-11,19
+bach_0745,reassigned,1,0,Atahualpa (Chisalata),rural,province,province_crew,-1.2,-78.611,2026-02-20,,
+bach_0746,reassigned,1,0,Atahualpa (Chisalata),urban,water_utility,water_crew,-1.225,-78.603,2026-02-23,,
+bach_0747,attended,1,1,Atahualpa (Chisalata),urban,city,city_crew,-1.219,-78.611,2026-02-23,2026-04-21,57
+bach_0748,attended,1,1,Huachi Grande,urban,city,city_crew,-1.304,-78.642,2026-02-23,2026-03-11,16
+bach_0749,attended,1,1,Huachi Grande,rural,city,city_crew,-1.315,-78.651,2026-02-23,2026-04-21,57
+bach_0750,attended,1,1,Huachi Grande,urban,city,city_crew,-1.315,-78.651,2026-02-23,2026-02-24,1
+bach_0751,reassigned,1,0,Huachi Grande,rural,province,province_crew,-1.315,-78.651,2026-02-23,,
+bach_0752,attended,1,1,La Península,urban,city,city_crew,-1.236,-78.601,2026-02-23,2026-03-11,16
+bach_0753,attended,1,1,La Península,urban,city,city_crew,-1.236,-78.601,2026-02-23,2026-03-11,16
+bach_0754,attended,1,1,La Península,urban,city,city_crew,-1.236,-78.601,2026-02-23,2026-03-11,16
+bach_0755,attended,1,1,La Península,urban,city,city_crew,-1.237,-78.601,2026-02-23,2026-03-11,16
+bach_0756,attended,1,1,La Península,urban,city,city_crew,-1.237,-78.602,2026-02-23,2026-03-11,16
+bach_0757,attended,1,1,La Península,urban,city,city_crew,-1.237,-78.602,2026-02-23,2026-03-11,16
+bach_0758,attended,1,1,La Península,urban,city,city_crew,-1.237,-78.602,2026-02-23,2026-03-11,16
+bach_0759,attended,1,1,La Península,urban,city,city_crew,-1.237,-78.602,2026-02-23,2026-03-11,16
+bach_0760,attended,1,1,La Península,urban,city,city_crew,-1.237,-78.602,2026-02-23,2026-03-11,16
+bach_0761,attended,1,1,La Península,urban,city,city_crew,-1.237,-78.603,2026-02-23,2026-03-11,16
+bach_0762,attended,1,1,La Península,urban,city,city_crew,-1.237,-78.602,2026-02-23,2026-03-11,16
+bach_0763,attended,1,1,Pishilata,urban,city,city_crew,-1.28,-78.6,2026-02-24,2026-03-11,15
+bach_0764,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.243,-78.631,2026-02-24,2026-02-24,0
+bach_0765,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.243,-78.631,2026-02-24,2026-02-24,0
+bach_0766,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.243,-78.631,2026-02-24,2026-02-24,0
+bach_0767,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.243,-78.631,2026-02-24,2026-02-24,0
+bach_0768,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.243,-78.631,2026-02-24,2026-02-24,0
+bach_0769,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.243,-78.631,2026-02-24,2026-02-24,0
+bach_0770,reassigned,1,0,Atahualpa (Chisalata),urban,water_utility,water_crew,-1.215,-78.605,2026-02-25,,
+bach_0771,attended,1,1,Atahualpa (Chisalata),urban,city,city_crew,-1.214,-78.604,2026-02-25,2026-04-21,55
+bach_0772,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.243,-78.613,2026-02-25,2026-02-25,0
+bach_0773,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.243,-78.613,2026-02-25,2026-02-25,0
+bach_0774,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.243,-78.613,2026-02-25,2026-02-25,0
+bach_0775,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.243,-78.613,2026-02-25,2026-02-25,0
+bach_0776,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.243,-78.613,2026-02-25,2026-02-25,0
+bach_0777,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.243,-78.613,2026-02-25,2026-02-25,0
+bach_0778,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.243,-78.613,2026-02-25,2026-02-25,0
+bach_0779,attended,1,1,Unamuncho,urban,city,city_crew,-1.171,-78.611,2026-02-26,2026-02-26,0
+bach_0780,attended,1,1,Unamuncho,urban,city,city_crew,-1.171,-78.611,2026-02-26,2026-02-26,0
+bach_0781,attended,1,1,Unamuncho,urban,city,city_crew,-1.161,-78.601,2026-02-26,2026-02-26,0
+bach_0782,attended,1,1,Unamuncho,urban,city,city_crew,-1.161,-78.601,2026-02-26,2026-02-26,0
+bach_0783,attended,1,1,Unamuncho,urban,city,city_crew,-1.161,-78.6,2026-02-26,2026-02-26,0
+bach_0784,attended,1,1,Unamuncho,urban,city,city_crew,-1.161,-78.6,2026-02-26,2026-02-26,0
+bach_0785,attended,1,1,Unamuncho,urban,city,city_crew,-1.161,-78.6,2026-02-26,2026-02-26,0
+bach_0786,attended,1,1,Atocha – Ficoa,urban,city,city_crew,-1.227,-78.626,2026-02-27,2026-02-27,0
+bach_0787,reassigned,1,0,Matriz,urban,water_utility,water_crew,-1.255,-78.645,2026-02-27,,
+bach_0788,attended,1,1,Atocha – Ficoa,urban,city,city_crew,-1.227,-78.626,2026-02-27,2026-02-27,0
+bach_0789,attended,1,1,Atocha – Ficoa,urban,city,city_crew,-1.227,-78.626,2026-02-27,2026-04-21,53
+bach_0790,attended,1,1,Atocha – Ficoa,urban,city,city_crew,-1.227,-78.626,2026-02-27,2026-02-27,0
+bach_0791,reassigned,1,0,Huachi Grande,urban,water_utility,water_crew,-1.307,-78.641,2026-02-27,,
+bach_0792,attended,1,1,Huachi Chico,urban,city,city_crew,-1.272,-78.644,2026-03-03,2026-04-21,49
+bach_0793,attended,1,1,Huachi Chico,urban,city,city_crew,-1.27,-78.641,2026-03-03,2026-04-21,49
+bach_0794,reassigned,1,0,Matriz,urban,water_utility,water_crew,-1.271,-78.643,2026-03-03,,
+bach_0795,attended,1,1,Matriz,urban,city,city_crew,-1.271,-78.643,2026-03-03,2026-04-21,49
+bach_0796,attended,1,1,Huachi Loreto,urban,city,road_association,-1.249,-78.621,2026-03-03,2026-04-21,49
+bach_0797,attended,1,1,Pishilata,urban,city,city_crew,-1.273,-78.617,2026-03-04,2026-03-11,7
+bach_0798,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.617,2026-03-04,2026-03-11,7
+bach_0799,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.617,2026-03-04,2026-03-11,7
+bach_0800,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.617,2026-03-04,2026-03-11,7
+bach_0801,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.617,2026-03-04,2026-03-11,7
+bach_0802,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.617,2026-03-04,2026-03-11,7
+bach_0803,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.617,2026-03-04,2026-03-11,7
+bach_0804,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.617,2026-03-04,2026-03-11,7
+bach_0805,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.617,2026-03-04,2026-03-11,7
+bach_0806,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.617,2026-03-04,2026-03-11,7
+bach_0807,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.617,2026-03-04,2026-03-11,7
+bach_0808,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.616,2026-03-04,2026-03-11,7
+bach_0809,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.616,2026-03-04,2026-03-11,7
+bach_0810,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.616,2026-03-04,2026-03-11,7
+bach_0811,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.616,2026-03-04,2026-03-11,7
+bach_0812,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.616,2026-03-04,2026-03-11,7
+bach_0813,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.616,2026-03-04,2026-03-11,7
+bach_0814,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.616,2026-03-04,2026-03-11,7
+bach_0815,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.616,2026-03-04,2026-03-11,7
+bach_0816,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.617,2026-03-05,2026-03-11,6
+bach_0817,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.616,2026-03-05,2026-03-11,6
+bach_0818,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.616,2026-03-05,2026-03-11,6
+bach_0819,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.616,2026-03-05,2026-03-11,6
+bach_0820,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.616,2026-03-05,2026-03-11,6
+bach_0821,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.616,2026-03-05,2026-03-11,6
+bach_0822,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.616,2026-03-05,2026-03-11,6
+bach_0823,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.616,2026-03-05,2026-03-11,6
+bach_0824,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.616,2026-03-05,2026-03-11,6
+bach_0825,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.616,2026-03-05,2026-03-11,6
+bach_0826,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.616,2026-03-05,2026-03-11,6
+bach_0827,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.616,2026-03-05,2026-03-11,6
+bach_0828,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.616,2026-03-05,2026-03-11,6
+bach_0829,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.616,2026-03-05,2026-03-11,6
+bach_0830,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.616,2026-03-05,2026-03-11,6
+bach_0831,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.616,2026-03-05,2026-03-11,6
+bach_0832,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.615,2026-03-05,2026-03-11,6
+bach_0833,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.615,2026-03-05,2026-03-11,6
+bach_0834,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.615,2026-03-05,2026-03-11,6
+bach_0835,attended,1,1,Pishilata,urban,city,city_crew,-1.271,-78.613,2026-03-05,2026-03-11,6
+bach_0836,attended,1,1,Pishilata,urban,city,city_crew,-1.271,-78.613,2026-03-05,2026-03-11,6
+bach_0837,attended,1,1,Pishilata,urban,city,city_crew,-1.271,-78.613,2026-03-05,2026-03-11,6
+bach_0838,attended,1,1,Pishilata,urban,city,city_crew,-1.271,-78.613,2026-03-05,2026-03-11,6
+bach_0839,attended,1,1,Pishilata,urban,city,city_crew,-1.271,-78.613,2026-03-05,2026-03-11,6
+bach_0840,attended,1,1,Pishilata,urban,city,city_crew,-1.271,-78.613,2026-03-05,2026-03-11,6
+bach_0841,attended,1,1,Pishilata,urban,city,city_crew,-1.271,-78.613,2026-03-05,2026-03-11,6
+bach_0842,attended,1,1,Pishilata,urban,city,city_crew,-1.271,-78.613,2026-03-05,2026-03-11,6
+bach_0843,attended,1,1,Pishilata,urban,city,city_crew,-1.271,-78.613,2026-03-05,2026-03-11,6
+bach_0844,attended,1,1,Pishilata,urban,city,city_crew,-1.271,-78.613,2026-03-05,2026-03-11,6
+bach_0845,attended,1,1,Pishilata,urban,city,city_crew,-1.271,-78.613,2026-03-05,2026-03-11,6
+bach_0846,attended,1,1,Pishilata,urban,city,city_crew,-1.271,-78.613,2026-03-05,2026-03-11,6
+bach_0847,attended,1,1,Pishilata,urban,city,city_crew,-1.271,-78.613,2026-03-05,2026-03-11,6
+bach_0848,attended,1,1,Pishilata,urban,city,city_crew,-1.271,-78.613,2026-03-05,2026-03-11,6
+bach_0849,attended,1,1,Pishilata,urban,city,city_crew,-1.271,-78.613,2026-03-05,2026-03-11,6
+bach_0850,attended,1,1,Pishilata,urban,city,city_crew,-1.271,-78.614,2026-03-05,2026-03-11,6
+bach_0851,attended,1,1,Pishilata,urban,city,city_crew,-1.271,-78.614,2026-03-05,2026-03-11,6
+bach_0852,attended,1,1,Pishilata,urban,city,city_crew,-1.271,-78.614,2026-03-05,2026-03-11,6
+bach_0853,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.614,2026-03-05,2026-03-11,6
+bach_0854,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.614,2026-03-05,2026-03-11,6
+bach_0855,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.614,2026-03-05,2026-03-11,6
+bach_0856,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.614,2026-03-05,2026-03-10,5
+bach_0857,attended,1,1,Pishilata,urban,city,city_crew,-1.271,-78.614,2026-03-05,2026-03-10,5
+bach_0858,attended,1,1,Pishilata,urban,city,city_crew,-1.271,-78.614,2026-03-05,2026-03-10,5
+bach_0859,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.614,2026-03-05,2026-03-10,5
+bach_0860,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.614,2026-03-05,2026-03-10,5
+bach_0861,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.614,2026-03-05,2026-03-10,5
+bach_0862,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.614,2026-03-05,2026-03-10,5
+bach_0863,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.614,2026-03-05,2026-03-10,5
+bach_0864,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.614,2026-03-05,2026-03-10,5
+bach_0865,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.614,2026-03-05,2026-03-10,5
+bach_0866,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.615,2026-03-05,2026-03-10,5
+bach_0867,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.615,2026-03-05,2026-03-10,5
+bach_0868,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.615,2026-03-05,2026-03-10,5
+bach_0869,attended,1,1,Pishilata,urban,city,city_crew,-1.272,-78.615,2026-03-05,2026-03-10,5
+bach_0870,attended,1,1,Atocha – Ficoa,urban,city,city_crew,-1.226,-78.623,2026-03-06,2026-03-10,4
+bach_0871,attended,1,1,Atocha – Ficoa,urban,city,city_crew,-1.226,-78.623,2026-03-06,2026-03-10,4
+bach_0872,attended,1,1,Atocha – Ficoa,urban,city,city_crew,-1.226,-78.623,2026-03-06,2026-03-10,4
+bach_0873,attended,1,1,Atocha – Ficoa,urban,city,city_crew,-1.225,-78.623,2026-03-06,2026-03-10,4
+bach_0874,attended,1,1,Atocha – Ficoa,urban,city,city_crew,-1.226,-78.623,2026-03-06,2026-03-10,4
+bach_0875,attended,1,1,Atocha – Ficoa,urban,city,city_crew,-1.225,-78.623,2026-03-06,2026-03-10,4
+bach_0876,attended,1,1,Atocha – Ficoa,urban,city,city_crew,-1.225,-78.622,2026-03-06,2026-03-10,4
+bach_0877,attended,1,1,Atocha – Ficoa,urban,city,city_crew,-1.225,-78.623,2026-03-06,2026-03-10,4
+bach_0878,attended,1,1,Atocha – Ficoa,urban,city,city_crew,-1.225,-78.622,2026-03-06,2026-03-10,4
+bach_0879,attended,1,1,Atocha – Ficoa,urban,city,city_crew,-1.225,-78.621,2026-03-06,2026-03-10,4
+bach_0880,attended,1,1,Atocha – Ficoa,urban,city,city_crew,-1.225,-78.621,2026-03-06,2026-03-10,4
+bach_0881,attended,1,1,Atocha – Ficoa,urban,city,city_crew,-1.225,-78.621,2026-03-06,2026-03-10,4
+bach_0882,attended,1,1,Atocha – Ficoa,urban,city,city_crew,-1.225,-78.62,2026-03-06,2026-03-10,4
+bach_0883,attended,1,1,Atocha – Ficoa,urban,city,city_crew,-1.225,-78.621,2026-03-06,2026-03-10,4
+bach_0884,attended,1,1,Atocha – Ficoa,urban,city,city_crew,-1.225,-78.621,2026-03-06,2026-03-10,4
+bach_0885,attended,1,1,Atocha – Ficoa,urban,city,city_crew,-1.225,-78.62,2026-03-06,2026-03-10,4
+bach_0886,attended,1,1,Atocha – Ficoa,urban,city,city_crew,-1.226,-78.619,2026-03-06,2026-03-10,4
+bach_0887,attended,1,1,Atocha – Ficoa,urban,city,city_crew,-1.226,-78.619,2026-03-06,2026-03-10,4
+bach_0888,attended,1,1,Atocha – Ficoa,urban,city,city_crew,-1.226,-78.619,2026-03-06,2026-03-10,4
+bach_0889,attended,1,1,Atocha – Ficoa,urban,city,city_crew,-1.226,-78.619,2026-03-06,2026-03-10,4
+bach_0890,attended,1,1,Atocha – Ficoa,urban,city,city_crew,-1.226,-78.619,2026-03-06,2026-03-10,4
+bach_0891,attended,1,1,Atocha – Ficoa,urban,city,city_crew,-1.226,-78.618,2026-03-06,2026-03-10,4
+bach_0892,attended,1,1,Atocha – Ficoa,urban,city,city_crew,-1.226,-78.618,2026-03-06,2026-03-10,4
+bach_0893,attended,1,1,Atocha – Ficoa,urban,city,city_crew,-1.226,-78.618,2026-03-06,2026-03-10,4
+bach_0894,attended,1,1,Atocha – Ficoa,urban,city,city_crew,-1.226,-78.618,2026-03-06,2026-03-10,4
+bach_0895,attended,1,1,Atocha – Ficoa,urban,city,city_crew,-1.225,-78.618,2026-03-06,2026-03-10,4
+bach_0896,attended,1,1,Atocha – Ficoa,urban,city,city_crew,-1.225,-78.618,2026-03-06,2026-03-10,4
+bach_0897,attended,1,1,Atocha – Ficoa,urban,city,city_crew,-1.225,-78.618,2026-03-06,2026-03-10,4
+bach_0898,attended,1,1,Atocha – Ficoa,urban,city,city_crew,-1.225,-78.618,2026-03-06,2026-03-10,4
+bach_0899,attended,1,1,Atocha – Ficoa,urban,city,city_crew,-1.225,-78.618,2026-03-06,2026-03-10,4
+bach_0900,attended,1,1,Atocha – Ficoa,urban,city,city_crew,-1.225,-78.618,2026-03-06,2026-03-10,4
+bach_0901,attended,1,1,Atocha – Ficoa,urban,city,city_crew,-1.225,-78.618,2026-03-06,2026-03-10,4
+bach_0902,attended,1,1,Atocha – Ficoa,urban,city,city_crew,-1.225,-78.618,2026-03-06,2026-03-10,4
+bach_0903,attended,1,1,Atocha – Ficoa,urban,city,city_crew,-1.224,-78.616,2026-03-06,2026-03-10,4
+bach_0904,attended,1,1,Atocha – Ficoa,urban,city,city_crew,-1.225,-78.618,2026-03-06,2026-03-10,4
+bach_0905,attended,1,1,Atocha – Ficoa,urban,city,city_crew,-1.224,-78.616,2026-03-06,2026-03-10,4
+bach_0906,attended,1,1,Atocha – Ficoa,urban,city,city_crew,-1.224,-78.616,2026-03-06,2026-03-10,4
+bach_0907,attended,1,1,,unknown,S/A,unknown,-0.166,-78.493,2026-03-21,2026-03-31,10
+bach_0908,attended,1,1,,unknown,S/A,unknown,-1.269,-78.627,2026-03-24,2026-03-31,7
+bach_0909,attended,1,1,Huachi Grande,urban,city,city_crew,-1.303,-78.637,2026-04-06,2026-04-06,0
+bach_0910,attended,1,1,Huachi Grande,urban,city,city_crew,-1.303,-78.637,2026-04-06,2026-04-06,0
+bach_0911,attended,1,1,Huachi Grande,urban,city,city_crew,-1.301,-78.638,2026-04-06,2026-04-06,0
+bach_0912,attended,1,1,Huachi Grande,urban,city,city_crew,-1.301,-78.638,2026-04-06,2026-04-06,0
+bach_0913,attended,1,1,Huachi Chico,urban,city,city_crew,-1.3,-78.637,2026-04-06,2026-04-06,0
+bach_0914,attended,1,1,Huachi Grande,urban,city,city_crew,-1.299,-78.636,2026-04-06,2026-04-06,0
+bach_0915,attended,1,1,Huachi Grande,urban,city,city_crew,-1.298,-78.636,2026-04-06,2026-04-06,0
+bach_0916,attended,1,1,Huachi Grande,urban,city,city_crew,-1.299,-78.636,2026-04-06,2026-04-06,0
+bach_0917,attended,1,1,Huachi Grande,urban,city,city_crew,-1.3,-78.637,2026-04-06,2026-04-06,0
+bach_0918,attended,1,1,Huachi Grande,urban,city,city_crew,-1.301,-78.638,2026-04-06,2026-04-06,0
+bach_0919,attended,1,1,Huachi Grande,urban,city,city_crew,-1.301,-78.638,2026-04-06,2026-04-06,0
+bach_0920,attended,1,1,Huachi Grande,urban,city,city_crew,-1.298,-78.636,2026-04-06,2026-04-06,0
+bach_0921,attended,1,1,Huachi Grande,urban,city,city_crew,-1.301,-78.638,2026-04-06,2026-04-06,0
+bach_0922,attended,1,1,Celiano Monge,urban,city,city_crew,-1.269,-78.627,2026-04-06,2026-04-27,21
+bach_0923,attended,1,1,Celiano Monge,urban,city,city_crew,-1.268,-78.628,2026-04-06,2026-04-28,22
+bach_0924,attended,1,1,Atocha – Ficoa,urban,city,city_crew,-1.23,-78.627,2026-04-06,2026-05-04,28
+bach_0925,attended,1,1,Huachi Grande,urban,city,city_crew,-1.305,-78.643,2026-04-07,2026-05-04,27
+bach_0926,reassigned,1,0,,unknown,S/A,unknown,-1.238,-78.62,2026-04-10,,
+bach_0927,reassigned,1,0,,unknown,S/A,unknown,-1.238,-78.62,2026-04-10,,
+bach_0928,attended,1,1,Huachi Chico,urban,water_utility,water_crew,-1.26,-78.644,2026-04-11,2026-05-05,24
+bach_0929,attended,1,1,Huachi Grande,rural,city,city_crew,-1.235,-78.653,2026-04-14,2026-05-04,20
+bach_0930,attended,1,1,Ambatillo,rural,city,city_crew,-1.235,-78.654,2026-04-14,2026-05-05,21
+bach_0931,attended,1,1,Ambatillo,urban,city,city_crew,-1.231,-78.655,2026-04-14,2026-04-28,14
+bach_0932,attended,1,1,Ambatillo,rural,city,city_crew,-1.229,-78.657,2026-04-14,2026-04-28,14
+bach_0933,attended,1,1,Ambatillo,urban,city,city_crew,-1.229,-78.657,2026-04-14,2026-05-05,21
+bach_0934,attended,1,1,Ambatillo,rural,city,city_crew,-1.229,-78.659,2026-04-14,2026-04-27,13
+bach_0935,attended,1,1,Ambatillo,urban,province,province_crew,-1.243,-78.656,2026-04-14,2026-04-20,6
+bach_0936,attended,1,1,Ambatillo,rural,city,city_crew,-1.245,-78.656,2026-04-14,2026-05-05,21
+bach_0937,attended,1,1,San Francisco,urban,city,city_crew,-1.238,-78.623,2026-04-14,2026-05-04,20
+bach_0938,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.243,-78.625,2026-04-14,2026-05-04,20
+bach_0939,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.243,-78.625,2026-04-14,2026-05-04,20
+bach_0940,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.243,-78.625,2026-04-14,2026-04-28,14
+bach_0941,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.244,-78.626,2026-04-14,2026-04-28,14
+bach_0942,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.244,-78.626,2026-04-14,2026-05-04,20
+bach_0943,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.244,-78.626,2026-04-14,2026-05-04,20
+bach_0944,attended,1,1,Celiano Monge,urban,city,city_crew,-1.244,-78.626,2026-04-14,2026-05-04,20
+bach_0945,attended,1,1,San Francisco,urban,city,city_crew,-1.244,-78.626,2026-04-14,2026-05-04,20
+bach_0946,attended,1,1,San Francisco,urban,city,city_crew,-1.244,-78.626,2026-04-14,2026-05-04,20
+bach_0947,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.244,-78.626,2026-04-14,2026-05-04,20
+bach_0948,attended,1,1,San Francisco,urban,city,city_crew,-1.243,-78.626,2026-04-14,2026-04-28,14
+bach_0949,attended,1,1,San Francisco,urban,city,city_crew,-1.243,-78.626,2026-04-14,2026-05-04,20
+bach_0950,reassigned,1,0,,unknown,S/A,unknown,-1.242,-78.624,2026-04-14,,
+bach_0951,attended,1,1,Pishilata,urban,water_utility,water_crew,-1.253,-78.592,2026-04-20,2026-05-05,15
+bach_0952,attended,1,1,Huachi Chico,urban,city,city_crew,-1.29,-78.637,2026-04-20,2026-05-04,14
+bach_0953,attended,1,1,La Península,urban,city,city_crew,-1.226,-78.608,2026-04-20,2026-04-28,8
+bach_0954,attended,1,1,Huachi Chico,urban,city,city_crew,-1.26,-78.635,2026-04-21,2026-04-28,7
+bach_0955,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.251,-78.627,2026-04-21,2026-04-28,7
+bach_0956,attended,1,1,Augusto N. Martínez (Mundugleo),unknown,city,city_crew,-1.216,-78.616,2026-04-21,2026-05-05,14
+bach_0957,attended,1,1,Atocha – Ficoa,urban,city,city_crew,-1.23,-78.627,2026-04-21,2026-05-04,13
+bach_0958,attended,1,1,Izamba,urban,city,city_crew,-1.227,-78.591,2026-04-21,2026-04-21,0
+bach_0959,attended,1,1,Izamba,urban,city,city_crew,-1.227,-78.591,2026-04-21,2026-04-21,0
+bach_0960,attended,1,1,Izamba,urban,city,city_crew,-1.227,-78.591,2026-04-21,2026-04-21,0
+bach_0961,reassigned,1,0,,unknown,S/A,unknown,-1.225,-78.603,2026-04-21,,
+bach_0962,reassigned,1,0,,unknown,S/A,unknown,-1.221,-78.608,2026-04-21,,
+bach_0963,reassigned,1,0,,unknown,S/A,unknown,-1.219,-78.615,2026-04-21,,
+bach_0964,reassigned,1,0,,unknown,S/A,unknown,-1.217,-78.614,2026-04-21,,
+bach_0965,reassigned,1,0,,unknown,S/A,unknown,-1.217,-78.614,2026-04-21,,
+bach_0966,reassigned,1,0,,unknown,S/A,unknown,-1.223,-78.616,2026-04-21,,
+bach_0967,attended,1,1,Atahualpa (Chisalata),urban,city,city_crew,-1.214,-78.604,2026-04-22,2026-05-05,13
+bach_0968,attended,1,1,,unknown,city,city_crew,-1.27,-78.629,2026-04-22,2026-04-22,0
+bach_0969,attended,1,1,Celiano Monge,urban,city,city_crew,-1.27,-78.629,2026-04-22,2026-04-22,0
+bach_0970,attended,1,1,Celiano Monge,urban,city,city_crew,-1.27,-78.629,2026-04-22,2026-04-22,0
+bach_0971,attended,1,1,Celiano Monge,urban,city,city_crew,-1.27,-78.629,2026-04-22,2026-04-22,0
+bach_0972,attended,1,1,Celiano Monge,urban,city,city_crew,-1.27,-78.629,2026-04-22,2026-04-22,0
+bach_0973,attended,1,1,Celiano Monge,urban,city,city_crew,-1.27,-78.629,2026-04-22,2026-04-22,0
+bach_0974,attended,1,1,Celiano Monge,urban,city,city_crew,-1.269,-78.629,2026-04-22,2026-04-22,0
+bach_0975,attended,1,1,Celiano Monge,urban,city,city_crew,-1.269,-78.629,2026-04-22,2026-04-22,0
+bach_0976,attended,1,1,Celiano Monge,urban,city,city_crew,-1.269,-78.629,2026-04-22,2026-04-22,0
+bach_0977,attended,1,1,Celiano Monge,urban,city,city_crew,-1.269,-78.629,2026-04-22,2026-04-22,0
+bach_0978,attended,1,1,Celiano Monge,urban,city,city_crew,-1.269,-78.629,2026-04-22,2026-04-22,0
+bach_0979,attended,1,1,Celiano Monge,urban,city,city_crew,-1.269,-78.629,2026-04-22,2026-04-22,0
+bach_0980,attended,1,1,Celiano Monge,urban,city,city_crew,-1.269,-78.629,2026-04-22,2026-04-22,0
+bach_0981,attended,1,1,Celiano Monge,urban,city,city_crew,-1.269,-78.629,2026-04-22,2026-04-22,0
+bach_0982,attended,1,1,Celiano Monge,urban,city,city_crew,-1.269,-78.629,2026-04-22,2026-04-22,0
+bach_0983,attended,1,1,Celiano Monge,urban,city,city_crew,-1.269,-78.629,2026-04-22,2026-04-22,0
+bach_0984,attended,1,1,Celiano Monge,urban,city,city_crew,-1.269,-78.629,2026-04-22,2026-04-22,0
+bach_0985,attended,1,1,Celiano Monge,urban,city,city_crew,-1.269,-78.629,2026-04-22,2026-04-22,0
+bach_0986,attended,1,1,Celiano Monge,urban,city,city_crew,-1.269,-78.629,2026-04-22,2026-04-22,0
+bach_0987,attended,1,1,Celiano Monge,urban,city,city_crew,-1.269,-78.629,2026-04-22,2026-04-22,0
+bach_0988,attended,1,1,Celiano Monge,urban,city,city_crew,-1.269,-78.629,2026-04-22,2026-04-22,0
+bach_0989,attended,1,1,Celiano Monge,urban,city,city_crew,-1.269,-78.629,2026-04-22,2026-04-22,0
+bach_0990,attended,1,1,Celiano Monge,urban,city,city_crew,-1.269,-78.629,2026-04-22,2026-04-22,0
+bach_0991,attended,1,1,Celiano Monge,urban,city,city_crew,-1.269,-78.629,2026-04-22,2026-04-22,0
+bach_0992,attended,1,1,Celiano Monge,urban,city,city_crew,-1.269,-78.629,2026-04-22,2026-04-22,0
+bach_0993,attended,1,1,Celiano Monge,urban,city,city_crew,-1.269,-78.629,2026-04-22,2026-04-22,0
+bach_0994,attended,1,1,Celiano Monge,urban,city,city_crew,-1.269,-78.629,2026-04-22,2026-04-23,1
+bach_0995,attended,1,1,Celiano Monge,urban,city,city_crew,-1.269,-78.629,2026-04-22,2026-04-22,0
+bach_0996,attended,1,1,Celiano Monge,urban,city,city_crew,-1.269,-78.629,2026-04-22,2026-04-22,0
+bach_0997,attended,1,1,Celiano Monge,urban,city,city_crew,-1.269,-78.629,2026-04-22,2026-04-22,0
+bach_0998,attended,1,1,Celiano Monge,urban,city,city_crew,-1.269,-78.629,2026-04-22,2026-04-22,0
+bach_0999,attended,1,1,Celiano Monge,urban,city,city_crew,-1.269,-78.629,2026-04-22,2026-04-22,0
+bach_1000,attended,1,1,Celiano Monge,urban,city,city_crew,-1.269,-78.629,2026-04-22,2026-04-23,1
+bach_1001,attended,1,1,Huachi Chico,urban,city,city_crew,-1.269,-78.629,2026-04-22,2026-04-23,1
+bach_1002,attended,1,1,Huachi Chico,urban,city,city_crew,-1.269,-78.629,2026-04-22,2026-04-23,1
+bach_1003,attended,1,1,Celiano Monge,urban,city,city_crew,-1.269,-78.629,2026-04-22,2026-04-23,1
+bach_1004,attended,1,1,Huachi Chico,urban,city,city_crew,-1.269,-78.629,2026-04-22,2026-04-23,1
+bach_1005,reassigned,1,0,,unknown,S/A,unknown,-1.224,-78.603,2026-04-22,,
+bach_1006,reassigned,1,0,,unknown,S/A,unknown,-1.215,-78.605,2026-04-22,,
+bach_1007,attended,1,1,Celiano Monge,urban,city,city_crew,-1.267,-78.628,2026-04-23,2026-04-23,0
+bach_1008,attended,1,1,Celiano Monge,urban,city,city_crew,-1.267,-78.628,2026-04-23,2026-04-23,0
+bach_1009,attended,1,1,Celiano Monge,urban,city,city_crew,-1.267,-78.628,2026-04-23,2026-04-23,0
+bach_1010,attended,1,1,Celiano Monge,urban,city,city_crew,-1.267,-78.628,2026-04-23,2026-04-23,0
+bach_1011,attended,1,1,Celiano Monge,urban,city,city_crew,-1.266,-78.628,2026-04-23,2026-04-23,0
+bach_1012,attended,1,1,Celiano Monge,urban,city,city_crew,-1.266,-78.628,2026-04-23,2026-04-23,0
+bach_1013,attended,1,1,Celiano Monge,urban,city,city_crew,-1.266,-78.628,2026-04-23,2026-04-23,0
+bach_1014,attended,1,1,Celiano Monge,urban,city,city_crew,-1.266,-78.628,2026-04-23,2026-04-23,0
+bach_1015,attended,1,1,Celiano Monge,urban,city,city_crew,-1.267,-78.627,2026-04-23,2026-04-23,0
+bach_1016,attended,1,1,Celiano Monge,urban,city,city_crew,-1.267,-78.627,2026-04-23,2026-04-23,0
+bach_1017,attended,1,1,Celiano Monge,urban,city,city_crew,-1.266,-78.627,2026-04-23,2026-04-23,0
+bach_1018,attended,1,1,Celiano Monge,urban,city,city_crew,-1.266,-78.628,2026-04-23,2026-04-23,0
+bach_1019,attended,1,1,Atocha – Ficoa,urban,city,city_crew,-1.23,-78.627,2026-04-24,2026-05-05,11
+bach_1020,reassigned,1,0,,unknown,S/A,unknown,-1.267,-78.61,2026-04-24,,
+bach_1021,attended,1,1,Huachi Chico,urban,city,city_crew,-1.26,-78.629,2026-04-27,2026-04-27,0
+bach_1022,attended,1,1,Huachi Chico,urban,city,city_crew,-1.26,-78.629,2026-04-27,2026-04-27,0
+bach_1023,attended,1,1,Huachi Chico,urban,city,city_crew,-1.26,-78.629,2026-04-27,2026-04-27,0
+bach_1024,attended,1,1,Huachi Chico,urban,city,city_crew,-1.26,-78.629,2026-04-27,2026-04-27,0
+bach_1025,attended,1,1,Huachi Chico,urban,city,city_crew,-1.26,-78.629,2026-04-27,2026-04-27,0
+bach_1026,attended,1,1,,unknown,city,city_crew,-1.26,-78.629,2026-04-27,2026-04-27,0
+bach_1027,attended,1,1,Huachi Chico,urban,city,city_crew,-1.261,-78.629,2026-04-27,2026-04-27,0
+bach_1028,attended,1,1,Huachi Chico,urban,city,city_crew,-1.261,-78.629,2026-04-27,2026-04-27,0
+bach_1029,attended,1,1,Huachi Chico,urban,city,city_crew,-1.261,-78.629,2026-04-27,2026-04-27,0
+bach_1030,attended,1,1,Huachi Chico,urban,city,city_crew,-1.262,-78.628,2026-04-27,2026-04-27,0
+bach_1031,attended,1,1,Huachi Chico,urban,city,city_crew,-1.262,-78.628,2026-04-27,2026-04-27,0
+bach_1032,attended,1,1,Huachi Chico,urban,city,city_crew,-1.262,-78.628,2026-04-27,2026-04-27,0
+bach_1033,attended,1,1,Huachi Chico,urban,city,city_crew,-1.264,-78.628,2026-04-28,2026-04-28,0
+bach_1034,attended,1,1,Huachi Chico,urban,city,city_crew,-1.264,-78.628,2026-04-28,2026-04-28,0
+bach_1035,attended,1,1,Huachi Chico,urban,S/A,unknown,-1.264,-78.628,2026-04-28,2026-04-28,0
+bach_1036,attended,1,1,Huachi Chico,urban,city,city_crew,-1.264,-78.628,2026-04-28,2026-04-28,0
+bach_1037,attended,1,1,Huachi Chico,urban,city,city_crew,-1.264,-78.628,2026-04-28,2026-04-28,0
+bach_1038,attended,1,1,Huachi Chico,urban,city,city_crew,-1.264,-78.628,2026-04-28,2026-04-28,0
+bach_1039,attended,1,1,Huachi Chico,urban,city,city_crew,-1.264,-78.628,2026-04-28,2026-04-28,0
+bach_1040,attended,1,1,Atocha – Ficoa,urban,city,city_crew,-1.238,-78.635,2026-04-29,2026-05-05,6
+bach_1041,attended,1,1,Celiano Monge,urban,city,city_crew,-1.263,-78.628,2026-05-04,2026-05-04,0
+bach_1042,attended,1,1,Celiano Monge,urban,city,city_crew,-1.263,-78.628,2026-05-04,2026-05-04,0
+bach_1043,attended,1,1,Celiano Monge,urban,city,city_crew,-1.263,-78.628,2026-05-04,2026-05-04,0
+bach_1044,attended,1,1,Celiano Monge,urban,city,city_crew,-1.263,-78.628,2026-05-04,2026-05-04,0
+bach_1045,reassigned,1,0,,unknown,S/A,unknown,-1.218,-78.611,2026-05-05,,
+bach_1046,attended,1,1,Huachi Grande,urban,city,city_crew,-1.303,-78.637,2026-05-06,2026-05-06,0
+bach_1047,attended,1,1,Huachi Grande,urban,city,city_crew,-1.303,-78.637,2026-05-06,2026-05-06,0
+bach_1048,attended,1,1,Huachi Grande,urban,city,city_crew,-1.303,-78.637,2026-05-06,2026-05-06,0
+bach_1049,attended,1,1,Huachi Grande,urban,city,city_crew,-1.303,-78.637,2026-05-06,2026-05-06,0
+bach_1050,attended,1,1,Huachi Grande,urban,city,city_crew,-1.303,-78.637,2026-05-06,2026-05-06,0
+bach_1051,attended,1,1,Huachi Grande,urban,city,city_crew,-1.303,-78.637,2026-05-06,2026-05-06,0
+bach_1052,attended,1,1,Huachi Grande,urban,city,city_crew,-1.303,-78.637,2026-05-06,2026-05-06,0
+bach_1053,attended,1,1,Huachi Grande,urban,city,city_crew,-1.303,-78.637,2026-05-06,2026-05-06,0
+bach_1054,received,1,0,,unknown,S/A,unknown,-1.285,-78.623,2026-05-06,,
+bach_1055,received,1,0,,unknown,S/A,unknown,-1.277,-78.625,2026-05-06,,
+bach_1056,attended,1,1,Huachi Grande,urban,city,city_crew,-1.299,-78.636,2026-05-07,2026-05-07,0
+bach_1057,attended,1,1,Huachi Grande,urban,city,city_crew,-1.299,-78.636,2026-05-07,2026-05-07,0
+bach_1058,attended,1,1,Huachi Grande,urban,city,city_crew,-1.299,-78.636,2026-05-07,2026-05-07,0
+bach_1059,attended,1,1,Huachi Grande,urban,city,city_crew,-1.299,-78.636,2026-05-07,2026-05-07,0
+bach_1060,attended,1,1,Huachi Grande,urban,city,city_crew,-1.299,-78.636,2026-05-07,2026-05-07,0
+bach_1061,attended,1,1,Huachi Grande,urban,city,city_crew,-1.298,-78.636,2026-05-07,2026-05-07,0
+bach_1062,attended,1,1,Huachi Grande,urban,city,city_crew,-1.298,-78.636,2026-05-07,2026-05-07,0
+bach_1063,attended,1,1,Huachi Grande,urban,city,city_crew,-1.298,-78.636,2026-05-07,2026-05-07,0
+bach_1064,attended,1,1,Huachi Grande,urban,city,city_crew,-1.298,-78.636,2026-05-07,2026-05-07,0
+bach_1065,received,1,0,,unknown,S/A,unknown,-1.24,-78.627,2026-05-08,,
+bach_1066,reassigned,1,0,,unknown,S/A,unknown,-1.235,-78.633,2026-05-11,,
+bach_1067,received,1,0,,unknown,S/A,unknown,-1.256,-78.616,2026-05-11,,
+bach_1068,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.253,-78.633,2026-05-12,2026-05-12,0
+bach_1069,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.253,-78.633,2026-05-12,2026-05-12,0
+bach_1070,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.253,-78.633,2026-05-12,2026-05-12,0
+bach_1071,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.253,-78.633,2026-05-12,2026-05-12,0
+bach_1072,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.253,-78.633,2026-05-13,2026-05-13,0
+bach_1073,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.253,-78.633,2026-05-13,2026-05-13,0
+bach_1074,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.253,-78.633,2026-05-13,2026-05-13,0
+bach_1075,attended,1,1,Celiano Monge,urban,city,city_crew,-1.285,-78.632,2026-05-13,2026-05-13,0
+bach_1076,attended,1,1,Celiano Monge,urban,city,city_crew,-1.285,-78.632,2026-05-13,2026-05-13,0
+bach_1077,attended,1,1,Celiano Monge,urban,city,city_crew,-1.285,-78.632,2026-05-13,2026-05-13,0
+bach_1078,attended,1,1,Celiano Monge,urban,city,city_crew,-1.285,-78.632,2026-05-13,2026-05-13,0
+bach_1079,attended,1,1,Celiano Monge,urban,city,city_crew,-1.285,-78.632,2026-05-13,2026-05-13,0
+bach_1080,attended,1,1,Celiano Monge,urban,city,city_crew,-1.285,-78.632,2026-05-13,2026-05-13,0
+bach_1081,attended,1,1,Celiano Monge,urban,city,city_crew,-1.285,-78.632,2026-05-13,2026-05-13,0
+bach_1082,attended,1,1,Celiano Monge,urban,city,city_crew,-1.285,-78.632,2026-05-13,2026-05-13,0
+bach_1083,attended,1,1,Huachi Grande,urban,city,city_crew,-1.299,-78.636,2026-05-14,2026-05-14,0
+bach_1084,attended,1,1,Huachi Grande,urban,water_utility,city_crew,-1.299,-78.636,2026-05-14,2026-05-14,0
+bach_1085,attended,1,1,Huachi Grande,urban,city,city_crew,-1.299,-78.636,2026-05-14,2026-05-14,0
+bach_1086,attended,1,1,Huachi Grande,urban,city,city_crew,-1.299,-78.636,2026-05-14,2026-05-14,0
+bach_1087,attended,1,1,Huachi Grande,urban,city,city_crew,-1.299,-78.636,2026-05-14,2026-05-18,4
+bach_1088,attended,1,1,Huachi Grande,urban,city,city_crew,-1.298,-78.636,2026-05-18,2026-05-18,0
+bach_1089,attended,1,1,Huachi Grande,urban,city,city_crew,-1.298,-78.636,2026-05-18,2026-05-18,0
+bach_1090,attended,1,1,Huachi Grande,urban,city,city_crew,-1.298,-78.636,2026-05-18,2026-05-18,0
+bach_1091,attended,1,1,Huachi Grande,urban,city,city_crew,-1.298,-78.636,2026-05-18,2026-05-18,0
+bach_1092,attended,1,1,Huachi Grande,urban,city,city_crew,-1.298,-78.635,2026-05-18,2026-05-18,0
+bach_1093,attended,1,1,Huachi Grande,urban,city,city_crew,-1.298,-78.635,2026-05-18,2026-05-18,0
+bach_1094,attended,1,1,Huachi Grande,urban,city,city_crew,-1.298,-78.635,2026-05-18,2026-05-18,0
+bach_1095,attended,1,1,Huachi Grande,urban,city,city_crew,-1.298,-78.635,2026-05-18,2026-05-18,0
+bach_1096,attended,1,1,Huachi Grande,urban,city,city_crew,-1.298,-78.635,2026-05-18,2026-05-18,0
+bach_1097,attended,1,1,Huachi Grande,urban,city,city_crew,-1.298,-78.635,2026-05-18,2026-05-18,0
+bach_1098,attended,1,1,Huachi Grande,urban,city,city_crew,-1.298,-78.635,2026-05-18,2026-05-18,0
+bach_1099,attended,1,1,Celiano Monge,urban,city,city_crew,-1.292,-78.635,2026-05-18,2026-05-19,1
+bach_1100,attended,1,1,Celiano Monge,urban,city,city_crew,-1.292,-78.635,2026-05-18,2026-05-19,1
+bach_1101,attended,1,1,Celiano Monge,urban,city,city_crew,-1.292,-78.635,2026-05-18,2026-05-19,1
+bach_1102,received,1,0,,unknown,S/A,unknown,-1.267,-78.61,2026-05-20,,
+bach_1103,received,1,0,,unknown,S/A,unknown,-1.216,-78.593,2026-05-21,,
+bach_1104,received,1,0,,unknown,S/A,unknown,-1.266,-78.611,2026-05-26,,
+bach_1105,received,1,0,,unknown,S/A,unknown,-1.268,-78.628,2026-05-27,,
+bach_1106,received,1,0,,unknown,S/A,unknown,-1.22,-78.615,2026-06-08,,
+bach_1107,attended,1,1,,unknown,S/A,unknown,-1.238,-78.682,2026-06-10,2026-06-11,1
+bach_1108,received,1,0,,unknown,S/A,unknown,-1.235,-78.686,2026-06-10,,
+bach_1109,received,1,0,,unknown,S/A,unknown,-1.234,-78.687,2026-06-10,,
+bach_1110,reassigned,1,0,,unknown,S/A,unknown,-1.237,-78.687,2026-06-10,,
+bach_1111,attended,1,1,Santa Rosa,urban,city,city_crew,-1.282,-78.658,2026-06-11,2026-06-11,0
+bach_1112,attended,1,1,Santa Rosa,urban,city,unknown,-1.282,-78.658,2026-06-11,2026-06-11,0
+bach_1113,attended,1,1,Santa Rosa,urban,city,city_crew,-1.282,-78.658,2026-06-11,2026-06-11,0
+bach_1114,attended,1,1,Santa Rosa,urban,city,city_crew,-1.282,-78.658,2026-06-11,2026-06-11,0
+bach_1115,attended,1,1,Santa Rosa,urban,city,city_crew,-1.283,-78.661,2026-06-11,2026-06-11,0
+bach_1116,attended,1,1,Santa Rosa,urban,city,city_crew,-1.283,-78.661,2026-06-11,2026-06-11,0
+bach_1117,attended,1,1,Santa Rosa,urban,city,city_crew,-1.283,-78.661,2026-06-11,2026-06-11,0
+bach_1118,attended,1,1,Santa Rosa,urban,city,city_crew,-1.283,-78.661,2026-06-11,2026-06-11,0
+bach_1119,attended,1,1,Santa Rosa,urban,city,city_crew,-1.283,-78.661,2026-06-11,2026-06-11,0
+bach_1120,attended,1,1,Santa Rosa,urban,city,city_crew,-1.285,-78.665,2026-06-11,2026-06-11,0
+bach_1121,attended,1,1,Santa Rosa,urban,city,city_crew,-1.285,-78.665,2026-06-11,2026-06-11,0
+bach_1122,attended,1,1,Santa Rosa,urban,city,city_crew,-1.285,-78.666,2026-06-11,2026-06-11,0
+bach_1123,attended,1,1,Santa Rosa,urban,city,city_crew,-1.285,-78.666,2026-06-11,2026-06-11,0
+bach_1124,attended,1,1,Santa Rosa,urban,city,city_crew,-1.285,-78.666,2026-06-11,2026-06-11,0
+bach_1125,attended,1,1,Santa Rosa,urban,city,city_crew,-1.285,-78.666,2026-06-11,2026-06-11,0
+bach_1126,attended,1,1,Santa Rosa,urban,city,city_crew,-1.285,-78.666,2026-06-11,2026-06-11,0
+bach_1127,attended,1,1,Santa Rosa,urban,city,city_crew,-1.283,-78.663,2026-06-11,2026-06-11,0
+bach_1128,attended,1,1,Santa Rosa,urban,city,city_crew,-1.283,-78.663,2026-06-11,2026-06-11,0
+bach_1129,attended,1,1,Santa Rosa,urban,city,city_crew,-1.283,-78.663,2026-06-11,2026-06-11,0
+bach_1130,attended,1,1,Santa Rosa,urban,city,city_crew,-1.283,-78.663,2026-06-11,2026-06-11,0
+bach_1131,attended,1,1,Santa Rosa,urban,city,city_crew,-1.283,-78.663,2026-06-11,2026-06-11,0
+bach_1132,attended,1,1,Santa Rosa,urban,city,city_crew,-1.283,-78.663,2026-06-11,2026-06-11,0
+bach_1133,attended,1,1,Santa Rosa,urban,city,city_crew,-1.28,-78.659,2026-06-11,2026-06-11,0
+bach_1134,attended,1,1,Santa Rosa,urban,city,city_crew,-1.28,-78.659,2026-06-11,2026-06-11,0
+bach_1135,attended,1,1,Santa Rosa,urban,city,city_crew,-1.28,-78.659,2026-06-11,2026-06-11,0
+bach_1136,attended,1,1,Santa Rosa,urban,city,city_crew,-1.28,-78.659,2026-06-11,2026-06-11,0
+bach_1137,received,1,0,,unknown,S/A,unknown,-1.236,-78.684,2026-06-11,,
+bach_1138,received,1,0,,unknown,S/A,unknown,-1.236,-78.684,2026-06-11,,
+bach_1139,received,1,0,,unknown,S/A,unknown,-1.233,-78.686,2026-06-11,,
+bach_1140,received,1,0,,unknown,S/A,unknown,-1.233,-78.686,2026-06-11,,
+bach_1141,received,1,0,,unknown,S/A,unknown,-1.232,-78.687,2026-06-11,,
+bach_1142,received,1,0,,unknown,S/A,unknown,-1.232,-78.687,2026-06-11,,
+bach_1143,received,1,0,,unknown,S/A,unknown,-1.234,-78.689,2026-06-11,,
+bach_1144,received,1,0,,unknown,S/A,unknown,-1.238,-78.686,2026-06-11,,
+bach_1145,received,1,0,,unknown,S/A,unknown,-1.236,-78.681,2026-06-11,,
+bach_1146,received,1,0,,unknown,S/A,unknown,-1.234,-78.678,2026-06-11,,
+bach_1147,received,1,0,,unknown,S/A,unknown,-1.235,-78.684,2026-06-11,,
+bach_1148,received,1,0,,unknown,S/A,unknown,-1.291,-78.621,2026-06-13,,
+bach_1149,attended,1,1,Izamba,urban,city,city_crew,-1.235,-78.631,2026-06-15,2026-06-15,0
+bach_1150,attended,1,1,Atocha – Ficoa,urban,city,city_crew,-1.235,-78.631,2026-06-15,2026-06-15,0
+bach_1151,attended,1,1,Atocha – Ficoa,urban,city,city_crew,-1.235,-78.631,2026-06-15,2026-06-15,0
+bach_1152,attended,1,1,Izamba,urban,city,city_crew,-1.223,-78.596,2026-06-15,2026-06-15,0
+bach_1153,attended,1,1,Izamba,urban,city,city_crew,-1.223,-78.596,2026-06-15,2026-06-15,0
+bach_1154,attended,1,1,Izamba,urban,city,city_crew,-1.223,-78.596,2026-06-15,2026-06-15,0
+bach_1155,attended,1,1,Izamba,urban,city,city_crew,-1.223,-78.596,2026-06-15,2026-06-15,0
+bach_1156,attended,1,1,Santa Rosa,urban,city,city_crew,-1.223,-78.596,2026-06-15,2026-06-15,0
+bach_1157,attended,1,1,Izamba,urban,city,city_crew,-1.223,-78.596,2026-06-15,2026-06-15,0
+bach_1158,attended,1,1,Izamba,urban,city,city_crew,-1.223,-78.596,2026-06-15,2026-06-15,0
+bach_1159,attended,1,1,Izamba,urban,city,city_crew,-1.223,-78.596,2026-06-15,2026-06-15,0
+bach_1160,attended,1,1,Celiano Monge,urban,city,city_crew,-1.257,-78.618,2026-06-15,2026-06-15,0
+bach_1161,attended,1,1,Celiano Monge,urban,city,city_crew,-1.257,-78.618,2026-06-15,2026-06-15,0
+bach_1162,attended,1,1,Celiano Monge,urban,city,city_crew,-1.257,-78.618,2026-06-15,2026-06-15,0
+bach_1163,attended,1,1,Celiano Monge,urban,city,city_crew,-1.257,-78.618,2026-06-15,2026-06-15,0
+bach_1164,attended,1,1,Celiano Monge,urban,city,city_crew,-1.257,-78.618,2026-06-15,2026-06-15,0
+bach_1165,attended,1,1,Celiano Monge,urban,city,city_crew,-1.257,-78.618,2026-06-15,2026-06-15,0
+bach_1166,attended,1,1,Celiano Monge,urban,city,city_crew,-1.257,-78.618,2026-06-15,2026-06-15,0
+bach_1167,attended,1,1,Izamba,urban,city,city_crew,-1.226,-78.587,2026-06-15,2026-06-15,0
+bach_1168,attended,1,1,Izamba,urban,city,city_crew,-1.226,-78.587,2026-06-15,2026-06-15,0
+bach_1169,attended,1,1,Izamba,urban,city,city_crew,-1.226,-78.587,2026-06-15,2026-06-15,0
+bach_1170,attended,1,1,Izamba,urban,city,city_crew,-1.226,-78.587,2026-06-15,2026-06-15,0
+bach_1171,attended,1,1,Izamba,urban,city,city_crew,-1.226,-78.587,2026-06-15,2026-06-15,0
+bach_1172,attended,1,1,Izamba,urban,city,city_crew,-1.226,-78.587,2026-06-15,2026-06-15,0
+bach_1173,attended,1,1,Izamba,urban,city,city_crew,-1.226,-78.587,2026-06-15,2026-06-15,0
+bach_1174,attended,1,1,Izamba,urban,city,city_crew,-1.226,-78.587,2026-06-15,2026-06-15,0
+bach_1175,attended,1,1,Celiano Monge,urban,city,city_crew,-1.259,-78.617,2026-06-15,2026-06-15,0
+bach_1176,attended,1,1,Santa Rosa,urban,city,city_crew,-1.259,-78.617,2026-06-15,2026-06-15,0
+bach_1177,attended,1,1,Celiano Monge,urban,city,city_crew,-1.259,-78.617,2026-06-15,2026-06-15,0
+bach_1178,attended,1,1,Santa Rosa,urban,city,city_crew,-1.283,-78.661,2026-06-15,2026-06-15,0
+bach_1179,attended,1,1,Santa Rosa,urban,city,city_crew,-1.283,-78.661,2026-06-15,2026-06-15,0
+bach_1180,attended,1,1,Santa Rosa,urban,city,city_crew,-1.282,-78.658,2026-06-15,2026-06-15,0
+bach_1181,attended,1,1,Santa Rosa,urban,city,city_crew,-1.282,-78.658,2026-06-15,2026-06-15,0
+bach_1182,attended,1,1,Santa Rosa,urban,city,city_crew,-1.282,-78.658,2026-06-15,2026-06-15,0
+bach_1183,attended,1,1,Santa Rosa,urban,city,city_crew,-1.282,-78.658,2026-06-15,2026-06-15,0
+bach_1184,attended,1,1,Santa Rosa,urban,city,city_crew,-1.282,-78.658,2026-06-15,2026-06-15,0
+bach_1185,attended,1,1,Santa Rosa,urban,city,city_crew,-1.282,-78.658,2026-06-15,2026-06-15,0
+bach_1186,attended,1,1,Santa Rosa,urban,city,city_crew,-1.282,-78.658,2026-06-15,2026-06-15,0
+bach_1187,attended,1,1,Santa Rosa,urban,city,city_crew,-1.282,-78.658,2026-06-15,2026-06-15,0
+bach_1188,attended,1,1,Santa Rosa,urban,city,city_crew,-1.282,-78.658,2026-06-15,2026-06-15,0
+bach_1189,attended,1,1,Santa Rosa,urban,city,city_crew,-1.285,-78.666,2026-06-15,2026-06-15,0
+bach_1190,attended,1,1,Santa Rosa,urban,city,city_crew,-1.285,-78.666,2026-06-15,2026-06-15,0
+bach_1191,attended,1,1,Santa Rosa,urban,city,city_crew,-1.285,-78.666,2026-06-15,2026-06-15,0
+bach_1192,attended,1,1,Santa Rosa,urban,city,city_crew,-1.285,-78.666,2026-06-15,2026-06-15,0
+bach_1193,attended,1,1,Santa Rosa,urban,city,city_crew,-1.285,-78.666,2026-06-15,2026-06-15,0
+bach_1194,received,1,0,,unknown,S/A,unknown,-1.25,-78.677,2026-06-17,,
+bach_1195,received,1,0,,unknown,S/A,unknown,-1.25,-78.675,2026-06-17,,
+bach_1196,received,1,0,,unknown,S/A,unknown,-1.248,-78.679,2026-06-17,,
+bach_1197,received,1,0,,unknown,S/A,unknown,-1.247,-78.68,2026-06-17,,
+bach_1198,received,1,0,,unknown,S/A,unknown,-1.235,-78.684,2026-06-17,,
+bach_1199,received,1,0,,unknown,S/A,unknown,-1.26,-78.644,2026-06-22,,
+bach_1200,received,1,0,,unknown,S/A,unknown,-1.256,-78.616,2026-06-22,,
+bach_1201,received,1,0,,unknown,S/A,unknown,-1.25,-78.62,2026-06-23,,
+bach_1202,received,1,0,,unknown,S/A,unknown,-1.274,-78.632,2026-06-24,,
+bach_1203,attended,1,1,Celiano Monge,urban,city,city_crew,-1.253,-78.622,2026-06-25,2026-06-25,0
+bach_1204,attended,1,1,Celiano Monge,urban,city,city_crew,-1.253,-78.622,2026-06-25,2026-06-29,4
+bach_1205,received,1,0,,unknown,S/A,unknown,-1.234,-78.688,2026-06-25,,
+bach_1206,reassigned,1,0,,unknown,S/A,unknown,-1.26,-78.624,2026-06-25,,
+bach_1207,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.249,-78.624,2026-06-29,2026-06-29,0
+bach_1208,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.249,-78.624,2026-06-29,2026-06-29,0
+bach_1209,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.249,-78.624,2026-06-29,2026-06-29,0
+bach_1210,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.249,-78.624,2026-06-29,2026-06-29,0
+bach_1211,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.249,-78.624,2026-06-29,2026-06-29,0
+bach_1212,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.249,-78.624,2026-06-29,2026-06-29,0
+bach_1213,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.249,-78.624,2026-06-29,2026-06-29,0
+bach_1214,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.249,-78.624,2026-06-29,2026-06-29,0
+bach_1215,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.249,-78.624,2026-06-29,2026-06-29,0
+bach_1216,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.249,-78.624,2026-06-29,2026-06-29,0
+bach_1217,attended,1,1,Celiano Monge,urban,city,city_crew,-1.249,-78.624,2026-06-29,2026-06-29,0
+bach_1218,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.249,-78.624,2026-06-29,2026-06-29,0
+bach_1219,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.249,-78.624,2026-06-29,2026-06-29,0
+bach_1220,in_progress,1,0,Celiano Monge,urban,city,city_crew,-1.249,-78.624,2026-06-29,,
+bach_1221,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.249,-78.624,2026-06-29,2026-06-29,0
+bach_1222,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.249,-78.624,2026-06-29,2026-06-29,0
+bach_1223,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.249,-78.624,2026-06-29,2026-06-29,0
+bach_1224,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.249,-78.624,2026-06-29,2026-06-29,0
+bach_1225,attended,1,1,Celiano Monge,urban,city,city_crew,-1.253,-78.622,2026-06-29,2026-06-29,0
+bach_1226,attended,1,1,Celiano Monge,urban,city,city_crew,-1.253,-78.622,2026-06-29,2026-06-29,0
+bach_1227,attended,1,1,Celiano Monge,urban,city,city_crew,-1.253,-78.622,2026-06-29,2026-06-29,0
+bach_1228,attended,1,1,Celiano Monge,urban,city,city_crew,-1.253,-78.622,2026-06-29,2026-06-29,0
+bach_1229,attended,1,1,Celiano Monge,urban,city,city_crew,-1.253,-78.622,2026-06-29,2026-06-29,0
+bach_1230,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.253,-78.622,2026-06-29,2026-06-29,0
+bach_1231,attended,1,1,Celiano Monge,urban,city,city_crew,-1.253,-78.622,2026-06-29,2026-06-29,0
+bach_1232,received,1,0,,unknown,S/A,unknown,-1.249,-78.624,2026-06-29,,
+bach_1233,received,1,0,,unknown,S/A,unknown,-1.249,-78.624,2026-06-29,,
+bach_1234,received,1,0,,unknown,S/A,unknown,-1.249,-78.624,2026-06-29,,
+bach_1235,received,1,0,,unknown,S/A,unknown,-1.249,-78.624,2026-06-29,,
+bach_1236,received,1,0,,unknown,S/A,unknown,-1.253,-78.622,2026-06-29,,
+bach_1237,received,1,0,,unknown,S/A,unknown,-1.253,-78.622,2026-06-29,,
+bach_1238,received,1,0,,unknown,S/A,unknown,-1.253,-78.622,2026-06-29,,
+bach_1239,received,1,0,,unknown,S/A,unknown,-1.253,-78.622,2026-06-29,,
+bach_1240,received,1,0,,unknown,S/A,unknown,-1.226,-78.587,2026-07-05,,
+bach_1241,received,1,0,,unknown,S/A,unknown,-1.276,-78.605,2026-07-14,,
+bach_1242,received,1,0,,unknown,S/A,unknown,-1.277,-78.606,2026-07-14,,
+bach_1243,received,1,0,,unknown,S/A,unknown,-1.276,-78.606,2026-07-14,,
+bach_1244,received,1,0,,unknown,S/A,unknown,-1.249,-78.629,2026-07-15,,
+bach_1245,received,1,0,,unknown,S/A,unknown,-1.268,-78.628,2026-07-16,,
+bach_1246,received,1,0,,unknown,S/A,unknown,-1.238,-78.62,2026-07-17,,
+bach_1247,received,1,0,,unknown,S/A,unknown,-1.272,-78.633,2026-07-20,,
+bach_1248,received,1,0,,unknown,S/A,unknown,-1.249,-78.63,2026-07-21,,
+bach_1249,received,1,0,,unknown,S/A,unknown,-1.249,-78.63,2026-07-22,,
+bach_1250,received,1,0,,unknown,S/A,unknown,-1.267,-78.631,2026-07-23,,
+bach_1251,received,1,0,,unknown,S/A,unknown,-1.25,-78.628,2026-07-23,,
+bach_1252,received,1,0,,unknown,S/A,unknown,-1.249,-78.629,2026-07-31,,
+bach_1253,received,1,0,,unknown,S/A,unknown,-1.268,-78.628,2026-08-13,,
+bach_1254,received,1,0,,unknown,S/A,unknown,-1.24,-78.627,2026-08-15,,
+bach_1255,received,1,0,,unknown,S/A,unknown,-1.24,-78.627,2026-08-18,,
+bach_1256,received,1,0,,unknown,S/A,unknown,-1.24,-78.627,2026-08-22,,
+bach_1257,received,1,0,,unknown,S/A,unknown,-1.241,-78.622,2026-08-25,,
+bach_1258,received,1,0,,unknown,S/A,unknown,-1.244,-78.63,2026-09-20,,
+bach_1259,received,1,0,,unknown,S/A,unknown,-1.247,-78.634,2026-09-22,,
+bach_1260,received,1,0,,unknown,S/A,unknown,-1.265,-78.626,2026-09-30,,
+bach_1261,received,1,0,,unknown,S/A,unknown,-1.257,-78.631,2026-10-07,,
+bach_1262,received,1,0,,unknown,S/A,unknown,-1.291,-78.647,2026-10-08,,

@@ -1,0 +1,1563 @@
+openapi: 3.1.0
+info:
+  title: CivicPulse public API (Next.js + Supabase)
+  version: 0.3.0-draft
+  summary: Contract between the PWA, the actor panel, the open feed and Supabase.
+  description: |
+    Draft contract, 2026-10-24; v0.2 (2026-10-25) adds moderation (E-R v2.1 §5c) and sebas's answers P3–P8 (review trust 0.5, auto-close dispatches, pin ≤ 15 m, 7-day expiry of unverifiable community closures, report text toggle in the panel). Based on plan v3.2 §3 (approved architecture) and E-R v2.1.
+    Spanish explainer: README.md in this folder. The Modal orchestrator has its own file:
+    orchestrator.openapi.yaml.
+
+    **Two backends, one contract.** Most calls go straight from the browser to Supabase
+    (PostgREST RPCs and views, Storage, Realtime) with the user's JWT, and Row Level Security
+    decides what each caller can do. Next.js only serves the pages, the open GeoJSON feed and
+    the few calls that need a server secret.
+
+    **Callers.**
+    - `public`: nobody signed in. Uses the Supabase anon key only.
+    - `device`: citizen with a Supabase anonymous session (`is_anonymous = true`, `devices.id = auth.uid()`). Never has roles.
+    - `sandbox device`: a second anonymous session, kept under its own storage key in the browser, bound to one `sandbox_sessions` row.
+    - `actor`: invited user (email + password or magic link) with `profiles` and `user_roles`. Permissions travel in the JWT (`cp_grants`, see `JwtClaims`).
+    - `orchestrator`: Modal, with the `service_role` key. Not part of this file.
+
+    **Errors.** Supabase calls return the PostgREST error object. Our SQL functions raise
+    `SQLSTATE 'PT4xx'` so PostgREST answers with that HTTP status, and put a stable
+    snake_case code in `message` (list in `ErrorCode`). Next.js routes return the same shape.
+
+    **Language.** Every key, enum and code is English. Display text comes from
+    `display_name.{en,es}` in the catalog.
+  contact:
+    name: sebas
+servers:
+  - url: https://{project_ref}.supabase.co
+    description: Supabase (default for RPCs, views and Storage)
+    variables:
+      project_ref:
+        default: civicpulse
+tags:
+  - name: feed
+    description: Open data, no login.
+  - name: catalog
+  - name: citizen
+    description: Calls from /report with an anonymous device session.
+  - name: sandbox
+    description: Calls from /sandbox. Same pipeline, isolated data.
+  - name: closure
+    description: AFTER photo and human confirmation, both closure paths.
+  - name: panel
+    description: Calls from /panel with an actor session.
+  - name: admin
+    description: Calls from /panel/admin (moderation, catalog, people, audit). City or global admins only.
+  - name: auth
+security:
+  - supabaseApiKey: []
+    supabaseJwt: []
+
+paths:
+  # ───────────────────────────── Next.js (Vercel) ─────────────────────────────
+  /api/clusters.geojson:
+    servers:
+      - url: https://civicpulse.vercel.app
+        description: Next.js on Vercel (placeholder domain)
+    get:
+      tags: [feed]
+      operationId: getClustersGeoJSON
+      summary: Open feed of verified civic problems
+      description: |
+        Route handler that reads the `public_clusters` view with the anon key and returns
+        GeoJSON (RFC 7946). Only real clusters in `validated`, `acknowledged`,
+        `resolution_pending` or `resolved`. Never sandbox rows, never individual reports,
+        never raw photos. CORS `*`. `Cache-Control: public, s-maxage=60, stale-while-revalidate=300`
+        and a weak `ETag` from the newest `updated_at`.
+      security: []
+      parameters:
+        - name: city
+          in: query
+          schema: {type: string, default: ambato}
+          description: cities.id. Only enabled cities (`cities.is_enabled`).
+        - name: domain
+          in: query
+          schema: {type: string, examples: [transit]}
+        - name: category
+          in: query
+          schema: {type: string, examples: [pothole]}
+          description: Comma-separated category ids.
+        - name: status
+          in: query
+          style: form
+          explode: false
+          schema:
+            type: array
+            items: {$ref: '#/components/schemas/PublicClusterStatus'}
+          description: Defaults to all public statuses.
+        - name: bbox
+          in: query
+          schema: {type: string, pattern: '^-?\d+(\.\d+)?(,-?\d+(\.\d+)?){3}$', examples: ['-78.66,-1.30,-78.58,-1.20']}
+          description: min_lon,min_lat,max_lon,max_lat (WGS84).
+        - name: updated_since
+          in: query
+          schema: {type: string, format: date-time}
+        - name: limit
+          in: query
+          schema: {type: integer, minimum: 1, maximum: 5000, default: 2000}
+        - name: lang
+          in: query
+          schema: {enum: [es, en], default: es}
+          description: Language of the flat `title` and `summary` properties. The full `{en, es}` objects are always included.
+      responses:
+        '200':
+          description: FeatureCollection
+          headers:
+            ETag: {schema: {type: string}}
+            Cache-Control: {schema: {type: string}}
+          content:
+            application/geo+json:
+              schema: {$ref: '#/components/schemas/ClusterFeatureCollection'}
+        '304': {description: Not modified (If-None-Match matched)}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '404':
+          description: Unknown or disabled city.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Error'}
+
+  /auth/callback:
+    servers:
+      - url: https://civicpulse.vercel.app
+    get:
+      tags: [auth]
+      operationId: authCallback
+      summary: Finish an actor sign-in (magic link, invitation, password reset)
+      description: |
+        Supabase Auth PKCE redirect target. Exchanges `code` for a session cookie with
+        `@supabase/ssr` and redirects to `next`. Only same-origin paths under `/panel` are
+        accepted in `next`. Anonymous citizens never pass through here.
+      security: []
+      parameters:
+        - {name: code, in: query, required: true, schema: {type: string}}
+        - {name: next, in: query, schema: {type: string, default: /panel, pattern: '^/panel(/.*)?$'}}
+      responses:
+        '302': {description: 'Redirect to `next`, or to `/panel/login?error=...` on failure.'}
+
+  /api/admin/invitations:
+    servers:
+      - url: https://civicpulse.vercel.app
+    post:
+      tags: [admin]
+      operationId: inviteActor
+      summary: Invite an actor or admin by email (optional for the hackathon)
+      description: |
+        Server route that calls `auth.admin.inviteUserByEmail` with the service key, creates
+        the `profiles` row and the `user_roles` grant, and writes `audit_log` (`role.grant`).
+        There is no open sign-up. Fallback for the hackathon: the same steps as a repo script
+        or from Supabase Studio (plan §3.2).
+
+        Who may invite (checked against `user_roles` in the database, not only the JWT):
+        `users.manage` at global or city scope for any role in that scope; `members.manage`
+        on a stakeholder for `stakeholder_agent` or `stakeholder_admin` of that stakeholder.
+      security:
+        - nextSession: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/InvitationRequest'}
+      responses:
+        '201':
+          description: Invitation sent
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [user_id, invited_at, user_role_id]
+                properties:
+                  user_id: {type: string, format: uuid}
+                  user_role_id: {type: string, format: uuid}
+                  invited_at: {type: string, format: date-time}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '409':
+          description: '`already_member`: the email already has this role at this scope.'
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Error'}
+
+  # ───────────────────────────── Supabase: catalog and public views ─────────────────────────────
+  /rest/v1/categories:
+    get:
+      tags: [catalog]
+      operationId: listActiveCategories
+      summary: Active categories, for PWA menus and labels
+      description: |
+        PostgREST table read. RLS lets anyone read rows with `status = 'active'`; users with
+        `categories.write` also read `draft` and `retired` rows (catalog screen in /panel/admin). Prompt
+        columns are readable but the PWA only needs the ones below. Recommended query:
+        `?select=id,family,display_name,photo_verifiability,default_priority&status=eq.active&order=id`.
+      security:
+        - supabaseApiKey: []
+      parameters:
+        - {name: select, in: query, schema: {type: string}}
+        - {name: status, in: query, schema: {type: string, default: eq.active}}
+      responses:
+        '200':
+          description: Rows
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/CategoryPublic'}
+
+  /rest/v1/public_clusters:
+    get:
+      tags: [feed]
+      operationId: listPublicClusters
+      summary: View behind the public map and the GeoJSON feed
+      description: |
+        View over `clusters` with `is_sandbox = false`, `moderation_status = 'visible'` and a public status, joined with the
+        category display name and the representative anonymized photo. `anon` can only read
+        this view (never `reports`). The map on `/` can read it directly for popups;
+        third parties should use `/api/clusters.geojson`.
+      security:
+        - supabaseApiKey: []
+      responses:
+        '200':
+          description: Rows
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/PublicCluster'}
+
+  # ───────────────────────────── Supabase: citizen (anonymous device) ─────────────────────────────
+  /rest/v1/rpc/issue_capture_nonce:
+    post:
+      tags: [citizen, sandbox, closure]
+      operationId: issueCaptureNonce
+      summary: Get a one-time nonce before opening the live camera
+      description: |
+        Postgres function, `security definer`. Caller must be an anonymous session
+        (`auth.jwt()->>'is_anonymous' = 'true'`); actors get 403.
+
+        - Creates the `devices` row on first call (`is_sandbox = false`, `trust = 0.5`) if it
+          does not exist. A sandbox identity already has its device from `start_sandbox_session`.
+        - Inserts `capture_nonces(nonce, device_id, issued_at, expires_at = now() + 5 min)`.
+          The nonce is 128 random bits, base64url.
+        - Returns the exact Storage object path the photo must be uploaded to. Storage RLS
+          only allows an upload to that path while the nonce is unused and not expired.
+        - Limits: at most 5 unused nonces per device and 60 per hour (`rate_limited`, 429).
+          Sandbox devices: 20 per day.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                p_purpose:
+                  enum: [report, report_photo_replacement, community_resolution]
+                  default: report
+                  description: Stored with the nonce so it cannot be spent on another kind of capture.
+      responses:
+        '200':
+          description: Nonce issued
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/CaptureNonce'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+
+  /storage/v1/object/{bucket}/{path}:
+    post:
+      tags: [citizen, sandbox, closure, panel]
+      operationId: uploadPhoto
+      summary: Upload the photo to the path given by the nonce (Supabase Storage)
+      description: |
+        Standard Supabase Storage upload (`supabase.storage.from(bucket).upload(path, file)`).
+        The client resizes to a longest side of about 1600 px and strips EXIF GPS before
+        upload. Limits: `image/jpeg` or `image/webp`, at most 2.5 MB.
+
+        | Caller | Bucket | Path |
+        |---|---|---|
+        | device | `raw` | `{device_id}/{nonce}.jpg` |
+        | sandbox device | `sandbox` | `{sandbox_session_id}/{device_id}/{nonce}.jpg` |
+        | actor (closure) | `raw` | `actors/{user_id}/{upload_id}.jpg`, `upload_id` a client UUID |
+
+        `raw` and `sandbox` are private. Only the orchestrator writes `public`
+        (anonymized copies, `{photo_id}.jpg`, and figures, `figures/{resolution_id}/…`).
+      parameters:
+        - {name: bucket, in: path, required: true, schema: {enum: [raw, sandbox]}}
+        - {name: path, in: path, required: true, schema: {type: string}}
+      requestBody:
+        required: true
+        content:
+          image/jpeg: {schema: {type: string, format: binary}}
+          image/webp: {schema: {type: string, format: binary}}
+      responses:
+        '200': {description: Uploaded}
+        '400': {description: Wrong type or size}
+        '403': {description: 'Path not allowed, or nonce used or expired'}
+
+  /rest/v1/rpc/submit_report:
+    post:
+      tags: [citizen, sandbox]
+      operationId: submitReport
+      summary: Create the report with its first photo, atomically
+      description: |
+        One transaction: checks the nonce (owned by the caller, purpose `report`, not
+        expired, not used) and that the object exists at `photo_path`; inserts `photos`,
+        `reports (status = 'received')` and `report_photos (version = 1)`; marks the nonce
+        used. The `INSERT` on `reports` fires the Database Webhook to the orchestrator.
+
+        - **City.** Real devices: `city_id` comes from `ST_Contains(cities.boundary, geom)`
+          over enabled cities; outside every city → `outside_service_area` (422). Sandbox: the
+          city of the sandbox session, the pin is manual and `gps_accuracy_m` may be null.
+        - **Manual pin (decided 2026-10-25).** Real devices send the raw GPS fix in
+          `p_gps_location` and the final pin in `p_location`. The pin may move at most 15 m
+          from the fix (`pin_too_far`, 422); plausibility checks use `p_gps_location`. If the
+          citizen does not move the pin, both are equal. Sandbox: `p_gps_location` is omitted.
+        - **ip_prefix** is taken by the function from `request.headers` (`x-forwarded-for`,
+          /24 for IPv4, /48 for IPv6). The client never sends it.
+        - **Idempotent.** `p_report_id` is generated by the client. Repeating the call with
+          the same id and nonce returns the same result (200) instead of an error.
+        - **Limits.** Real device: 20 reports per day. Sandbox: 5 GPU reports per session per
+          day; a report made with `p_sample_id` does not count, because its SAM result is cached.
+        - `sha256`, `phash` and `public_path` of the photo are filled later by the
+          orchestrator (stage `phash`). The client never sends a hash.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/SubmitReportRequest'}
+      responses:
+        '200':
+          description: Report received. Status updates arrive by Realtime on `reports` (filter `id=eq.{report_id}`).
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/SubmitReportResponse'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '409': {$ref: '#/components/responses/Conflict'}
+        '422': {$ref: '#/components/responses/Unprocessable'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+
+  /rest/v1/rpc/replace_report_photo:
+    post:
+      tags: [citizen, sandbox]
+      operationId: replaceReportPhoto
+      summary: Replace the photo of one of my reports
+      description: |
+        Spends a new nonce (purpose `report_photo_replacement`), inserts `photos` and
+        `report_photos (version = n + 1)`, sets `replaced_at` on the previous version, bumps
+        `reports.current_photo_version`, and sets `reports.status = 'spec_ready'` if a spec
+        exists (otherwise it stays `received`). The `INSERT` on `report_photos` with
+        `version > 1` fires the webhook; only stages `sam_ground`, `classify` and `cluster`
+        run again. The report keeps its cluster. At most 5 versions per report.
+        Not allowed once the report's cluster is `resolved` (`report_closed`, 409).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [p_report_id, p_nonce, p_photo_path]
+              properties:
+                p_report_id: {type: string, format: uuid}
+                p_nonce: {type: string}
+                p_photo_path: {type: string}
+                p_width: {type: integer, minimum: 1, maximum: 4096}
+                p_height: {type: integer, minimum: 1, maximum: 4096}
+                p_captured_at: {type: string, format: date-time}
+                p_hint_box: {$ref: '#/components/schemas/HintBox'}
+      responses:
+        '200':
+          description: New version accepted
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [report_id, photo_version, status]
+                properties:
+                  report_id: {type: string, format: uuid}
+                  photo_version: {type: integer}
+                  status: {$ref: '#/components/schemas/ReportStatus'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '409': {$ref: '#/components/responses/Conflict'}
+        '422': {$ref: '#/components/responses/Unprocessable'}
+
+  /rest/v1/my_reports:
+    get:
+      tags: [citizen, sandbox]
+      operationId: listMyReports
+      summary: The caller's own reports with their pipeline state
+      description: |
+        View filtered by RLS to `device_id = auth.uid()`. Used by `/report/[id]` and the
+        "my reports" list. Realtime: subscribe to `postgres_changes` on table `reports`
+        with `filter: id=eq.{id}` and re-read this view on each event.
+      responses:
+        '200':
+          description: Rows
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/MyReport'}
+
+  # ───────────────────────────── Supabase: sandbox ─────────────────────────────
+  /rest/v1/rpc/get_demo_status:
+    post:
+      tags: [sandbox]
+      operationId: getDemoStatus
+      summary: Current backup demo level and banner (v0.3)
+      description: |
+        `security definer` over `app_config`. Effective level: `demo_level_override` if set; else 3 when
+        `provider_health.checked_at` is older than 60 min, 2 when SAM is not `ok` or today's sandbox
+        spend reached `sandbox_daily_cap_usd`, 1 when vision is not `ok`, else 0. Level 4 is decided by
+        the browser when Supabase is unreachable (route `/demo` on Vercel). Never returns 4xx; with no
+        `app_config` rows it returns level 0. The PWA calls it when `/sandbox` opens and every 60 s.
+      security: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: {type: object, properties: {}}
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/DemoStatus'}
+
+  /rest/v1/rpc/start_sandbox_session:
+    post:
+      tags: [sandbox]
+      operationId: startSandboxSession
+      summary: Start (or resume) the visitor's sandbox session
+      description: |
+        Called by `/sandbox` right after `signInAnonymously()` on its own Supabase client
+        (separate `storageKey`, so the visitor's real device, if any, is untouched).
+        Creates `sandbox_sessions (expires_at = next nightly purge)` and the caller's
+        `devices` row with `is_sandbox = true`. If the caller already has a sandbox device and
+        a live session, returns it. If the caller's device is a real one → `not_a_sandbox_identity`
+        (409). Only cities with `sandbox_enabled`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [p_city_id]
+              properties:
+                p_city_id: {type: string, examples: [ambato]}
+                p_locale: {enum: [es, en], default: es}
+      responses:
+        '200':
+          description: Session
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/SandboxSession'}
+        '409': {$ref: '#/components/responses/Conflict'}
+        '422': {$ref: '#/components/responses/Unprocessable'}
+
+  /rest/v1/rpc/get_sandbox_session:
+    post:
+      tags: [sandbox]
+      operationId: getSandboxSession
+      summary: Current session, remaining quota and sample catalog
+      responses:
+        '200':
+          description: Session
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/SandboxSession'}
+        '404':
+          description: '`no_sandbox_session`'
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Error'}
+
+  /rest/v1/sandbox_clusters:
+    get:
+      tags: [sandbox]
+      operationId: listSandboxClusters
+      summary: Map layer of the visitor's own sandbox session
+      description: Same columns as `public_clusters`, but `is_sandbox = true` and filtered by RLS to the caller's `sandbox_session_id`. Includes `candidate` clusters so the visitor sees consensus forming.
+      responses:
+        '200':
+          description: Rows
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/PublicCluster'}
+
+  # ───────────────────────────── Supabase: closure ─────────────────────────────
+  /rest/v1/rpc/nearby_resolutions_to_review:
+    post:
+      tags: [closure]
+      operationId: nearbyResolutionsToReview
+      summary: Community closures near me that I can confirm or reject
+      description: |
+        For a device. Returns community resolutions with
+        `ai_status = 'RESOLVED_CANDIDATE_REQUIRES_HUMAN_REVIEW'` and `outcome = 'open'`
+        within `p_radius_m`, excluding ones the caller submitted or already reviewed, and only
+        if the caller's `trust` is at least the review threshold (0.5, decided 2026-10-25; a new device starts at 0.5, so it can review from day one; devices penalized below 0.5 cannot).
+        Shows anonymized BEFORE and AFTER photos only.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [p_location]
+              properties:
+                p_location: {$ref: '#/components/schemas/GeoPoint'}
+                p_radius_m: {type: integer, minimum: 50, maximum: 3000, default: 1000}
+      responses:
+        '200':
+          description: Rows
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/ResolutionCard'}
+
+  /rest/v1/rpc/submit_community_resolution:
+    post:
+      tags: [closure]
+      operationId: submitCommunityResolution
+      summary: A citizen uploads the AFTER photo of a cluster (community path)
+      description: |
+        Device only. Cluster must be real (or, for a sandbox device, in the same sandbox
+        session) and in `validated`, `acknowledged` or `resolution_pending`. Caller must be
+        within 150 m of the cluster centroid (`too_far_from_cluster`, 422). Spends a nonce
+        with purpose `community_resolution`. The function picks `before_report_id`: the
+        cluster report whose current photo has the best intake status, newest first.
+
+        Inserts `photos` and `resolutions (closure_path = 'community', ai_status = 'pending',
+        outcome = 'open', submitted_by_device = auth.uid())`; the cluster moves to
+        `resolution_pending` (`cluster_events`). The `INSERT` fires the webhook and the
+        orchestrator runs the closure check. A community resolution can only end `resolved`
+        if the AI gives `RESOLVED_CANDIDATE_REQUIRES_HUMAN_REVIEW` and independent devices
+        approve (see `reviewResolution`). If the AI gives `PERSISTENT_ISSUE`, the outcome is
+        `rejected` and the submitter loses trust (`device_trust_events`).
+
+        If the AI gives any `NOT_VERIFIABLE_*` status, device reviews do not count, the
+        resolution stays `open` and visible to the dispatched actors (`panel_inbox`,
+        `latest_resolution`), who can approve or reject it. After 7 days without a decision a
+        `pg_cron` job sets `outcome = 'rejected'` (reason `expired_unverifiable`) **without** a
+        trust penalty, and the cluster goes back to its previous status.
+
+        One open community resolution per cluster at a time (`resolution_already_open`, 409).
+        Sandbox: 2 GPU closures per session per day; `p_sample_pair_id` does not count.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/SubmitCommunityResolutionRequest'}
+      responses:
+        '200':
+          description: Resolution created
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/SubmitResolutionResponse'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '409': {$ref: '#/components/responses/Conflict'}
+        '422': {$ref: '#/components/responses/Unprocessable'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+
+  /rest/v1/rpc/submit_stakeholder_resolution:
+    post:
+      tags: [closure, panel]
+      operationId: submitStakeholderResolution
+      summary: An actor uploads the AFTER photo (stakeholder path)
+      description: |
+        Actor with `resolutions.submit` on `p_stakeholder_id`, and a dispatch for
+        (`p_cluster_id`, `p_stakeholder_id`) must exist. The AFTER photo is required. No nonce
+        (actors are identified); the photo must be at `raw/actors/{auth.uid()}/…`.
+        Inserts `photos` and `resolutions (closure_path = 'stakeholder', ai_status = 'pending',
+        outcome = 'open', submitted_by_user, stakeholder_id)`; cluster → `resolution_pending`;
+        dispatch status is left as is. Webhook → closure check. Approval is a separate step
+        (`reviewResolution`) by someone with `resolutions.approve`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/SubmitStakeholderResolutionRequest'}
+      responses:
+        '200':
+          description: Resolution created
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/SubmitResolutionResponse'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '409': {$ref: '#/components/responses/Conflict'}
+        '422': {$ref: '#/components/responses/Unprocessable'}
+
+  /rest/v1/rpc/review_resolution:
+    post:
+      tags: [closure, panel]
+      operationId: reviewResolution
+      summary: Approve or reject a resolution (actor or community device)
+      description: |
+        Inserts `resolution_reviews` and lets a trigger decide `resolutions.outcome`.
+
+        **Stakeholder path** (caller is an actor with `resolutions.approve` on the
+        resolution's stakeholder, checked against `user_roles`, not only the JWT):
+        - Allowed once `ai_status` is no longer `pending` (`ai_pending`, 409), so the approver
+          always sees the AI result.
+        - `approve` → `outcome = 'resolved'`, cluster `resolved`. If `ai_status` is not
+          `RESOLVED_CANDIDATE_REQUIRES_HUMAN_REVIEW`, also `ai_overridden = true` and an
+          `audit_log` row `resolution.override`; then `p_note` is required (`note_required`, 422).
+        - `reject` → `outcome = 'rejected'`, cluster back to its previous status.
+
+        **Community path** (caller is a device):
+        - Only counts when `ai_status = 'RESOLVED_CANDIDATE_REQUIRES_HUMAN_REVIEW'`
+          (`ai_not_candidate`, 409); reviewer ≠ submitter; reviewer `trust` ≥ 0.5 (`trust_too_low`);
+          one review per device.
+        - 2 approvals → `resolved`; 2 rejections → `rejected` (assumptions, see README).
+        - Actors may also review a community resolution if they have `resolutions.approve`
+          on a stakeholder dispatched for that cluster; their approval closes it alone.
+
+        Sandbox: simulated devices add their reviews automatically after the AI result.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [p_resolution_id, p_verdict]
+              properties:
+                p_resolution_id: {type: string, format: uuid}
+                p_verdict: {enum: [approve, reject]}
+                p_note: {type: string, maxLength: 1000}
+      responses:
+        '200':
+          description: Review stored
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ReviewResult'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '409': {$ref: '#/components/responses/Conflict'}
+        '422': {$ref: '#/components/responses/Unprocessable'}
+
+  # ───────────────────────────── Supabase: panel ─────────────────────────────
+  /rest/v1/panel_inbox:
+    get:
+      tags: [panel]
+      operationId: listPanelInbox
+      summary: Dispatches of the stakeholders I belong to
+      description: |
+        View over `dispatches` + `clusters` + latest `resolutions`, filtered by RLS with
+        `has_permission('dispatches.read', city_id, stakeholder_id)`. Never sandbox rows for
+        real actors. Realtime: `postgres_changes` on `dispatches` (filter
+        `stakeholder_id=eq.{id}`) and on `resolutions` (filter `cluster_id=in.(…)`).
+        Order: `?order=priority_score.desc`.
+      parameters:
+        - {name: stakeholder_id, in: query, schema: {type: string, examples: ['eq.6f1c…']}}
+        - {name: dispatch_status, in: query, schema: {type: string, examples: ['in.(sent,seen,accepted)']}}
+      responses:
+        '200':
+          description: Rows
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/PanelInboxRow'}
+
+  /rest/v1/panel_cluster_reports:
+    get:
+      tags: [panel]
+      operationId: listPanelClusterReports
+      summary: Reports of a dispatched cluster, for the case screen
+      description: |
+        View over `reports` of clusters dispatched to my stakeholders (RLS:
+        `has_permission('dispatches.read', city_id, stakeholder_id)` through `dispatches`).
+        Only `moderation_status = 'visible'`. Never `device_id`, `ip_prefix` or raw photos.
+        The panel shows `summary_en` by default and a toggle to `raw_text_redacted`, the
+        citizen's original text with personal data masked (decided 2026-10-25).
+        Query: `?cluster_id=eq.{id}&order=created_at.desc`.
+      parameters:
+        - {name: cluster_id, in: query, required: true, schema: {type: string, examples: ['eq.0b7c2f5e-…']}}
+      responses:
+        '200':
+          description: Rows
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/PanelReportRow'}
+
+  /rest/v1/rpc/set_dispatch_status:
+    post:
+      tags: [panel]
+      operationId: setDispatchStatus
+      summary: Mark a dispatch seen, accepted, declined or closed
+      description: |
+        `seen` needs `dispatches.read`; `accepted`, `declined`, `closed` need
+        `dispatches.respond` (new permission proposed for `stakeholder_agent` and
+        `stakeholder_admin`). Allowed transitions: sent→seen, seen|sent→accepted|declined,
+        accepted→closed. `accepted` moves the cluster from `validated` to `acknowledged`
+        (`cluster_events`). `declined` requires `p_note`. Every change goes to `audit_log`.
+
+        **Automatic close (decided 2026-10-25).** When a cluster becomes `resolved`, a trigger
+        sets every open dispatch of that cluster (`sent`, `seen`, `accepted`) to `closed`
+        (`audit_log` actor = system). The manual `closed` stays for cases the actor ends
+        without a physical fix (for example a duplicate), and then `p_note` is required.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [p_cluster_id, p_stakeholder_id, p_status]
+              properties:
+                p_cluster_id: {type: string, format: uuid}
+                p_stakeholder_id: {type: string, format: uuid}
+                p_status: {enum: [seen, accepted, declined, closed]}
+                p_note: {type: string, maxLength: 1000}
+      responses:
+        '200':
+          description: Updated dispatch
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [cluster_id, stakeholder_id, status]
+                properties:
+                  cluster_id: {type: string, format: uuid}
+                  stakeholder_id: {type: string, format: uuid}
+                  status: {$ref: '#/components/schemas/DispatchStatus'}
+                  cluster_status: {$ref: '#/components/schemas/ClusterStatus'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '409': {$ref: '#/components/responses/Conflict'}
+
+  # ───────────────────────────── Supabase: admin / moderation (v0.2) ─────────────────────────────
+  /rest/v1/moderation_queue:
+    get:
+      tags: [admin]
+      operationId: listModerationQueue
+      summary: Open moderation flags in my cities
+      description: |
+        View over `moderation_flags` (open only: `resolved_at is null`) joined with the report
+        or cluster summary. RLS: `has_permission('reports.moderate', city_id, null)`. Never shows
+        `device_id` or `ip_prefix`; the device appears only as its current trust and report counts.
+        Realtime: `postgres_changes` on `moderation_flags` (filter `city_id=eq.{id}`).
+        Order: `?order=created_at.desc`. Filter by reason: `?reason=eq.reused_photo`.
+      parameters:
+        - {name: city_id, in: query, schema: {type: string, examples: ['eq.ambato']}}
+        - {name: reason, in: query, schema: {type: string, examples: ['in.(reused_photo,personal_data)']}}
+      responses:
+        '200':
+          description: Rows
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/ModerationQueueRow'}
+
+  /rest/v1/rpc/moderate_report:
+    post:
+      tags: [admin]
+      operationId: moderateReport
+      summary: Hide, restore or keep a report
+      description: |
+        Needs `reports.moderate` on the report's city (re-checked against `user_roles`).
+        - `hide`: `moderation_status = 'hidden'` with `p_reason`; the report leaves consensus,
+          `public_clusters`, the feed and new briefs; the cluster's `weighted_support` is
+          recomputed. If the cluster has no visible report left it becomes `hidden` too. A
+          `validated` cluster never moves back in status.
+        - `restore`: back to `visible`; the cluster is recomputed and shown again.
+        - `keep`: no change to the report; only closes its open flags.
+        Every call closes the report's open flags (`resolution` = `hidden`, `restored` or
+        `kept`) and writes `audit_log` (`report.hide`, `report.restore`, `report.keep`) with the
+        city. `p_note` is required for `hide`. Real reports only; sandbox reports are never
+        moderated (they are purged nightly).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [p_report_id, p_action]
+              properties:
+                p_report_id: {type: string, format: uuid}
+                p_action: {enum: [hide, restore, keep]}
+                p_reason: {$ref: '#/components/schemas/ModerationReason'}
+                p_note: {type: string, maxLength: 1000}
+      responses:
+        '200':
+          description: Result
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ModerateReportResult'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {description: '`report_not_found`'}
+        '409': {$ref: '#/components/responses/Conflict'}
+        '422': {$ref: '#/components/responses/Unprocessable'}
+
+  /rest/v1/rpc/set_category_status:
+    post:
+      tags: [admin, catalog]
+      operationId: setCategoryStatus
+      summary: Activate, retire or send back to draft a catalog category
+      description: |
+        Needs `categories.activate` (global; `catalog_editor`, `super_admin`). Users with
+        `categories.write` can read categories in every status through `/rest/v1/categories`
+        (RLS), so the panel lists drafts there.
+        - `active` requires non-empty `target_prompts` and `resolved_description` when
+          `photo_verifiability` is not `none` (`category_missing_prompts`, 422). Freezes a new
+          `category_versions` row and bumps `current_version`.
+        - `retired`: new reports can no longer get this category (the spec falls back to
+          `other`); existing clusters keep it.
+        - `draft`: only from `active` with a note (rollback).
+        Writes `audit_log` (`category.activate`, `category.retire`, `category.draft`, global).
+        The orchestrator's 60 s catalog cache picks the change up.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [p_category_id, p_status]
+              properties:
+                p_category_id: {type: string, examples: [bus_stop_blocked_by_vehicle]}
+                p_status: {enum: [draft, active, retired]}
+                p_note: {type: string, maxLength: 1000}
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [category_id, status, current_version]
+                properties:
+                  category_id: {type: string}
+                  status: {enum: [draft, active, retired]}
+                  current_version: {type: integer}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '409': {$ref: '#/components/responses/Conflict'}
+        '422': {$ref: '#/components/responses/Unprocessable'}
+
+  /rest/v1/rpc/redispatch_cluster:
+    post:
+      tags: [admin]
+      operationId: redispatchCluster
+      summary: Send a cluster to another actor
+      description: |
+        Needs `dispatches.redispatch` on the cluster's city (`city_admin`, `super_admin`).
+        Cluster must be real, `visible` and in `validated` or `acknowledged`
+        (`cluster_already_resolved` or `cluster_not_found` otherwise). The target stakeholder
+        must be in the same city and must not already have an open dispatch for this cluster
+        (`already_dispatched`, 409); it does not need to cover the domain (the note explains why).
+        Inserts `dispatches (status = 'sent', brief = null)`; a Database Webhook on `dispatches`
+        INSERT with `brief is null` makes the orchestrator write the brief for the new actor's
+        profile and language. The panel inbox hides rows until `brief` is set. Closes open
+        `declined_by_actor` flags of the cluster (`resolution = 'redispatched'`) and writes
+        `audit_log` (`cluster.redispatch`). `p_note` is required.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [p_cluster_id, p_stakeholder_id, p_note]
+              properties:
+                p_cluster_id: {type: string, format: uuid}
+                p_stakeholder_id: {type: string, format: uuid}
+                p_note: {type: string, maxLength: 1000}
+      responses:
+        '200':
+          description: Dispatch created, brief pending
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [cluster_id, stakeholder_id, status]
+                properties:
+                  cluster_id: {type: string, format: uuid}
+                  stakeholder_id: {type: string, format: uuid}
+                  status: {const: sent}
+                  brief_pending: {const: true}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '409': {$ref: '#/components/responses/Conflict'}
+
+  /rest/v1/admin_members:
+    get:
+      tags: [admin]
+      operationId: listAdminMembers
+      summary: People and their active roles in my scope
+      description: |
+        View over `profiles` + `user_roles` (active and revoked, with `revoked_at`). RLS:
+        `users.manage` (city or global) sees grants in that scope; `members.manage`
+        (stakeholder admin) sees only grants of its stakeholder. Invite with
+        `POST /api/admin/invitations`; revoke with `revoke_role`.
+      parameters:
+        - {name: city_id, in: query, schema: {type: string}}
+        - {name: stakeholder_id, in: query, schema: {type: string}}
+      responses:
+        '200':
+          description: Rows
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/MemberRow'}
+
+  /rest/v1/rpc/revoke_role:
+    post:
+      tags: [admin]
+      operationId: revokeRole
+      summary: Revoke one role grant
+      description: |
+        Needs `users.manage` on the grant's city (or global), or `members.manage` on its
+        stakeholder for stakeholder roles. Sets `user_roles.revoked_at = now()`; takes effect at
+        once for sensitive actions (they re-check `user_roles`) and for the rest when the JWT
+        refreshes (≤ 1 h). Refuses to revoke the last active `super_admin` (`last_super_admin`).
+        Writes `audit_log` (`role.revoke`).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [p_user_role_id]
+              properties:
+                p_user_role_id: {type: string, format: uuid}
+                p_note: {type: string, maxLength: 1000}
+      responses:
+        '200':
+          description: Revoked
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [user_role_id, revoked_at]
+                properties:
+                  user_role_id: {type: string, format: uuid}
+                  revoked_at: {type: string, format: date-time}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '409': {$ref: '#/components/responses/Conflict'}
+
+  /rest/v1/admin_audit_log:
+    get:
+      tags: [admin]
+      operationId: listAdminAuditLog
+      summary: Audit trail readable by admins
+      description: |
+        View over `audit_log` joined with the actor's `display_name`. RLS:
+        `has_permission('audit.read', city_id, null)`; rows with `city_id is null` (global
+        actions) only for global grants. Order `?order=at.desc`, paginate with `Range`.
+      parameters:
+        - {name: action, in: query, schema: {type: string, examples: ['like.report.*']}}
+        - {name: city_id, in: query, schema: {type: string}}
+      responses:
+        '200':
+          description: Rows
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/AuditLogRow'}
+
+components:
+  securitySchemes:
+    supabaseApiKey:
+      type: apiKey
+      in: header
+      name: apikey
+      description: Project anon (publishable) key. Public by design; RLS does the protection.
+    supabaseJwt:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Supabase access token of an anonymous device or of an actor. Claims in `JwtClaims`.
+    nextSession:
+      type: apiKey
+      in: cookie
+      name: sb-access-token
+      description: Supabase session cookie set by `@supabase/ssr` on the Next.js domain (actors only).
+
+  responses:
+    BadRequest:
+      description: '`invalid_argument`'
+      content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}
+    Unauthorized:
+      description: No or expired JWT.
+      content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}
+    Forbidden:
+      description: '`forbidden`, `anonymous_only`, `actors_only`, `missing_permission`.'
+      content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}
+    Conflict:
+      description: State conflict, see `ErrorCode`.
+      content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}
+    Unprocessable:
+      description: Valid shape, rejected by a business rule, see `ErrorCode`.
+      content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}
+    RateLimited:
+      description: '`rate_limited` or `sandbox_quota_exceeded`. `details` says when the window resets.'
+      content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}
+
+  schemas:
+    Error:
+      type: object
+      description: PostgREST error object. `message` holds the stable code.
+      required: [code, message]
+      properties:
+        code: {type: string, description: 'SQLSTATE, e.g. PT409, or a PostgREST code (PGRST…).'}
+        message: {$ref: '#/components/schemas/ErrorCode'}
+        details: {type: ['string', 'null'], description: Human-readable English detail.}
+        hint: {type: ['string', 'null']}
+
+    ErrorCode:
+      type: string
+      description: Stable codes. The PWA maps them to es/en text.
+      enum:
+        - invalid_argument
+        - forbidden
+        - anonymous_only
+        - actors_only
+        - missing_permission
+        - rate_limited
+        - sandbox_quota_exceeded
+        - nonce_invalid
+        - nonce_expired
+        - nonce_used
+        - nonce_wrong_purpose
+        - photo_missing
+        - photo_too_large
+        - outside_service_area
+        - gps_accuracy_too_low
+        - report_not_found
+        - report_closed
+        - too_many_photo_versions
+        - not_a_sandbox_identity
+        - no_sandbox_session
+        - sandbox_mismatch
+        - cluster_not_found
+        - cluster_not_closable
+        - too_far_from_cluster
+        - resolution_already_open
+        - no_dispatch_for_stakeholder
+        - ai_pending
+        - ai_not_candidate
+        - already_reviewed
+        - self_review
+        - trust_too_low
+        - pin_too_far
+        - note_required
+        - invalid_transition
+        - already_member
+        - category_missing_prompts
+        - cluster_already_resolved
+        - already_dispatched
+        - last_super_admin
+        - user_role_not_found
+
+    GeoPoint:
+      type: object
+      additionalProperties: false
+      required: [lat, lon]
+      properties:
+        lat: {type: number, minimum: -90, maximum: 90}
+        lon: {type: number, minimum: -180, maximum: 180}
+
+    HintBox:
+      type: ['object', 'null']
+      description: Optional "tap to mark" box, normalized 0..1 on the uploaded image. Passed to SAM 3.1 as a visual exemplar.
+      additionalProperties: false
+      required: [x0, y0, x1, y1]
+      properties:
+        x0: {type: number, minimum: 0, maximum: 1}
+        y0: {type: number, minimum: 0, maximum: 1}
+        x1: {type: number, minimum: 0, maximum: 1}
+        y1: {type: number, minimum: 0, maximum: 1}
+
+    CaptureNonce:
+      type: object
+      required: [nonce, expires_at, bucket, upload_path]
+      properties:
+        nonce: {type: string, examples: [Q2l2aWNQdWxzZU5vbmNlMTIz]}
+        expires_at: {type: string, format: date-time}
+        bucket: {enum: [raw, sandbox]}
+        upload_path: {type: string, examples: ['3f0e…/Q2l2aWNQdWxzZU5vbmNlMTIz.jpg']}
+        max_bytes: {type: integer, default: 2621440}
+
+    SubmitReportRequest:
+      type: object
+      additionalProperties: false
+      required: [p_report_id, p_location, p_lang]
+      properties:
+        p_report_id: {type: string, format: uuid, description: Client-generated, used for idempotency.}
+        p_nonce: {type: string, description: Required unless p_sample_id is given.}
+        p_photo_path: {type: string, description: Must equal the `upload_path` returned with the nonce.}
+        p_sample_id: {type: string, description: 'Sandbox only: id from the sample catalog instead of a camera photo.'}
+        p_width: {type: integer, minimum: 1, maximum: 4096}
+        p_height: {type: integer, minimum: 1, maximum: 4096}
+        p_captured_at: {type: string, format: date-time}
+        p_location: {$ref: '#/components/schemas/GeoPoint', description: 'Final pin. At most 15 m from p_gps_location.'}
+        p_gps_location: {$ref: '#/components/schemas/GeoPoint', description: 'Raw GPS fix. Required for real devices, omitted in the sandbox.'}
+        p_gps_accuracy_m:
+          type: ['number', 'null']
+          minimum: 0
+          description: Required for real devices. Above 50 m the report is accepted but the GPS plausibility stage lowers its weight; above 500 m → `gps_accuracy_too_low`.
+        p_raw_text: {type: string, maxLength: 2000, description: Any language. May be empty if there is a photo.}
+        p_lang: {type: string, pattern: '^[a-z]{2}$', description: UI language; the orchestrator detects the text language separately.}
+        p_hint_box: {$ref: '#/components/schemas/HintBox'}
+      oneOf:
+        - required: [p_nonce, p_photo_path]
+        - required: [p_sample_id]
+
+    SubmitReportResponse:
+      type: object
+      required: [report_id, status, photo_version, city_id, is_sandbox]
+      properties:
+        report_id: {type: string, format: uuid}
+        status: {const: received}
+        photo_version: {const: 1}
+        city_id: {type: string}
+        is_sandbox: {type: boolean}
+        quota:
+          $ref: '#/components/schemas/SandboxQuota'
+
+    SubmitCommunityResolutionRequest:
+      type: object
+      additionalProperties: false
+      required: [p_resolution_id, p_cluster_id, p_location]
+      properties:
+        p_resolution_id: {type: string, format: uuid, description: Client-generated, idempotency.}
+        p_cluster_id: {type: string, format: uuid}
+        p_nonce: {type: string}
+        p_photo_path: {type: string}
+        p_sample_pair_id: {type: string, description: 'Sandbox only.'}
+        p_location: {$ref: '#/components/schemas/GeoPoint'}
+        p_gps_accuracy_m: {type: ['number', 'null'], minimum: 0}
+        p_width: {type: integer}
+        p_height: {type: integer}
+        p_captured_at: {type: string, format: date-time}
+      oneOf:
+        - required: [p_nonce, p_photo_path]
+        - required: [p_sample_pair_id]
+
+    SubmitStakeholderResolutionRequest:
+      type: object
+      additionalProperties: false
+      required: [p_resolution_id, p_cluster_id, p_stakeholder_id, p_photo_path]
+      properties:
+        p_resolution_id: {type: string, format: uuid}
+        p_cluster_id: {type: string, format: uuid}
+        p_stakeholder_id: {type: string, format: uuid}
+        p_photo_path: {type: string, pattern: '^actors/[0-9a-f-]{36}/[0-9a-f-]{36}\.(jpg|webp)$'}
+        p_location: {$ref: '#/components/schemas/GeoPoint'}
+        p_width: {type: integer}
+        p_height: {type: integer}
+        p_captured_at: {type: string, format: date-time}
+        p_note: {type: string, maxLength: 1000}
+
+    SubmitResolutionResponse:
+      type: object
+      required: [resolution_id, closure_path, ai_status, outcome, cluster_status]
+      properties:
+        resolution_id: {type: string, format: uuid}
+        closure_path: {enum: [stakeholder, community]}
+        before_report_id: {type: string, format: uuid}
+        ai_status: {const: pending}
+        outcome: {const: open}
+        cluster_status: {const: resolution_pending}
+
+    ReviewResult:
+      type: object
+      required: [resolution_id, outcome, ai_status]
+      properties:
+        resolution_id: {type: string, format: uuid}
+        outcome: {$ref: '#/components/schemas/ResolutionOutcome'}
+        ai_status: {$ref: 'schemas/closure_verification.schema.json#/$defs/ai_status'}
+        ai_overridden: {type: boolean}
+        approvals: {type: integer}
+        rejections: {type: integer}
+        approvals_needed: {type: integer, description: 'Community path: 2. Stakeholder path: 1.'}
+        cluster_status: {$ref: '#/components/schemas/ClusterStatus'}
+
+    SandboxQuota:
+      type: ['object', 'null']
+      description: null for real devices.
+      required: [reports_left, closures_left, resets_at]
+      properties:
+        reports_left: {type: integer, minimum: 0, maximum: 5}
+        closures_left: {type: integer, minimum: 0, maximum: 2}
+        resets_at: {type: string, format: date-time}
+
+    DemoStatus:
+      type: object
+      required: [level, reason, checked_at]
+      properties:
+        level: {type: integer, minimum: 0, maximum: 3, description: '0 live, 1 no classifier, 2 no live SAM (cache only), 3 replay. Level 4 is client-side only.'}
+        reason: {enum: [ok, override, vision_down, sam_down, sandbox_cap_reached, orchestrator_stale]}
+        banner:
+          type: ['object', 'null']
+          description: Required on screen for levels 2 and 3.
+          properties: {es: {type: string}, en: {type: string}}
+        replay_version: {type: ['string', 'null'], examples: ['2026-11-02']}
+        replay_base_url: {type: ['string', 'null'], format: uri, description: 'Public Storage prefix public/replay/{version}/'}
+        checked_at: {type: string, format: date-time}
+
+    SandboxSession:
+      type: object
+      required: [sandbox_session_id, device_id, city_id, expires_at, quota]
+      properties:
+        sandbox_session_id: {type: string, format: uuid}
+        device_id: {type: string, format: uuid}
+        city_id: {type: string}
+        expires_at: {type: string, format: date-time}
+        quota: {$ref: '#/components/schemas/SandboxQuota'}
+        samples:
+          type: array
+          description: Cached sample photos and pairs (do not use GPU quota).
+          items:
+            type: object
+            required: [id, kind, category_id, thumbnail_url]
+            properties:
+              id: {type: string, examples: [pothole_cevallos_01]}
+              kind: {enum: [report_photo, closure_pair]}
+              category_id: {type: string}
+              thumbnail_url: {type: string, format: uri}
+              suggested_text: {type: object, properties: {es: {type: string}, en: {type: string}}}
+              suggested_location: {$ref: '#/components/schemas/GeoPoint'}
+
+    ReportStatus:
+      enum: [received, spec_ready, vision_done, clustered, failed]
+    ModerationStatus:
+      enum: [visible, hidden]
+    ModerationReason:
+      enum: [spam, reused_photo, personal_data, inappropriate, impossible_gps, duplicate, other]
+    ModerationFlagReason:
+      enum: [reused_photo, impossible_gps, personal_data, low_trust_device, declined_by_actor]
+
+    ModerationQueueRow:
+      type: object
+      required: [flag_id, city_id, reason, created_at]
+      properties:
+        flag_id: {type: string, format: uuid}
+        city_id: {type: string}
+        reason: {$ref: '#/components/schemas/ModerationFlagReason'}
+        evidence: {type: object, description: 'E.g. {"phash_match_report_id": "…", "hamming": 3} or {"km": 40, "minutes": 3}.'}
+        created_at: {type: string, format: date-time}
+        report_id: {type: ['string', 'null'], format: uuid}
+        cluster_id: {type: ['string', 'null'], format: uuid}
+        category_name: {oneOf: [{type: 'null'}, {$ref: '#/components/schemas/I18nText'}]}
+        summary_en: {type: ['string', 'null']}
+        raw_text_redacted: {type: ['string', 'null'], description: 'Report text with detected personal data masked.'}
+        photo_url: {type: ['string', 'null'], format: uri, description: 'Anonymized copy; moderators never see the raw photo.'}
+        moderation_status: {$ref: '#/components/schemas/ModerationStatus'}
+        cluster_status: {oneOf: [{type: 'null'}, {$ref: '#/components/schemas/ClusterStatus'}]}
+        device_trust: {type: ['number', 'null']}
+        device_reports_today: {type: ['integer', 'null']}
+        declined_by: {type: ['string', 'null'], description: 'Stakeholder name, for declined_by_actor.'}
+        decline_note: {type: ['string', 'null']}
+
+    ModerateReportResult:
+      type: object
+      required: [report_id, moderation_status, flags_closed]
+      properties:
+        report_id: {type: string, format: uuid}
+        moderation_status: {$ref: '#/components/schemas/ModerationStatus'}
+        flags_closed: {type: integer}
+        cluster_id: {type: ['string', 'null'], format: uuid}
+        cluster_moderation_status: {oneOf: [{type: 'null'}, {$ref: '#/components/schemas/ModerationStatus'}]}
+        cluster_below_threshold: {type: boolean, description: 'True when the cluster stays validated but its support is now under the threshold.'}
+
+    MemberRow:
+      type: object
+      required: [user_role_id, user_id, display_name, role_id, scope]
+      properties:
+        user_role_id: {type: string, format: uuid}
+        user_id: {type: string, format: uuid}
+        display_name: {type: string}
+        email: {type: string, format: email}
+        is_active: {type: boolean}
+        role_id: {type: string}
+        scope: {enum: [global, city, stakeholder]}
+        city_id: {type: ['string', 'null']}
+        stakeholder_id: {type: ['string', 'null'], format: uuid}
+        stakeholder_name: {type: ['string', 'null']}
+        granted_at: {type: string, format: date-time}
+        revoked_at: {type: ['string', 'null'], format: date-time}
+        last_sign_in_at: {type: ['string', 'null'], format: date-time}
+
+    AuditLogRow:
+      type: object
+      required: [id, action, entity, entity_id, at]
+      properties:
+        id: {type: integer}
+        at: {type: string, format: date-time}
+        actor_user: {type: ['string', 'null'], format: uuid}
+        actor_name: {type: ['string', 'null']}
+        city_id: {type: ['string', 'null']}
+        action: {type: string, examples: [report.hide, category.activate, cluster.redispatch, resolution.override, role.revoke]}
+        entity: {type: string}
+        entity_id: {type: string}
+        before: {type: ['object', 'null']}
+        after: {type: ['object', 'null']}
+    IntakeStatus:
+      $ref: 'schemas/intake_result.schema.json#/$defs/intake_status'
+    ClusterStatus:
+      enum: [candidate, validated, acknowledged, resolution_pending, resolved]
+    PublicClusterStatus:
+      enum: [validated, acknowledged, resolution_pending, resolved]
+    DispatchStatus:
+      enum: [sent, seen, accepted, declined, closed]
+    ResolutionOutcome:
+      enum: [open, resolved, rejected]
+    I18nText:
+      type: object
+      required: [en, es]
+      properties:
+        en: {type: string}
+        es: {type: string}
+
+    CategoryPublic:
+      type: object
+      required: [id, display_name, photo_verifiability]
+      properties:
+        id: {type: string}
+        family: {type: string}
+        display_name: {$ref: '#/components/schemas/I18nText'}
+        photo_verifiability: {enum: [full, partial, none]}
+        default_priority: {type: ['string', 'null']}
+
+    PublicCluster:
+      description: Columns of the `public_clusters` view. No device ids, no raw text, no weighted_support.
+      allOf:
+        - $ref: '#/components/schemas/PublicClusterFields'
+      required: [id, centroid]
+
+    PublicClusterFields:
+      type: object
+      required: [city_id, domain_id, category_id, status, report_count, distinct_devices]
+      properties:
+        id: {type: string, format: uuid}
+        city_id: {type: string}
+        domain_id: {type: string}
+        category_id: {type: string}
+        category_name: {$ref: '#/components/schemas/I18nText'}
+        status: {$ref: '#/components/schemas/ClusterStatus'}
+        centroid: {$ref: '#/components/schemas/GeoPoint'}
+        report_count: {type: integer}
+        distinct_devices: {type: integer}
+        priority_score: {type: ['number', 'null']}
+        photo_evidence: {enum: [confirmed, needs_review, none], description: 'Best intake_status in the cluster, simplified.'}
+        people_count_max: {type: ['integer', 'null']}
+        dist_to_official_stop_m: {type: ['number', 'null']}
+        public_summary: {oneOf: [{type: 'null'}, {$ref: '#/components/schemas/I18nText'}]}
+        photo_url: {type: ['string', 'null'], format: uri, description: Anonymized representative photo (public bucket).}
+        resolved_via: {enum: [stakeholder, community, null]}
+        ai_overridden: {type: boolean, description: 'True = "resolved by the stakeholder; automatic verification did not confirm it".'}
+        opened_at: {type: string, format: date-time}
+        validated_at: {type: ['string', 'null'], format: date-time}
+        last_report_at: {type: ['string', 'null'], format: date-time}
+        resolved_at: {type: ['string', 'null'], format: date-time}
+        updated_at: {type: string, format: date-time}
+
+    ClusterFeatureCollection:
+      type: object
+      required: [type, features]
+      properties:
+        type: {const: FeatureCollection}
+        generated_at: {type: string, format: date-time}
+        license: {type: string, default: ODbL-1.0}
+        features:
+          type: array
+          items:
+            type: object
+            required: [type, id, geometry, properties]
+            properties:
+              type: {const: Feature}
+              id: {type: string, format: uuid}
+              geometry:
+                type: object
+                required: [type, coordinates]
+                properties:
+                  type: {const: Point}
+                  coordinates:
+                    type: array
+                    description: '[lon, lat], WGS84.'
+                    minItems: 2
+                    maxItems: 2
+                    items: {type: number}
+              properties:
+                description: '`PublicClusterFields` (no `id` and `centroid`, they are the feature id and geometry), plus flat `title` and `summary` in the `lang` requested.'
+                allOf:
+                  - $ref: '#/components/schemas/PublicClusterFields'
+                properties:
+                  title: {type: string}
+                  summary: {type: ['string', 'null']}
+      examples:
+        - type: FeatureCollection
+          generated_at: '2026-10-30T14:00:00Z'
+          license: ODbL-1.0
+          features:
+            - type: Feature
+              id: 0b7c2f5e-6c1a-4a8e-9a4e-2f1d3c4b5a69
+              geometry: {type: Point, coordinates: [-78.6197, -1.2491]}
+              properties:
+                city_id: ambato
+                domain_id: roads
+                category_id: pothole
+                category_name: {en: Pothole, es: Bache}
+                title: Bache
+                status: validated
+                report_count: 5
+                distinct_devices: 4
+                priority_score: 0.71
+                photo_evidence: confirmed
+                summary: Bache profundo en el carril derecho de la Av. Cevallos
+                photo_url: https://civicpulse.supabase.co/storage/v1/object/public/public/9a1d….jpg
+                resolved_via: null
+                ai_overridden: false
+                opened_at: '2026-10-28T15:04:11Z'
+                validated_at: '2026-10-29T09:12:40Z'
+                updated_at: '2026-10-29T09:12:40Z'
+
+    MyReport:
+      type: object
+      required: [id, status, created_at, is_sandbox]
+      properties:
+        id: {type: string, format: uuid}
+        is_sandbox: {type: boolean}
+        status: {$ref: '#/components/schemas/ReportStatus'}
+        category_id: {type: ['string', 'null']}
+        category_name: {oneOf: [{type: 'null'}, {$ref: '#/components/schemas/I18nText'}]}
+        summary_en: {type: ['string', 'null']}
+        intake_status: {oneOf: [{type: 'null'}, {$ref: '#/components/schemas/IntakeStatus'}]}
+        current_photo_version: {type: integer}
+        photo_public_url: {type: ['string', 'null'], format: uri}
+        cluster_id: {type: ['string', 'null'], format: uuid}
+        cluster_status: {oneOf: [{type: 'null'}, {$ref: '#/components/schemas/ClusterStatus'}]}
+        cluster_distinct_devices: {type: ['integer', 'null']}
+        failed_reason: {type: ['string', 'null'], description: 'Set when status = failed (last stage_runs error, sanitized).'}
+        moderation_status: {$ref: '#/components/schemas/ModerationStatus'}
+        created_at: {type: string, format: date-time}
+        updated_at: {type: string, format: date-time}
+
+    ResolutionCard:
+      type: object
+      required: [resolution_id, cluster_id, category_id, before_photo_url, after_photo_url, distance_m]
+      properties:
+        resolution_id: {type: string, format: uuid}
+        cluster_id: {type: string, format: uuid}
+        category_id: {type: string}
+        category_name: {$ref: '#/components/schemas/I18nText'}
+        resolved_description: {type: string, description: 'From the spec; the PWA shows it as "what fixed looks like".'}
+        before_photo_url: {type: string, format: uri}
+        after_photo_url: {type: string, format: uri}
+        distance_m: {type: number}
+        approvals: {type: integer}
+        approvals_needed: {type: integer}
+        created_at: {type: string, format: date-time}
+
+    PanelReportRow:
+      type: object
+      required: [report_id, cluster_id, created_at]
+      properties:
+        report_id: {type: string, format: uuid}
+        cluster_id: {type: string, format: uuid}
+        short_ref: {type: string, description: 'Citation id used in briefs, e.g. r_81.'}
+        summary_en: {type: ['string', 'null']}
+        raw_text_redacted: {type: ['string', 'null'], description: 'Original text, any language, with personal data masked by the orchestrator at the spec stage.'}
+        lang: {type: ['string', 'null'], description: 'Detected language of the original text.'}
+        intake_status: {oneOf: [{type: 'null'}, {$ref: '#/components/schemas/IntakeStatus'}]}
+        photo_public_url: {type: ['string', 'null'], format: uri}
+        created_at: {type: string, format: date-time}
+
+    PanelInboxRow:
+      type: object
+      required: [cluster_id, stakeholder_id, dispatch_status, cluster]
+      properties:
+        cluster_id: {type: string, format: uuid}
+        stakeholder_id: {type: string, format: uuid}
+        stakeholder_name: {type: string}
+        dispatch_status: {$ref: '#/components/schemas/DispatchStatus'}
+        dispatched_at: {type: string, format: date-time}
+        seen_at: {type: ['string', 'null'], format: date-time}
+        brief: {$ref: 'schemas/brief.schema.json'}
+        cluster: {$ref: '#/components/schemas/PublicCluster'}
+        priority_score: {type: ['number', 'null']}
+        latest_resolution:
+          type: ['object', 'null']
+          properties:
+            resolution_id: {type: string, format: uuid}
+            closure_path: {enum: [stakeholder, community]}
+            ai_status: {$ref: 'schemas/closure_verification.schema.json#/$defs/ai_status'}
+            outcome: {$ref: '#/components/schemas/ResolutionOutcome'}
+            ai_overridden: {type: boolean}
+            verification: {$ref: 'schemas/closure_verification.schema.json'}
+            after_photo_url: {type: ['string', 'null'], format: uri}
+            created_at: {type: string, format: date-time}
+
+    InvitationRequest:
+      type: object
+      additionalProperties: false
+      required: [email, role_id]
+      properties:
+        email: {type: string, format: email}
+        display_name: {type: string, maxLength: 120}
+        locale: {enum: [es, en], default: es}
+        role_id: {enum: [super_admin, city_admin, catalog_editor, stakeholder_admin, stakeholder_agent]}
+        city_id: {type: string, description: Required when the role scope is `city`.}
+        stakeholder_id: {type: string, format: uuid, description: Required when the role scope is `stakeholder`.}
+
+    JwtClaims:
+      type: object
+      description: |
+        Claims added by the Supabase custom access token hook for actors. Anonymous devices
+        get only the standard claims (`is_anonymous = true`, `cp_grants = []`). RLS reads
+        `cp_grants` through `has_permission(perm, city_id, stakeholder_id)`: a global grant
+        matches anything, a city grant matches that city and its stakeholders, a stakeholder
+        grant matches only that stakeholder. Because a JWT lives up to 1 h, sensitive actions
+        (override approval, invitations, role changes) re-check `user_roles` in the database.
+      required: [sub, role, is_anonymous, cp_grants]
+      properties:
+        sub: {type: string, format: uuid}
+        role: {enum: [authenticated]}
+        is_anonymous: {type: boolean}
+        email: {type: string, format: email}
+        cp_profile_active: {type: boolean}
+        cp_grants:
+          type: array
+          items:
+            type: object
+            required: [role, scope, permissions]
+            properties:
+              role: {type: string}
+              scope: {enum: [global, city, stakeholder]}
+              city_id: {type: ['string', 'null']}
+              stakeholder_id: {type: ['string', 'null'], format: uuid}
+              permissions:
+                type: array
+                items:
+                  type: string
+                  examples: [dispatches.read, dispatches.respond, dispatches.redispatch, resolutions.submit, resolutions.approve, members.manage, users.manage, categories.write, categories.activate, domains.write, stakeholders.manage, reports.moderate, audit.read]
+      examples:
+        - sub: 7d3b6c1e-2a4f-4e0b-9a1c-5b6d7e8f9a0b
+          role: authenticated
+          is_anonymous: false
+          email: operaciones@coop-ejemplo.ec
+          cp_profile_active: true
+          cp_grants:
+            - role: stakeholder_admin
+              scope: stakeholder
+              city_id: ambato
+              stakeholder_id: 6f1c2d3e-4b5a-4c7d-8e9f-0a1b2c3d4e5f
+              permissions: [dispatches.read, dispatches.respond, resolutions.submit, resolutions.approve, members.manage]

@@ -1,0 +1,11 @@
+# Photos that are not of the road (drawings, identity documents, ...) and must never be used.
+# One photo per line, without extension. Read by download.py, qc.py and prefilter.py.
+bach_0002_after
+bach_0027_after
+bach_0027_before
+bach_0096_after
+bach_0096_before
+bach_0558_after
+bach_0558_before
+bach_0559_after
+bach_0559_before

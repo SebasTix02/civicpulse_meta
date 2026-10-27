@@ -1,6 +1,6 @@
 pair_id,status,has_before,has_after,parish,zone,institution,crew,lat_approx,lon_approx,reported_on,attended_on,days_to_attend,before_status,after_status,usable_as
 bach_0001,attended,1,1,Matriz,urban,city,city_crew,-1.256,-78.636,2025-12-17,2026-04-20,124,ok,placeholder,before_only
-bach_0002,attended,1,1,Celiano Monge,urban,city,city_crew,-1.269,-78.621,2025-12-18,2026-01-22,35,ok,ok,pair
+bach_0002,attended,1,1,Celiano Monge,urban,city,city_crew,-1.269,-78.621,2025-12-18,2026-01-22,35,ok,banned,before_only
 bach_0003,attended,1,1,Celiano Monge,urban,city,city_crew,-1.268,-78.628,2025-12-19,2026-01-23,35,ok,ok,pair
 bach_0004,attended,1,1,La Merced,urban,city,city_crew,-1.236,-78.626,2025-12-19,2026-04-20,122,ok,placeholder,before_only
 bach_0005,attended,1,1,La Merced,urban,city,city_crew,-1.233,-78.619,2025-12-19,2026-04-20,122,ok,placeholder,before_only
@@ -25,7 +25,7 @@ bach_0023,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.244,-78.626,2025-12
 bach_0024,attended,1,1,Huachi Loreto,urban,city,city_crew,-1.244,-78.625,2025-12-19,2026-04-20,122,ok,placeholder,before_only
 bach_0025,attended,1,1,Atahualpa (Chisalata),urban,city,city_crew,-1.21,-78.601,2025-12-22,2026-01-29,38,ok,ok,pair
 bach_0026,attended,1,1,Huachi Chico,urban,city,city_crew,-1.284,-78.634,2025-12-23,2026-04-20,118,ok,placeholder,before_only
-bach_0027,attended,1,1,Celiano Monge,urban,city,city_crew,-17.651,-78.651,2025-12-23,2026-02-18,57,ok,ok,pair
+bach_0027,attended,1,1,Celiano Monge,urban,city,city_crew,-17.651,-78.651,2025-12-23,2026-02-18,57,banned,banned,none
 bach_0028,reassigned,1,0,Huachi Grande,rural,province,province_crew,-1.322,-78.66,2025-12-26,,,ok,missing,before_only
 bach_0029,attended,1,1,Huachi Chico,urban,city,city_crew,-1.284,-78.634,2025-12-28,2026-04-20,113,ok,placeholder,before_only
 bach_0030,attended,1,1,Huachi Chico,urban,city,city_crew,-1.284,-78.634,2025-12-30,2026-04-20,111,ok,placeholder,before_only
@@ -94,7 +94,7 @@ bach_0092,attended,1,1,Huachi Grande,urban,city,city_crew,-1.288,-78.607,2026-01
 bach_0093,attended,1,1,Huachi Grande,urban,city,city_crew,-1.294,-78.619,2026-01-19,2026-04-20,91,ok,placeholder,before_only
 bach_0094,attended,1,1,Huachi Grande,urban,city,city_crew,-1.292,-78.62,2026-01-19,2026-04-20,91,ok,placeholder,before_only
 bach_0095,attended,1,1,Huachi Grande,urban,city,city_crew,-1.286,-78.624,2026-01-19,2026-04-20,91,ok,placeholder,before_only
-bach_0096,attended,1,1,Celiano Monge,urban,city,city_crew,-1.268,-78.628,2026-01-20,2026-02-18,29,ok,ok,pair
+bach_0096,attended,1,1,Celiano Monge,urban,city,city_crew,-1.268,-78.628,2026-01-20,2026-02-18,29,banned,banned,none
 bach_0097,attended,1,1,Huachi Grande,urban,city,city_crew,-1.304,-78.642,2026-01-21,2026-04-20,89,ok,placeholder,before_only
 bach_0098,attended,1,1,Huachi Grande,urban,city,city_crew,-1.304,-78.645,2026-01-21,2026-04-20,89,ok,placeholder,before_only
 bach_0099,attended,1,1,Huachi Grande,urban,city,city_crew,-1.287,-78.614,2026-01-22,2026-04-20,88,ok,placeholder,before_only
@@ -556,8 +556,8 @@ bach_0554,reassigned,1,0,Totoras,rural,province,province_crew,-1.297,-78.603,202
 bach_0555,reassigned,1,0,Totoras,rural,province,province_crew,-1.292,-78.604,2026-02-11,,,ok,missing,before_only
 bach_0556,attended,1,1,Picaihua,urban,city,city_crew,-1.289,-78.605,2026-02-11,2026-04-21,69,ok,placeholder,before_only
 bach_0557,attended,1,1,Santa Rosa,urban,city,city_crew,-1.28,-78.658,2026-02-11,2026-04-21,69,ok,placeholder,before_only
-bach_0558,attended,1,1,Celiano Monge,urban,city,city_crew,-1.269,-78.628,2026-02-11,2026-02-12,1,ok,ok,pair
-bach_0559,attended,1,1,Celiano Monge,urban,city,city_crew,-1.268,-78.628,2026-02-11,2026-02-12,1,ok,ok,pair
+bach_0558,attended,1,1,Celiano Monge,urban,city,city_crew,-1.269,-78.628,2026-02-11,2026-02-12,1,banned,banned,none
+bach_0559,attended,1,1,Celiano Monge,urban,city,city_crew,-1.268,-78.628,2026-02-11,2026-02-12,1,banned,banned,none
 bach_0560,attended,1,1,Celiano Monge,urban,city,city_crew,-1.269,-78.628,2026-02-11,2026-02-12,1,ok,ok,pair
 bach_0561,attended,1,1,La Merced,urban,city,city_crew,-1.23,-78.615,2026-02-12,2026-02-12,0,ok,ok,pair
 bach_0562,reassigned,1,1,Izamba,urban,water_utility,city_crew,-1.207,-78.595,2026-02-12,2026-02-12,0,ok,ok,pair

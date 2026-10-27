@@ -40,6 +40,10 @@ cases, so it cannot prove what happened at that place). `pairs.csv` gets `usable
 `before_only`, `after_only` or `none`; only `pair` counts for the closure metric, single photos still
 feed the intake evaluation.
 
+`banned.txt` lists photos removed by hand because they are not of the road (a drawing, an identity
+document). `download.py` skips them, `qc.py` marks them `banned` and deletes their anonymized copy,
+and `prefilter.py` never processes them. Delete the originals from `data/private/raw/` yourself.
+
 `prefilter.py` (`pip install "opencv-python-headless<5" pillow numpy`) runs two small OpenCV Zoo
 detectors on your CPU: YuNet for faces and NanoDet-Plus for people and vehicles, on the whole photo
 plus four tiles, with low thresholds. Every detected box is padded, pixelated and blurred (the whole

@@ -24,6 +24,7 @@ import zipfile
 from pathlib import Path
 
 import httpx
+from banned import banned_stems
 
 ROOT = Path(__file__).resolve().parents[2]
 PRIVATE = ROOT / "data" / "private"
@@ -58,6 +59,7 @@ def main() -> int:
     if args.limit:
         rows = rows[: args.limit]
 
+    banned = banned_stems()
     ok, failed = [], []
     with httpx.Client(timeout=30.0, follow_redirects=True) as client:
         for i, row in enumerate(rows, 1):
@@ -66,6 +68,8 @@ def main() -> int:
                 if not url:
                     continue
                 dest = RAW / f"{row['pair_id']}_{side}.{url.rsplit('.', 1)[-1].lower()}"
+                if dest.stem in banned:
+                    continue
                 (ok if download(client, url, dest) else failed).append(dest.name)
             if i % 50 == 0:
                 print(f"{i}/{len(rows)} pairs")

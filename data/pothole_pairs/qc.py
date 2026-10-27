@@ -10,6 +10,8 @@ Each photo in data/private/raw/ gets one status:
   reused       the exact same file attached to several different cases (a crew sending one
                photo for many repairs): it cannot prove what happened at THIS place, so it is
                not used as a pair, but it is kept as a real example of photo reuse
+  banned       listed in banned.txt by hand (a drawing, an identity document...): never used,
+               and its anonymized copy in data/private/anon/ is deleted
 
 Writes:
   data/private/photo_qc.csv      photo, sha256, status, cases sharing it
@@ -27,6 +29,7 @@ import zipfile
 from collections import defaultdict
 from pathlib import Path
 
+from banned import banned_stems
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -54,13 +57,19 @@ def main() -> int:
         print("no photos in data/private/raw; run download.py first", file=sys.stderr)
         return 2
 
+    banned = banned_stems()
     digest = {p.name: sha256(p) for p in photos}
     cases_by_hash: dict[str, set[str]] = defaultdict(set)
     for name, h in digest.items():
-        cases_by_hash[h].add(name.split("_")[1])
+        if Path(name).stem not in banned:
+            cases_by_hash[h].add(name.split("_")[1])
 
     status: dict[str, str] = {}
     for p in photos:
+        if p.stem in banned:
+            status[p.name] = "banned"
+            (PRIVATE / "anon" / f"{p.stem}.jpg").unlink(missing_ok=True)
+            continue
         shared = len(cases_by_hash[digest[p.name]])
         if shared >= PLACEHOLDER_MIN_CASES or mostly_black(p):
             status[p.name] = "placeholder"
@@ -91,7 +100,7 @@ def main() -> int:
         w.writeheader()
         w.writerows(rows)
 
-    keep = [p for p in photos if status[p.name] != "placeholder"]
+    keep = [p for p in photos if status[p.name] in ("ok", "reused")]
     with zipfile.ZipFile(PRIVATE / "raw.zip", "w", zipfile.ZIP_STORED) as zf:
         for p in keep:
             zf.write(p, p.name)
@@ -101,7 +110,7 @@ def main() -> int:
         counts[s] += 1
     print("photos:", dict(counts))
     print("cases usable as:", dict(usable_counts))
-    print(f"raw.zip rebuilt with {len(keep)} photos (placeholders left out)")
+    print(f"raw.zip rebuilt with {len(keep)} photos (placeholders and banned left out)")
     return 0
 
 

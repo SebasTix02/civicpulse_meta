@@ -5,7 +5,7 @@
     python data/pothole_pairs/prefilter.py --sam      # flagged photos go to the SAM 3.1 Colab notebook instead
 
 Two small OpenCV Zoo detectors (downloaded once into data/private/models/, ~4 MB, checked by
-sha256) run on every photo that qc.py did not mark as a placeholder:
+sha256) run on every photo that qc.py marked ok or reused (no placeholders, nothing banned):
   YuNet        faces, on the whole photo at full size
   NanoDet-Plus people, bicycles, motorcycles, cars, buses, trucks; on the whole photo and on
                four overlapping tiles, so a small person in a corner is still seen
@@ -38,6 +38,7 @@ from pathlib import Path
 
 import cv2
 import numpy as np
+from banned import banned_stems
 from PIL import Image, ImageDraw, ImageOps
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -205,9 +206,14 @@ def main() -> int:
     if not qc.exists():
         print("run qc.py first: it marks the logo placeholders", file=sys.stderr)
         return 2
-    photos = [RAW / r["photo"] for r in csv.DictReader(qc.open(encoding="utf-8")) if r["status"] != "placeholder"]
+    banned = banned_stems()
+    photos = [RAW / r["photo"] for r in csv.DictReader(qc.open(encoding="utf-8"))
+              if r["status"] in ("ok", "reused") and Path(r["photo"]).stem not in banned]
+    for stem in banned:  # banned after an earlier run: its anonymized copy goes too
+        (ANON / f"{stem}.jpg").unlink(missing_ok=True)
     report = PRIVATE / "prefilter.csv"
     rows = list(csv.reader(report.open(encoding="utf-8")))[1:] if args.resume and report.exists() else []
+    rows = [r for r in rows if Path(r[0]).stem not in banned]
     seen = {r[0] for r in rows}
     photos = [p for p in photos if p.exists() and p.name not in seen][: args.limit]
     deadline = time.monotonic() + args.max_minutes * 60 if args.max_minutes else None

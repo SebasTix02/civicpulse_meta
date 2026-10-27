@@ -1,10 +1,12 @@
+-- PostGIS names are schema-qualified: the Supabase CLI sends seeds in a batch where a
+-- `set search_path` does not carry over.
 set search_path = public, extensions;
 
 -- City and stakeholders for the hackathon demo. The boundary is an APPROXIMATE bounding box
 -- of the Ambato canton; replace it with the official GIS boundary (day 1 task).
 insert into cities (id, name, boundary, default_lang, timezone, is_enabled, sandbox_enabled)
 values ('ambato', 'Ambato',
-        st_multi(st_makeenvelope(-78.80, -1.42, -78.45, -1.08, 4326))::geography,
+        extensions.st_multi(extensions.st_makeenvelope(-78.80, -1.42, -78.45, -1.08, 4326))::extensions.geography,
         'es', 'America/Guayaquil', true, true)
 on conflict (id) do update set boundary = excluded.boundary;
 

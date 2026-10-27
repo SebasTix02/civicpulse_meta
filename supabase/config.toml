@@ -6,7 +6,7 @@ schemas = ["public"]
 extra_search_path = ["public", "extensions"]
 
 [db]
-major_version = 16
+major_version = 17  # Supabase CLI 2.x only accepts 15 or 17; new hosted projects run 17
 
 [db.seed]
 enabled = true

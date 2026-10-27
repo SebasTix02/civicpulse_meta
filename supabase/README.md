@@ -1,7 +1,7 @@
 # Database (Supabase)
 
 Migrations follow the E-R design v2.2. Apply with the Supabase CLI (`supabase db push`) or,
-for tests, on any Postgres 16 + PostGIS with `scripts/test_db.sh` (uses `tests/local_shim.sql`
+for tests, on any Postgres 17 + PostGIS with `scripts/test_db.sh` (uses `tests/local_shim.sql`
 to stand in for Supabase's `auth` schema and roles).
 
 | Migration | Content |

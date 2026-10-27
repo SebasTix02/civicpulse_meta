@@ -38,8 +38,8 @@ citizen (PWA, es/en) ──► Supabase (Postgres + PostGIS + RLS, Storage, Auth
 | Model | Where | Role |
 |---|---|---|
 | **SAM 3.1** | Meta Model API (fallback: official weights on a Modal GPU) | Where the problem is, counting people, anonymization |
-| **Muse Spark 1.3** | Meta Model API | Text → spec, crop and before/after classification, briefs |
-| **Muse Spark Open** | Baseten / Fireworks / Modal Endpoints | Fallback for the same prompts |
+| **Muse Spark Open** | Baseten (hackathon credits; fallback hosts Fireworks / Modal Endpoints) | Text → spec, crop and before/after classification, briefs |
+| **Muse Spark 1.3** | Meta Model API | Second provider for the same prompts (Meta credits are kept for SAM 3.1) |
 | **Muse Glimmer** | Open weights | Cheap last model fallback; after it, catalog keywords and human review |
 
 ## Repository

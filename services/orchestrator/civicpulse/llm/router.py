@@ -1,7 +1,7 @@
 """LLMRouter: OpenAI-compatible chat calls over the Muse provider chain with a circuit breaker.
 
-Chain (decided 2026-10-26): Muse Spark 1.3 on the Meta Model API -> Muse Spark Open on
-Baseten -> Fireworks -> Modal Endpoints -> Muse Glimmer. If every provider fails, the
+Chain (2026-10-27): Muse Spark Open on Baseten -> Muse Spark 1.3 on the Meta Model API ->
+Muse Spark Open on Fireworks -> Modal Endpoints -> Muse Glimmer. If every provider fails, the
 caller falls back to catalog keywords (text) or leaves the classifier off (vision): states
 stay in *_REQUIRES_REVIEW and a confirmation is never invented.
 """
@@ -64,7 +64,9 @@ def image_part(jpeg: bytes) -> dict:
 
 
 def extract_json(text: str) -> dict:
-    """Models sometimes wrap JSON in prose or code fences; take the outermost object."""
+    """Models sometimes wrap JSON in prose or code fences; take the outermost object.
+    Reasoning normally comes apart in `reasoning_content`; inline <think> blocks are dropped."""
+    text = re.sub(r"<think>.*?</think>", "", text or "", flags=re.DOTALL)
     match = re.search(r"\{.*\}", text, re.DOTALL)
     if not match:
         raise ValueError("no JSON object in answer")
@@ -74,18 +76,19 @@ def extract_json(text: str) -> dict:
 class LLMRouter:
     def __init__(self, providers: list[ProviderConfig], client: httpx.Client | None = None, clock=time.monotonic):
         self.providers = providers
-        self.client = client or httpx.Client(timeout=httpx.Timeout(30.0, connect=5.0))
+        self.client = client or httpx.Client(timeout=httpx.Timeout(90.0, connect=5.0))  # reasoning is slow
         self.clock = clock
         self.breakers = {p.name: Breaker() for p in providers}
 
     def _chat(self, p: ProviderConfig, messages: list[dict], max_tokens: int) -> str:
-        resp = self.client.post(
-            f"{p.base_url.rstrip('/')}/chat/completions",
-            headers={"Authorization": f"Bearer {p.api_key}"},
-            json={"model": p.model, "messages": messages, "max_tokens": max_tokens, "temperature": 0},
-        )
+        body = {"model": p.model, "messages": messages, "temperature": 0,
+                "max_tokens": max_tokens + p.reasoning_min_tokens}
+        if p.reasoning_effort:
+            body["reasoning_effort"] = p.reasoning_effort
+        resp = self.client.post(f"{p.base_url.rstrip('/')}/chat/completions",
+                                headers={"Authorization": f"Bearer {p.api_key}"}, json=body)
         resp.raise_for_status()
-        return resp.json()["choices"][0]["message"]["content"]
+        return resp.json()["choices"][0]["message"]["content"] or ""  # None when reasoning ate the budget
 
     def structured(self, system: str, user: list[dict] | str, schema: type[BaseModel], *,
                    vision: bool = False, max_tokens: int = 400) -> CallResult:

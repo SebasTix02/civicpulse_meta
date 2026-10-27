@@ -4,7 +4,7 @@
 
 Secrets (Modal dashboard): `civicpulse-supabase` (SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY,
 ORCHESTRATOR_WEBHOOK_SECRET, ORCHESTRATOR_OPS_SECRET) and `civicpulse-llm`
-(META_MODEL_API_KEY and optional partner keys). Cost rules from plan §7: CPU only here,
+(BASETEN_API_KEY, META_MODEL_API_KEY; optional partner keys). Cost rules from plan §7: CPU only here,
 min_containers=0, the GPU fallback for SAM lives in its own app.
 """
 
@@ -18,7 +18,7 @@ ROOT = Path(__file__).resolve().parents[2]
 
 image = (
     modal.Image.debian_slim(python_version="3.12")
-    .pip_install("fastapi>=0.115", "pydantic>=2.8", "httpx>=0.27", "pyyaml>=6")
+    .pip_install("fastapi>=0.115", "pydantic>=2.8", "httpx>=0.27", "pyyaml>=6", "meta-sam-parser>=0.1")
     .env({"CATALOG_PATH": "/app/civic_catalog.json"})
     .add_local_file(ROOT / "packages/catalog/civic_catalog.json", "/app/civic_catalog.json")
     .add_local_python_source("civicpulse")

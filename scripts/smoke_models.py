@@ -32,6 +32,7 @@ sys.path.insert(0, str(ROOT / "services" / "orchestrator"))
 from civicpulse.catalog import Catalog
 from civicpulse.config import REPO_ROOT, _provider_chain
 from civicpulse.llm.router import AllProvidersFailed, LLMRouter, image_part
+from civicpulse.models import SpecLLMOutput
 from civicpulse.pipeline.intake import build_spec
 
 REPORTS = [  # (text, expected category)
@@ -91,7 +92,10 @@ def raw_call(p) -> None:
     msg, usage = data["choices"][0]["message"], data.get("usage", {})
     reasoning = msg.get("reasoning_content") or msg.get("reasoning") or ""
     print(f"  raw: {ms} ms, answer {msg.get('content')!r}, tokens in {usage.get('prompt_tokens')} "
-          f"out {usage.get('completion_tokens')}, reasoning {len(reasoning)} chars")
+          f"out {usage.get('completion_tokens')}, reasoning {len(reasoning)} chars, "
+          f"finish {data['choices'][0].get('finish_reason')}, message keys {sorted(msg)}")
+    if usage.get("completion_tokens_details"):
+        print(f"       completion details {usage['completion_tokens_details']}")
 
 
 def main() -> int:
@@ -113,6 +117,12 @@ def main() -> int:
             out = build_spec(text, catalog, router)
             mark = "" if expected is None else ("OK " if out.spec["category_id"] == expected else "MISS ")
             print(f"  spec: {mark}{out.spec['category_id']} via {out.provider} in {out.latency_ms} ms")
+            if out.provider == "keywords":  # the model failed: show why, once
+                try:
+                    router.structured("Answer with JSON only.", text, SpecLLMOutput)
+                except AllProvidersFailed as exc:
+                    print(f"        why: {str(exc)[:500]}")
+                break
         if photo is None:
             print("  vision: skipped (no clean anonymized photo in data/private/anon/)")
             continue

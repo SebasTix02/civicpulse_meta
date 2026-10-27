@@ -39,8 +39,10 @@ def _provider_chain() -> list[ProviderConfig]:
     chain = [
         ProviderConfig("baseten_muse_spark_open", env("BASETEN_BASE", "https://inference.baseten.co/v1"),
                        env("BASETEN_MODEL", "meta-models/muse-spark-open-1026"), "BASETEN_API_KEY", **open_reasoning),
+        # Muse Spark 1.3 also spends hidden reasoning tokens (smoke test 2026-10-27: 64 of 64, empty answer)
         ProviderConfig("meta_muse_spark", env("META_API_BASE", "https://api.meta.ai/v1"),
-                       env("META_MODEL", "muse-spark-1.3"), "META_MODEL_API_KEY"),
+                       env("META_MODEL", "muse-spark-1.3"), "META_MODEL_API_KEY",
+                       reasoning_min_tokens=int(env("META_REASONING_MIN_TOKENS", "4096"))),
         ProviderConfig("fireworks_muse_spark_open", env("FIREWORKS_BASE", "https://api.fireworks.ai/inference/v1"),
                        env("FIREWORKS_MODEL", "accounts/fireworks/models/muse-spark-open"), "FIREWORKS_API_KEY",
                        **open_reasoning),

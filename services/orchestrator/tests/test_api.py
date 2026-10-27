@@ -36,3 +36,11 @@ def test_first_photo_version_is_ignored():
 def test_unknown_table():
     c, _ = client()
     assert post(c, {"type": "INSERT", "table": "devices", "record": {}}).status_code == 422
+
+
+def test_db_sends_new_secret_key_only_as_apikey():
+    from civicpulse.db import Db
+
+    assert Db("https://x.supabase.co", "sb_secret_abc").headers == {"apikey": "sb_secret_abc"}
+    legacy = Db("https://x.supabase.co", "eyJhbGciOi.x.y").headers
+    assert legacy["Authorization"] == "Bearer eyJhbGciOi.x.y"

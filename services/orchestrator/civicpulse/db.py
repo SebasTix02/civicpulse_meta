@@ -12,7 +12,11 @@ class Db:
     def __init__(self, url: str, service_key: str, client: httpx.Client | None = None):
         self.base = url.rstrip("/") + "/rest/v1"
         self.client = client or httpx.Client(timeout=15.0)
-        self.headers = {"apikey": service_key, "Authorization": f"Bearer {service_key}"}
+        # New secret keys (sb_secret_...) are not JWTs and go only in `apikey`; the legacy
+        # service_role JWT is also sent as Bearer, as PostgREST expected before.
+        self.headers = {"apikey": service_key}
+        if service_key.startswith("eyJ"):
+            self.headers["Authorization"] = f"Bearer {service_key}"
 
     def select_one(self, table: str, **eq: Any) -> dict | None:
         params = {k: f"eq.{v}" for k, v in eq.items()} | {"limit": "1"}

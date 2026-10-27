@@ -1,7 +1,8 @@
 // Open feed of validated and resolved clusters (API contract: getClustersGeoJSON).
 import { publicServerClient, type PublicCluster } from "@/lib/supabase";
 
-export const revalidate = 60;
+// Rendered per request (the CDN caches it 60 s via Cache-Control), never at build time.
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   const supabase = publicServerClient();

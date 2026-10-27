@@ -1,8 +1,21 @@
 import { createBrowserClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+// Values pasted into a hosting dashboard often carry quotes or spaces; anything that is not an
+// http(s) URL counts as "not configured" instead of crashing the build.
+function cleanUrl(raw: string | undefined): string | undefined {
+  const value = raw?.trim().replace(/^["']|["']$/g, "");
+  if (!value) return undefined;
+  try {
+    const parsed = new URL(value);
+    return parsed.protocol === "https:" || parsed.protocol === "http:" ? value.replace(/\/+$/, "") : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+const url = cleanUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
+const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim().replace(/^["']|["']$/g, "") || undefined;
 
 export const supabaseConfigured = Boolean(url && anonKey);
 

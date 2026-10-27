@@ -10,6 +10,15 @@ select null from set_config('request.headers', '{"x-forwarded-for": "190.152.10.
 
 create temp table t_nonce as select issue_capture_nonce() as n;
 
+-- The storage upload check sees the nonce even though clients cannot read capture_nonces.
+do $$
+declare n jsonb := (select n from t_nonce);
+begin
+  assert can_upload_capture(n ->> 'bucket', n ->> 'upload_path'), 'own nonce path may upload';
+  assert not can_upload_capture('raw', '11111111-1111-4111-8111-111111111111/other.jpg'), 'other path refused';
+  assert not can_upload_capture('public', n ->> 'upload_path'), 'public bucket refused';
+end $$;
+
 -- First submit creates the report; the second identical call is idempotent.
 do $$
 declare n jsonb := (select n from t_nonce); r jsonb;

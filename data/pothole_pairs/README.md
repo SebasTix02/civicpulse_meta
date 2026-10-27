@@ -30,14 +30,21 @@ used by Meta for product improvement, so the API only ever sees anonymized copie
 ```bash
 python data/pothole_pairs/prepare.py ~/Downloads/Admin.xlsx   # 1. index + private manifest
 python data/pothole_pairs/download.py --limit 50              # 2. originals + raw.zip (your computer only)
+python data/pothole_pairs/qc.py                               # 3. drop logo placeholders, flag reused photos
 ```
 
-3. Upload `data/private/raw.zip` to `MyDrive/civicpulse/` and run
+`qc.py` gives every photo a status: `ok`, `placeholder` (the provider's logo the app stores when
+no photo was taken: 445 of the first 2,341 downloads) or `reused` (the same file attached to several
+cases, so it cannot prove what happened at that place). `pairs.csv` gets `usable_as` = `pair`,
+`before_only`, `after_only` or `none`; only `pair` counts for the closure metric, single photos still
+feed the intake evaluation.
+
+4. Upload `data/private/raw.zip` to `MyDrive/civicpulse/` and run
    [`anonymize_sam31_colab.ipynb`](anonymize_sam31_colab.ipynb) on a free T4: SAM 3.1 open weights
    segment every **person** and **license plate** (plus an OpenCV face detector as a safety net), and
    those regions are pixelated and blurred; the JPEG is rebuilt from pixels, so no EXIF survives.
    Resumable across Colab sessions.
-4. Review the contact sheet, then unzip `anon.zip` into `data/private/anon/`.
+5. Review the contact sheet, then unzip `anon.zip` into `data/private/anon/`.
 
 ## How CivicPulse uses it
 

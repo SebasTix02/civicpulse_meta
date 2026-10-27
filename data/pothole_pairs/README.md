@@ -19,7 +19,7 @@ data owner's permission for evaluating CivicPulse's closure verification.
 | `data/private/pairs_manifest.csv` | **no** | `pair_id` → source id, exact coordinates, photo URLs |
 | `data/private/raw/` | **no** | Original photos |
 | `data/private/raw.zip` | **no** | Originals packed for your own Google Drive |
-| `data/private/anon/` | **no** | Anonymized photos (no metadata; people, faces and plates blurred by SAM 3.1) |
+| `data/private/anon/` | **no** | Anonymized photos (no metadata; people, faces and close vehicles blurred) |
 | The source export (`.xlsx`) | **no** | Has citizen names and phone numbers. Never commit it |
 
 ## Steps
@@ -31,6 +31,7 @@ used by Meta for product improvement, so the API only ever sees anonymized copie
 python data/pothole_pairs/prepare.py ~/Downloads/Admin.xlsx   # 1. index + private manifest
 python data/pothole_pairs/download.py --limit 50              # 2. originals + raw.zip (your computer only)
 python data/pothole_pairs/qc.py                               # 3. drop logo placeholders, flag reused photos
+python data/pothole_pairs/prefilter.py                        # 4. anonymize on your CPU, nothing uploaded
 ```
 
 `qc.py` gives every photo a status: `ok`, `placeholder` (the provider's logo the app stores when
@@ -39,12 +40,28 @@ cases, so it cannot prove what happened at that place). `pairs.csv` gets `usable
 `before_only`, `after_only` or `none`; only `pair` counts for the closure metric, single photos still
 feed the intake evaluation.
 
-4. Upload `data/private/raw.zip` to `MyDrive/civicpulse/` and run
-   [`anonymize_sam31_colab.ipynb`](anonymize_sam31_colab.ipynb) on a free T4: SAM 3.1 open weights
-   segment every **person** and **license plate** (plus an OpenCV face detector as a safety net), and
-   those regions are pixelated and blurred; the JPEG is rebuilt from pixels, so no EXIF survives.
-   Resumable across Colab sessions.
-5. Review the contact sheet, then unzip `anon.zip` into `data/private/anon/`.
+`prefilter.py` (`pip install "opencv-python-headless<5" pillow numpy`) runs two small OpenCV Zoo
+detectors on your CPU: YuNet for faces and NanoDet-Plus for people and vehicles, on the whole photo
+plus four tiles, with low thresholds. Every detected box is padded, pixelated and blurred (the whole
+person; the whole vehicle when it is close enough for a plate to be legible). Each photo is then
+saved to `data/private/anon/` with orientation applied, at most 1600 px, and the JPEG rebuilt
+without EXIF. About one second per photo; `--max-minutes` and `--resume` split a long run.
+
+- `data/private/prefilter.csv`: decision (`clean` or `blurred`), what was found, and
+  `blurred_share`. Above ~0.4 the blur may also hide the pothole: check those and keep them out of
+  the evals.
+- `data/private/review/clean_NN.jpg` and `blurred_NN.jpg`: contact sheets with the photo name under
+  each thumbnail. Skim them for anyone the detectors missed (residual risk: a person very small or
+  partly hidden).
+
+On a first sample of 40 real photos, 3 out of 4 had a person or a vehicle, which is why the
+default is to blur here instead of sending those to Colab.
+
+**Optional, finer masks:** `prefilter.py --sam` leaves flagged photos untouched in `needs_sam.zip`.
+Upload it to `MyDrive/civicpulse/` and run [`anonymize_sam31_colab.ipynb`](anonymize_sam31_colab.ipynb)
+on a free T4: SAM 3.1 open weights segment every **person** and **license plate** (plus an OpenCV
+face detector as a safety net) and blur only those pixels; resumable across Colab sessions. Review
+its contact sheet, then unzip `anon.zip` into `data/private/anon/`.
 
 ## How CivicPulse uses it
 

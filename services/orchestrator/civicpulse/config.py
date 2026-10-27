@@ -6,7 +6,10 @@ import os
 from dataclasses import dataclass, field
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[3]
+_HERE = Path(__file__).resolve()
+# In the repo this file is services/orchestrator/civicpulse/config.py; in the Modal image it is
+# /root/civicpulse/config.py, with no repo around it (CATALOG_PATH is set there instead).
+REPO_ROOT = _HERE.parents[3] if len(_HERE.parents) > 3 else _HERE.parent
 
 
 @dataclass(frozen=True)

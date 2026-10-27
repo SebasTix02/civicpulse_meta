@@ -14,7 +14,10 @@ from pathlib import Path
 
 import modal
 
-ROOT = Path(__file__).resolve().parents[2]
+_HERE = Path(__file__).resolve()
+# Only meaningful on the deploying machine; inside the container this file is /root/modal_app.py
+# and the local files below are already in the image.
+ROOT = _HERE.parents[2] if len(_HERE.parents) > 2 else _HERE.parent
 
 image = (
     modal.Image.debian_slim(python_version="3.12")

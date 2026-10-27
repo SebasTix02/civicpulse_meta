@@ -18,6 +18,7 @@ from civicpulse.db import Db
 from civicpulse.llm.prompts import spec_system
 from civicpulse.llm.router import AllProvidersFailed, LLMRouter
 from civicpulse.models import SpecLLMOutput
+from civicpulse.redact import redact
 
 KEYWORD_PREFERRED_BELOW = 0.40
 
@@ -35,8 +36,9 @@ def build_spec(text: str, catalog: Catalog, router: LLMRouter) -> SpecOutcome:
     provider fails, or if the model is unsure and the keywords found a category."""
     started = time.monotonic()
     keyword_cat = catalog.keyword_match(text)
+    safe_text, _ = redact(text)  # the model never sees phones, ids, plates or emails
     try:
-        res = router.structured(spec_system(catalog.categories), text, SpecLLMOutput)
+        res = router.structured(spec_system(catalog.categories), safe_text, SpecLLMOutput)
         llm: SpecLLMOutput = res.data  # type: ignore[assignment]
         if llm.category_id not in catalog.categories:
             llm = llm.model_copy(update={"category_id": "other"})
@@ -74,7 +76,9 @@ class IntakePipeline:
         version = report["current_photo_version"]
         if self.db.stage_done("spec", report_id=report["id"], photo_version=version):
             return
-        out = build_spec(report["raw_text"] or "", self.catalog, self.router)
+        raw = report["raw_text"] or ""
+        redacted, _ = redact(raw)
+        out = build_spec(raw, self.catalog, self.router)
         domain = self._domain_for(out.spec["category_id"])
         moved = self.db.compare_and_set("reports", report["id"], "received", {
             "status": "spec_ready",
@@ -83,6 +87,7 @@ class IntakePipeline:
             "domain_id": domain,
             "catalog_version": 1,
             "severity": out.spec["severity"],
+            "raw_text_redacted": redacted,
             "model_versions": {"spec": f"{out.provider}:{out.model}"},
         })
         self.db.insert("stage_runs", {

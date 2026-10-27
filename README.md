@@ -76,7 +76,7 @@ Copy `.env.example` to `.env` and fill in the keys. Production: Vercel (web), Su
 
 - Citizens are anonymous. Raw photos stay in a private bucket; only anonymized copies (faces and plates blurred, EXIF removed) can be public.
 - The Ambato pothole pairs are used with the data owner's permission. Names, phone numbers, source ids and exact coordinates never enter this repository; see [data/pothole_pairs/README.md](data/pothole_pairs/README.md).
-- Citizen and sandbox data only use the Meta Model API standard tier, never a tier that may train on data.
+- The Meta Model API only receives anonymized photos and redacted text: people, faces and plates are blurred locally (SAM 3.1 open weights) before any API call.
 
 ## License
 

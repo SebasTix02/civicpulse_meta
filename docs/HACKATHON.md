@@ -24,4 +24,4 @@ Everything else. Log, newest last:
 - Catalog sync: `catalog.json` + `domains/*.yaml` → idempotent seed SQL.
 - Orchestrator: Muse-only LLMRouter with circuit breaker and JSON-retry, spec stage with keyword fallback, asymmetric closure decision (with tests), webhook API, Modal app.
 - PWA (es/en): live-camera report flow wired to Supabase (anonymous session, GPS, nonce, resize + EXIF strip, upload, submit), public cluster list, open GeoJSON feed.
-- Data: anonymized index of the Ambato pothole repair pairs; private downloader + anonymizer (EXIF strip, face and plate blur).
+- Data: anonymized index of the Ambato pothole repair pairs; private downloader; Colab notebook that anonymizes every photo with SAM 3.1 open weights (people and plates blurred, metadata dropped) before any API sees it.

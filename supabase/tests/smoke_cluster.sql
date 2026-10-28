@@ -2,6 +2,14 @@
 \set ON_ERROR_STOP 1
 begin;
 set local search_path = public, extensions;
+-- A verified roads stakeholder, one unverified, and one covering only water: only the first is routed.
+insert into stakeholders (id, city_id, name, kind, verified) values
+  ('c0000000-0000-4000-8000-000000000001', 'ambato', 'Roads crew', 'government', true),
+  ('c0000000-0000-4000-8000-000000000002', 'ambato', 'Unverified board', 'neighborhood', false),
+  ('c0000000-0000-4000-8000-000000000003', 'ambato', 'Water utility', 'utility', true);
+insert into stakeholder_coverage (stakeholder_id, domain_id) values
+  ('c0000000-0000-4000-8000-000000000001', 'roads'), ('c0000000-0000-4000-8000-000000000002', 'roads'),
+  ('c0000000-0000-4000-8000-000000000003', 'water');
 insert into devices (id, trust) values
   ('a0000000-0000-4000-8000-000000000001', 0.5), ('a0000000-0000-4000-8000-000000000002', 0.5),
   ('a0000000-0000-4000-8000-000000000003', 0.5), ('a0000000-0000-4000-8000-000000000004', 0.5);
@@ -35,6 +43,8 @@ begin
   assert b ->> 'status' = 'validated' and (b ->> 'validated_now')::boolean, b::text;
   assert (b ->> 'report_count')::int = 6 and (b ->> 'weighted_support')::real = 1.5, b::text;
   assert (select count(*) from cluster_events where cluster_id = first_cluster) = 2, 'candidate + validated events';
+  assert (select array_agg(stakeholder_id::text) from dispatches where cluster_id = first_cluster)
+         = array['c0000000-0000-4000-8000-000000000001'], 'routed to the verified roads stakeholder only';
 
   -- 500 m away: another cluster. A report already clustered is skipped.
   x := assign_cluster(pg_temp.report(2, -1.24620, -78.61970, '190.1.1.0/24'));

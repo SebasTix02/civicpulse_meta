@@ -84,7 +84,11 @@ def _anonymizer():
 def run_job(kind: str, key: str) -> str:
     if kind in ("intake", "photo_replaced"):
         return _pipeline().run(key)
-    raise NotImplementedError(f"job {kind}: closure day 8, brief day 7")
+    if kind in ("brief", "closure"):
+        # Dispatches already fire the webhook; the brief (day 7) and closure (day 8) stages come later.
+        print(f"job {kind} {key}: not built yet, skipped")
+        return "skipped"
+    raise ValueError(f"unknown job {kind}")
 
 
 @app.function(secrets=secrets, min_containers=0, scaledown_window=60)

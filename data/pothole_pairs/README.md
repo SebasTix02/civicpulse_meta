@@ -37,8 +37,12 @@ python data/pothole_pairs/prefilter.py                        # 4. anonymize on 
 `qc.py` gives every photo a status: `ok`, `placeholder` (the provider's logo the app stores when
 no photo was taken: 445 of the first 2,341 downloads) or `reused` (the same file attached to several
 cases, so it cannot prove what happened at that place). `pairs.csv` gets `usable_as` = `pair`,
-`before_only`, `after_only` or `none`; only `pair` counts for the closure metric, single photos still
-feed the intake evaluation.
+`same_photo`, `before_only`, `after_only` or `none`; only `pair` counts for the closure metric, single
+photos still feed the intake evaluation. `same_photo` (393 of 494 cases with two good photos) means the
+crew uploaded one identical file as both before and after: it proves nothing, so only 101 real pairs are left.
+
+`label_pairs.py` writes `data/private/label_pairs.html`, a local page to label real pairs by hand
+(repaired / not_repaired / not_comparable); its CSV goes to `closure_labels.csv`, ids and labels only.
 
 `banned.txt` lists photos removed by hand because they are not of the road (a drawing, an identity
 document). `download.py` skips them, `qc.py` marks them `banned` and deletes their anonymized copy,

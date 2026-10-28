@@ -1,7 +1,7 @@
 """Build a local page to hand-label pothole before/after pairs for the closure evaluation.
 
-    python data/pothole_pairs/label_pairs.py            # 60 pairs, fixed seed
-    python data/pothole_pairs/label_pairs.py --n 100
+    python data/pothole_pairs/label_pairs.py            # up to 60 new pairs, fixed seed
+    python data/pothole_pairs/label_pairs.py --n 200    # every real pair not labeled yet
 
 Opens nothing on the network: it writes data/private/label_pairs.html, which shows the
 anonymized photos from data/private/anon/ side by side. Open it in your browser (double click),
@@ -12,7 +12,10 @@ Labels:
   1 repaired        the pothole in "before" is clearly fixed in "after", same place
   2 not_repaired    same place, the pothole (or part of it) is still there
   3 not_comparable  different place or angle, too dark, too blurred, or you cannot tell
-Progress is kept in the browser, so you can close the page and continue later.
+Progress is kept in the browser, so you can close the page and continue later. Pairs already in
+closure_labels.csv come back with their label, so the new download keeps them: save it over the
+old file. Only real pairs are offered (usable_as = pair): qc.py marks as same_photo the cases
+whose before and after are one identical file.
 """
 
 from __future__ import annotations
@@ -27,6 +30,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 PRIVATE = ROOT / "data" / "private"
 ANON = PRIVATE / "anon"
+LABELS = ROOT / "data" / "pothole_pairs" / "closure_labels.csv"
 MAX_BLURRED = 0.4  # above this the blur may hide the pothole (prefilter.csv)
 
 
@@ -82,8 +86,8 @@ PAGE = """<!doctype html>
 <script>
 const PAIRS = __PAIRS__;
 const KEY = "civicpulse-closure-labels-v1";
-let labels = {};
-try { labels = JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) {}
+let labels = __LABELS__;
+try { Object.assign(labels, JSON.parse(localStorage.getItem(KEY) || "{}")); } catch (e) {}
 let i = PAIRS.findIndex(p => !labels[p]); if (i < 0) i = 0;
 const $ = id => document.getElementById(id);
 function save() { try { localStorage.setItem(KEY, JSON.stringify(labels)); } catch (e) {} }
@@ -140,10 +144,17 @@ def main() -> int:
     if not pool:
         print("no usable pairs: run qc.py and prefilter.py first", file=sys.stderr)
         return 2
-    chosen = sorted(random.Random(args.seed).sample(pool, min(args.n, len(pool))))
+    done = {}
+    if LABELS.exists():
+        done = {r["pair_id"]: {"label": r["label"], "note": r.get("note") or ""}
+                for r in csv.DictReader(LABELS.open(encoding="utf-8")) if r["pair_id"] in pool}
+    fresh = [p for p in pool if p not in done]
+    chosen = sorted(done) + sorted(random.Random(args.seed).sample(fresh, min(args.n, len(fresh))))
     out = PRIVATE / "label_pairs.html"
-    out.write_text(PAGE.replace("__PAIRS__", json.dumps(chosen)), encoding="utf-8")
-    print(f"{len(chosen)} of {len(pool)} usable pairs -> {out.relative_to(ROOT)} (open it in your browser)")
+    out.write_text(PAGE.replace("__PAIRS__", json.dumps(chosen)).replace("__LABELS__", json.dumps(done)),
+                   encoding="utf-8")
+    print(f"{len(chosen) - len(done)} new + {len(done)} already labeled, of {len(pool)} usable pairs -> "
+          f"{out.relative_to(ROOT)} (open it in your browser)")
     return 0
 
 

@@ -16,7 +16,8 @@ Each photo in data/private/raw/ gets one status:
 Writes:
   data/private/photo_qc.csv      photo, sha256, status, cases sharing it
   data/pothole_pairs/pairs.csv       public index updated with before_status, after_status, usable_as
-                                 (pair, before_only, after_only, none)
+                                 (pair, same_photo, before_only, after_only, none); same_photo = the
+                                 crew uploaded one file as both before and after, so it proves nothing
   data/private/raw.zip           rebuilt without placeholders, ready for the anonymization notebook
 """
 
@@ -86,6 +87,7 @@ def main() -> int:
 
     # pair_id_side -> status, whatever the file extension
     by_side = {p.stem: status[p.name] for p in photos}
+    hash_by_side = {p.stem: digest[p.name] for p in photos}
     rows = list(csv.DictReader(PAIRS.open(encoding="utf-8")))
     base_cols = [c for c in rows[0] if c not in ("before_status", "after_status", "usable_as")]
     usable_counts: dict[str, int] = defaultdict(int)
@@ -94,6 +96,8 @@ def main() -> int:
             r[f"{side}_status"] = by_side.get(f"{r['pair_id']}_{side}", "missing")
         b_ok, a_ok = r["before_status"] == "ok", r["after_status"] == "ok"
         r["usable_as"] = "pair" if b_ok and a_ok else "before_only" if b_ok else "after_only" if a_ok else "none"
+        if r["usable_as"] == "pair" and hash_by_side[f"{r['pair_id']}_before"] == hash_by_side[f"{r['pair_id']}_after"]:
+            r["usable_as"] = "same_photo"
         usable_counts[r["usable_as"]] += 1
     with PAIRS.open("w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=[*base_cols, "before_status", "after_status", "usable_as"])

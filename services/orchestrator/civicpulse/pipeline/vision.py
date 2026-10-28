@@ -139,6 +139,8 @@ class VisionStage:
                                           "status": "error", "error": f"{type(exc).__name__}: {str(exc)[:300]}",
                                           "latency_ms": int((time.monotonic() - started) * 1000)})
             raise
+        if intake and self._gps_flagged(report["id"]):  # impossible travel: no support until a moderator decides
+            intake |= {"open_flags": ["impossible_gps"], "consistency_score": 0.0}
         status = intake["intake_status"] if intake else "NOT_VERIFIABLE_ISSUE_NOT_FOUND_IN_PHOTO"
         moved = self.db.compare_and_set("reports", report["id"], "spec_ready", {
             "status": "vision_done",
@@ -153,6 +155,11 @@ class VisionStage:
             self.db.insert("stage_runs", {"report_id": report["id"], "photo_version": version, "stage": stage,
                                           "status": "ok" if moved else "skipped", "provider": provider,
                                           "latency_ms": ms})
+
+    def _gps_flagged(self, report_id: str) -> bool:
+        """The impossible-travel trigger (migration 11) flags the report when it is inserted."""
+        return bool(self.db.select("moderation_flags", {"select": "id", "report_id": f"eq.{report_id}",
+                                                        "reason": "eq.impossible_gps", "resolved_at": "is.null"}))
 
     def _intake(self, report: dict) -> tuple[dict | None, str | None]:
         spec, version = report.get("spec") or {}, report["current_photo_version"]

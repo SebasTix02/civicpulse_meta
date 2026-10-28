@@ -57,6 +57,10 @@
         "properties": {"report_id": {"type": "string", "format": "uuid"}, "version": {"type": "integer"},
                        "distance": {"type": "integer", "minimum": 0, "maximum": 64}}}}}
     },
+    "open_flags": {
+      "type": "array", "items": {"enum": ["impossible_gps"]},
+      "description": "Moderation flags open on the report when the photo was checked; the report adds no support (consistency 0) until a moderator decides."
+    },
     "people_count": {"type": ["integer", "null"], "minimum": 0, "description": "From count_prompts; null when the domain does not count."},
     "anonymization": {
       "type": "object", "additionalProperties": false,

@@ -34,6 +34,11 @@ class FakeDb:
         }
         self.inserted, self.uploads, self.updates, self.downloads = [], {}, [], []
         self.reuse = {"reused": False, "matches": []}
+        self.flags = []
+
+    def select(self, table, params):
+        assert table == "moderation_flags" and params["reason"] == "eq.impossible_gps"
+        return self.flags
 
     def select_one(self, table, **eq):
         return self.rows.get(table)
@@ -174,6 +179,16 @@ def test_reused_photo_skips_sam_and_adds_no_support(monkeypatch):
     assert "public/reports/r1/v1.jpg" in db.uploads  # the moderator still sees the anonymized copy
     schema = json.loads((REPO_ROOT / "packages/contracts/schemas/intake_result.schema.json").read_text())
     jsonschema.validate(rep["intake"], schema)
+
+
+def test_impossible_gps_flag_removes_support(monkeypatch):
+    db, sam = FakeDb(spec_for("pothole")), FakeSAM({"pothole": [(0.8, [100, 100, 180, 160])]})
+    db.flags = [{"id": "f1"}]
+    r, _ = router([verdict("issue_present", 0.9)], monkeypatch)
+    VisionStage(db, r, sam, anonymizer).run(db.rows["reports"])
+    rep = db.rows["reports"]
+    assert rep["intake_status"] == "REPORT_CONFIRMED_BY_PHOTO" and rep["consistency_score"] == 0.0
+    assert rep["intake"]["open_flags"] == ["impossible_gps"]
 
 
 def test_sam_error_is_recorded_and_raised(monkeypatch):

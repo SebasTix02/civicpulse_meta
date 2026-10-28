@@ -63,6 +63,9 @@ class MemoryDb:
     def rpc(self, fn, args):  # check_photo_reuse: the smoke photos are never "reused"
         return {"reused": False, "matches": []}
 
+    def select(self, table, params):  # no moderation flags here
+        return []
+
     def upload(self, path, data, content_type="image/jpeg"):
         name = f"{self.rows['reports']['id']}_{Path(path).name}"
         (OUT / name).write_bytes(data)

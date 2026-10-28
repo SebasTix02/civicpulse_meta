@@ -43,6 +43,10 @@ crew uploaded one identical file as both before and after: it proves nothing, so
 
 `label_pairs.py` writes `data/private/label_pairs.html`, a local page to label real pairs by hand
 (repaired / not_repaired / not_comparable); its CSV goes to `closure_labels.csv`, ids and labels only.
+`label_all.py` writes `data/private/label_all.html` for every case with at least one photo, in
+batches of 100 (`--batch`), with two more labels: `already_repaired` (the street already looks
+fixed in "before") and `same_photo` ("after" repeats "before" or is missing). Its CSV goes to
+`closure_labels_v2.csv`; the first run preloads `closure_labels.csv`.
 
 `banned.txt` lists photos removed by hand because they are not of the road (a drawing, an identity
 document). `download.py` skips them, `qc.py` marks them `banned` and deletes their anonymized copy,

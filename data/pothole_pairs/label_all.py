@@ -1,23 +1,24 @@
-"""Build a local page to hand-label every pothole case, 100 at a time, with five labels.
+"""Build a local page to hand-label every pothole pair, 100 at a time, with five labels.
 
-    python data/pothole_pairs/label_all.py               # every case with at least one anonymized photo
+    python data/pothole_pairs/label_all.py               # every case with both photos anonymized
     python data/pothole_pairs/label_all.py --batch 50    # smaller batches
 
 Opens nothing on the network: it writes data/private/label_all.html, which shows the anonymized
-photos from data/private/anon/ side by side (a missing side says why: no photo, logo placeholder).
+photos from data/private/anon/ side by side. Cases without a real "before" and "after" photo
+(no photo, or the provider's logo placeholder) are left out.
 Open it in your browser (double click) and label with the keyboard:
 
   1 repaired          the pothole in "before" is clearly fixed in "after", same place
   2 not_repaired      same place, the pothole (or part of it) is still there
   3 not_comparable    different place or angle, too dark, too blurred, or you cannot tell
   4 already_repaired  the street already looks repaired in "before" too, so the pair proves nothing
-  5 same_photo        "after" is the same picture as "before", or there is no "after" at all
+  5 same_photo        "after" is the same picture as "before"
 
 Every label is kept in the browser at once. At the end of each batch the page asks you to press
 "Guardar CSV" and save the file as data/pothole_pairs/closure_labels_v2.csv (pair ids, labels and
 notes only, safe to commit). Running the script again preloads that file, so you can continue in
-another browser; "Cargar CSV" does the same from the page. The first time, the 93 labels of
-closure_labels.csv come preloaded so you only revise them.
+another browser; "Cargar CSV" does the same from the page. The labels of closure_labels.csv (three
+labels only) are not preloaded: every pair is labeled again with the five.
 """
 
 from __future__ import annotations
@@ -33,10 +34,7 @@ PRIVATE = ROOT / "data" / "private"
 ANON = PRIVATE / "anon"
 HERE = ROOT / "data" / "pothole_pairs"
 LABELS = HERE / "closure_labels_v2.csv"
-OLD_LABELS = HERE / "closure_labels.csv"
 LABEL_IDS = ("repaired", "not_repaired", "not_comparable", "already_repaired", "same_photo")
-WHY_MISSING = {"placeholder": "logo del proveedor (sin foto)", "missing": "sin foto", "banned": "excluida",
-               "reused": "sin copia anonimizada"}
 
 
 def cases() -> list[dict]:
@@ -50,24 +48,21 @@ def cases() -> list[dict]:
         case = {"id": row["pair_id"], "usable_as": row["usable_as"], "days": row["days_to_attend"]}
         for side in ("before", "after"):
             stem = f"{row['pair_id']}_{side}"
-            has = (ANON / f"{stem}.jpg").exists()
-            case[side] = has
-            case[f"{side}_why"] = "" if has else WHY_MISSING.get(row[f"{side}_status"], "sin foto")
+            case[side] = (ANON / f"{stem}.jpg").exists()
             case[f"{side}_blur"] = round(blurred.get(stem, 0), 2)
             case[f"{side}_reused"] = row[f"{side}_status"] == "reused"
-        if case["before"] or case["after"]:
+        if case["before"] and case["after"]:
             out.append(case)
     return out
 
 
 def preload(ids: set[str]) -> tuple[dict, str]:
-    for path in (LABELS, OLD_LABELS):
-        if path.exists():
-            rows = {r["pair_id"]: {"label": r["label"], "note": r.get("note") or ""}
-                    for r in csv.DictReader(path.open(encoding="utf-8"))
-                    if r["pair_id"] in ids and r["label"] in LABEL_IDS}
-            return rows, path.name
-    return {}, ""
+    if not LABELS.exists():
+        return {}, ""
+    rows = {r["pair_id"]: {"label": r["label"], "note": r.get("note") or ""}
+            for r in csv.DictReader(LABELS.open(encoding="utf-8"))
+            if r["pair_id"] in ids and r["label"] in LABEL_IDS}
+    return rows, LABELS.name
 
 
 PAGE = """<!doctype html>
@@ -84,8 +79,7 @@ PAGE = """<!doctype html>
  select, button, input { font:inherit; }
  .pair { display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:8px 16px; }
  .pair figure { margin:0; background:var(--card); border:1px solid var(--line); border-radius:6px; overflow:hidden; }
- .pair img, .pair .none { width:100%; height:calc(100vh - 250px); object-fit:contain; background:#000; display:block; }
- .pair .none { display:flex; align-items:center; justify-content:center; color:#bbb; background:#111; }
+ .pair img { width:100%; height:calc(100vh - 250px); object-fit:contain; background:#000; display:block; }
  figcaption { padding:4px 8px; font-weight:600; }
  .actions { display:flex; gap:8px; flex-wrap:wrap; padding:6px 16px; align-items:center; }
  button { padding:7px 12px; border-radius:6px; border:1px solid var(--line); background:var(--card); color:var(--fg); cursor:pointer; }
@@ -96,7 +90,7 @@ PAGE = """<!doctype html>
  .strip span { width:14px; height:14px; border-radius:3px; background:var(--line); cursor:pointer; }
  .strip span.cur { outline:2px solid var(--fg); }
  #banner { display:none; margin:8px 16px; padding:10px 14px; border-radius:6px; border:2px solid var(--c1); background:var(--card); }
- @media (max-width: 700px) { .pair { grid-template-columns:1fr; } .pair img, .pair .none { height:34vh; } }
+ @media (max-width: 700px) { .pair { grid-template-columns:1fr; } .pair img { height:34vh; } }
 </style></head><body>
 <header><b id="title"></b><span class="muted" id="progress"></span><span id="flags"></span><span style="flex:1"></span>
  <label>Lote <select id="batch"></select></label>
@@ -112,7 +106,7 @@ PAGE = """<!doctype html>
  <button data-l="not_repaired" style="border-color:var(--c2)">2 · No reparado</button>
  <button data-l="not_comparable" style="border-color:var(--c3)">3 · No comparable</button>
  <button data-l="already_repaired" style="border-color:var(--c4)">4 · Ya reparado en el antes</button>
- <button data-l="same_photo" style="border-color:var(--c5)">5 · Misma foto / sin después</button>
+ <button data-l="same_photo" style="border-color:var(--c5)">5 · Misma foto</button>
  <input type="text" id="note" placeholder="Nota opcional (Enter para guardarla; p. ej. otro ángulo, parche parcial)">
 </div>
 <div class="strip" id="strip"></div>
@@ -121,7 +115,7 @@ const CASES = __CASES__, BATCH = __BATCH__, SOURCE = __SOURCE__;
 const LABELS = ["repaired", "not_repaired", "not_comparable", "already_repaired", "same_photo"];
 const COLORS = { repaired:"var(--c1)", not_repaired:"var(--c2)", not_comparable:"var(--c3)",
                  already_repaired:"var(--c4)", same_photo:"var(--c5)" };
-const KEY = "civicpulse-pothole-labels-v2";
+const KEY = "civicpulse-pothole-labels-v3";  // v2 held the preloaded three-label answers
 let labels = __LABELS__;
 try { Object.assign(labels, JSON.parse(localStorage.getItem(KEY) || "{}")); } catch (e) {}
 const $ = id => document.getElementById(id);
@@ -136,7 +130,6 @@ for (let b = 0; b < nBatches; b++) {
 }
 function save() { try { localStorage.setItem(KEY, JSON.stringify(labels)); } catch (e) {} }
 function side(c, s) {
-  if (!c[s]) return `<div class="none">${c[s + "_why"]}</div>`;
   return `<img src="anon/${c.id}_${s}.jpg" alt="${s}">`;
 }
 function batchOf(k) { return Math.floor(k / BATCH); }
@@ -242,7 +235,7 @@ def main() -> int:
     args = ap.parse_args()
     found = cases()
     if not found:
-        print("no anonymized photos in data/private/anon/: run qc.py and prefilter.py first", file=sys.stderr)
+        print("no case has both photos in data/private/anon/: run qc.py and prefilter.py first", file=sys.stderr)
         return 2
     done, source = preload({c["id"] for c in found})
     out = PRIVATE / "label_all.html"

@@ -97,5 +97,17 @@ def api():
 
 
 @app.function(secrets=secrets, schedule=modal.Cron("* * * * *"), timeout=55)
-def sweeper() -> None:
-    """Re-spawns reports stuck in a non-final status for more than 2 minutes (day 4)."""
+def sweeper() -> dict:
+    """Re-spawns reports stuck in a non-final status for more than 2 minutes (pipeline/sweeper.py)."""
+    from datetime import UTC, datetime
+
+    from civicpulse.config import get_settings
+    from civicpulse.db import Db
+    from civicpulse.pipeline.sweeper import sweep
+
+    s = get_settings()
+    out = sweep(Db(s.supabase_url, s.supabase_service_key), lambda kind, key: run_job.spawn(kind, key),
+                datetime.now(UTC), s.max_stage_attempts)
+    if any(out.values()):
+        print(out)
+    return out

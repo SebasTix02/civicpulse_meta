@@ -2,8 +2,7 @@
 id: transit
 display_name: {en: "Public transit", es: "Transporte público"}
 status: active
-# informal_stop, crowded_stop, bus_stop_blocked_by_vehicle, missing_stop_marking and
-# stop_infrastructure are added to the catalog on day 2; the sync skips missing ids with a warning.
+# The five stop categories answer the "67% of stops are de facto" figure (plan §5.6).
 categories: [informal_stop, crowded_stop, bus_stop_blocked_by_vehicle, missing_stop_marking, stop_infrastructure, transit_delay]
 count_prompts: ["person"]
 spatial_layers: [transit_stops, transit_routes]

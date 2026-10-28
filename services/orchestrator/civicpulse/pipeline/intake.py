@@ -4,8 +4,9 @@ Every stage is idempotent: it is skipped when stage_runs already has an `ok` row
 same (report_id, photo_version, stage), and status moves use compare-and-set. Duplicate
 webhooks, sweeper retries and /ops/reprocess are all safe.
 
-Built so far: `spec` and vision (`sam_ground` + `classify`, pipeline/vision.py). Cluster
-(day 5) and brief (day 7) are not built: a report waits in vision_done instead of faking a result.
+Built so far: `spec`, vision (`sam_ground` + `classify`, pipeline/vision.py) and `cluster`
+(assign_cluster() in Postgres, migration 08). Routing and briefs for validated clusters come
+with day 7.
 """
 
 from __future__ import annotations
@@ -77,7 +78,21 @@ class IntakePipeline:
                 raise RuntimeError("vision stage not configured (SAM backend or anonymizer missing)")
             self.vision.run(report)
             report = self.db.select_one("reports", id=report_id)
+        if report["status"] == "vision_done":
+            self.stage_cluster(report)
+            report = self.db.select_one("reports", id=report_id)
         return report["status"]
+
+    def stage_cluster(self, report: dict) -> dict:
+        """One transaction in Postgres: nearest open cluster or a new one, support, validation."""
+        started = time.monotonic()
+        out = self.db.rpc("assign_cluster", {"p_report_id": report["id"]})
+        self.db.insert("stage_runs", {
+            "report_id": report["id"], "photo_version": report["current_photo_version"], "stage": "cluster",
+            "status": "skipped" if out.get("skipped") else "ok", "provider": "postgis",
+            "latency_ms": int((time.monotonic() - started) * 1000),
+        })
+        return out
 
     def stage_spec(self, report: dict) -> None:
         version = report["current_photo_version"]

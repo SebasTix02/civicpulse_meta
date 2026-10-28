@@ -37,4 +37,4 @@ def test_spawns_stuck_skips_running_and_fails_after_max_attempts():
     assert spawned == [("intake", "stuck")]
     assert db.moved == [("broken", "spec_ready", {"status": "failed"})]
     params = db.queries[0][1]
-    assert params["status"] == "in.(received,spec_ready)" and params["updated_at"] == f"lt.{ago(120)}"
+    assert params["status"] == "in.(received,spec_ready,vision_done)" and params["updated_at"] == f"lt.{ago(120)}"

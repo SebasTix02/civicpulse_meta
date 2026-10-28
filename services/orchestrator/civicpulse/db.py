@@ -26,6 +26,11 @@ class Db:
         rows = resp.json()
         return rows[0] if rows else None
 
+    def rpc(self, fn: str, args: dict) -> Any:
+        resp = self.client.post(f"{self.base}/rpc/{fn}", json=args, headers=self.headers)
+        resp.raise_for_status()
+        return resp.json()
+
     def select(self, table: str, params: dict[str, str]) -> list[dict]:
         """Raw PostgREST filters, e.g. {"status": "in.(received,spec_ready)", "updated_at": "lt.<iso>"}."""
         resp = self.client.get(f"{self.base}/{table}", params=params, headers=self.headers)

@@ -2,12 +2,10 @@
 
 A webhook can be lost, a container can die mid-stage, or SAM / the LLM chain can be down for a
 while. Stages are idempotent (stage_runs + compare-and-set), so re-running is always safe; the
-sweeper only decides when. A report is stuck when it sits in `received` or `spec_ready` with no
-update for STALE_S and no stage started in that window (a slow job still running is left
-alone). After `max_attempts` recorded errors for the current photo it is marked `failed`, so a
+sweeper only decides when. A report is stuck when it sits in `received`, `spec_ready` or
+`vision_done` with no update for STALE_S and no stage started in that window (a slow job still
+running is left alone). After `max_attempts` recorded errors for the current photo it is marked `failed`, so a
 broken photo does not bill SAM every minute; /ops/reprocess can still run it again by hand.
-
-`vision_done` joins the list once clustering exists (day 5).
 """
 
 from __future__ import annotations
@@ -17,7 +15,7 @@ from datetime import datetime, timedelta
 
 from civicpulse.db import Db
 
-RETRY_STATUSES = ("received", "spec_ready")
+RETRY_STATUSES = ("received", "spec_ready", "vision_done")
 STALE_S = 120
 BATCH = 20
 

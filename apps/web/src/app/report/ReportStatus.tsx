@@ -6,13 +6,13 @@ import { browserClient } from "@/lib/supabase";
 
 type Row = { status: string; intake_status: string | null };
 
-const STEPS = TIMELINE.slice(0, 3); // received -> understood -> photo checked; the rest comes with clustering
-const FINAL = new Set(["vision_done", "clustered", "failed"]);
+const STEPS = TIMELINE.slice(0, 4); // received -> understood -> photo checked -> on the map (clustered); the rest follows the cluster
+const FINAL = new Set(["clustered", "failed"]);
 const POLL_MS = 5000;
 const GIVE_UP_MS = 3 * 60 * 1000;
 
 // Follows one report live: Realtime on reports (own_reports RLS), plus polling in case the
-// socket cannot connect on a mobile network. Stops once the photo has been checked.
+// socket cannot connect on a mobile network. Stops once the report joined a cluster.
 export function ReportStatus({ lang, reportId }: { lang: Lang; reportId: string }) {
   const [row, setRow] = useState<Row>({ status: "received", intake_status: null });
   const [slow, setSlow] = useState(false);
@@ -61,7 +61,7 @@ export function ReportStatus({ lang, reportId }: { lang: Lang; reportId: string 
       <p>{t(lang, "reportReceived")}</p>
       <ol className="timeline">
         {STEPS.map((s, i) => (
-          <li key={s.id} className={i < current || checked ? "done" : i === current ? "now" : ""}>
+          <li key={s.id} className={i < current || row.status === "clustered" ? "done" : i === current ? "now" : ""}>
             {s[lang]}
           </li>
         ))}

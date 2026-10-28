@@ -98,7 +98,7 @@ def api():
 
 @app.function(secrets=secrets, schedule=modal.Cron("* * * * *"), timeout=55)
 def sweeper() -> dict:
-    """Re-spawns reports stuck in a non-final status for more than 2 minutes (pipeline/sweeper.py)."""
+    """Re-spawns reports stuck before clustered for more than 2 minutes (pipeline/sweeper.py)."""
     from datetime import UTC, datetime
 
     from civicpulse.config import get_settings

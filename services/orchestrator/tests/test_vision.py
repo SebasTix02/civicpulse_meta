@@ -177,3 +177,21 @@ def test_sam_error_is_recorded_and_raised(monkeypatch):
 ])
 def test_decide_intake_never_confirms_on_doubt(cands, whole, on, expected):
     assert decide_intake({"target_prompts": ["pothole"]}, cands, whole, on) == expected
+
+
+def test_pipeline_clusters_after_vision(monkeypatch):
+    from civicpulse.pipeline.intake import IntakePipeline
+
+    db, sam = FakeDb(spec_for("pothole")), FakeSAM({"pothole": [(0.8, [100, 100, 180, 160])]})
+    calls = []
+
+    def rpc(fn, args):
+        calls.append((fn, args))
+        db.rows["reports"]["status"] = "clustered"
+        return {"cluster_id": "c1", "status": "candidate"}
+
+    db.rpc = rpc
+    r, _ = router([verdict("issue_present", 0.9)], monkeypatch)
+    assert IntakePipeline(db, CATALOG, r, VisionStage(db, r, sam, anonymizer)).run("r1") == "clustered"
+    assert calls == [("assign_cluster", {"p_report_id": "r1"})]
+    assert [row["stage"] for _, row in db.inserted] == ["sam_ground", "classify", "cluster"]

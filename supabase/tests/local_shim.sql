@@ -2,6 +2,14 @@
 -- (CI and local without Docker). Never applied to a real Supabase project.
 create schema if not exists auth;
 create schema if not exists extensions;
+-- The postgis/postgis image (CI) pre-installs PostGIS in public; Supabase keeps it in extensions,
+-- and the seed calls extensions.st_*. PostGIS cannot be moved, so reinstall it there.
+do $$ begin
+  if exists (select 1 from pg_extension e join pg_namespace n on n.oid = e.extnamespace
+              where e.extname = 'postgis' and n.nspname <> 'extensions') then
+    drop extension if exists postgis_tiger_geocoder, postgis_topology, postgis cascade;
+  end if;
+end $$;
 create table if not exists auth.users (id uuid primary key, email text);
 create or replace function auth.jwt() returns jsonb language sql stable as $$
   select coalesce(nullif(current_setting('request.jwt.claims', true), ''), '{}')::jsonb

@@ -26,6 +26,18 @@ const dict = {
   reportSend: { es: "Enviar", en: "Send" },
   reportSending: { es: "Enviando…", en: "Sending…" },
   reportReceived: { es: "Recibido. Te avisamos cuando la IA lo revise.", en: "Received. We will let you know when the AI has checked it." },
+  reportCheckFailed: {
+    es: "No pudimos revisar la foto ahora. Tu reporte quedó guardado y sigue contando.",
+    en: "We could not check the photo right now. Your report is saved and still counts.",
+  },
+  reportStillChecking: {
+    es: "La revisión está tardando más de lo normal. Puedes cerrar esta página: tu reporte ya está guardado.",
+    en: "The check is taking longer than usual. You can close this page: your report is already saved.",
+  },
+  reportPublicPhoto: {
+    es: "Así se verá tu foto en público: caras, personas y placas difuminadas.",
+    en: "This is how your photo looks in public: faces, people and plates blurred.",
+  },
   reportNeedsGps: { es: "Necesitamos tu ubicación para ubicar el problema.", en: "We need your location to place the problem." },
   sandboxTitle: { es: "Modo sandbox", en: "Sandbox mode" },
   sandboxBody: {
@@ -54,3 +66,32 @@ export const TIMELINE: { id: string; es: string; en: string }[] = [
   { id: "resolution_pending", es: "Revisando arreglo", en: "Checking the fix" },
   { id: "resolved", es: "Resuelto", en: "Resolved" },
 ];
+
+// What the photo check means for the citizen (intake_status). A photo never rejects a report.
+const INTAKE: Record<string, Record<Lang, string>> = {
+  REPORT_CONFIRMED_BY_PHOTO: { es: "La foto muestra el problema.", en: "The photo shows the problem." },
+  ISSUE_VISIBLE_NOT_LOCALIZED_REQUIRES_REVIEW: {
+    es: "Se ve el problema en la foto; una persona confirmará dónde está.",
+    en: "The problem is visible; a person will confirm where it is.",
+  },
+  CANDIDATE_REGIONS_FOUND_REQUIRES_REVIEW: {
+    es: "Encontramos posibles zonas del problema; una persona lo revisará.",
+    en: "We found possible areas of the problem; a person will review it.",
+  },
+  NOT_VERIFIABLE_ISSUE_NOT_FOUND_IN_PHOTO: {
+    es: "No logramos verlo en esta foto. Tu reporte sigue contando; una foto más cercana ayuda.",
+    en: "We could not see it in this photo. Your report still counts; a closer photo helps.",
+  },
+  NOT_VERIFIABLE_NO_VISUAL_SPEC: {
+    es: "Este problema se confirma con más reportes de la zona, no con la foto.",
+    en: "This problem is confirmed by more reports in the area, not by the photo.",
+  },
+  NOT_PHOTO_VERIFIABLE_CATEGORY: {
+    es: "Este problema se confirma con más reportes de la zona, no con la foto.",
+    en: "This problem is confirmed by more reports in the area, not by the photo.",
+  },
+};
+
+export function intakeMessage(lang: Lang, status: string): string {
+  return INTAKE[status]?.[lang] ?? INTAKE.NOT_VERIFIABLE_ISSUE_NOT_FOUND_IN_PHOTO[lang];
+}

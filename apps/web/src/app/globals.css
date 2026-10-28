@@ -23,3 +23,7 @@ textarea, input { width: 100%; font: inherit; padding: 10px; border-radius: 8px;
 button.primary { background: var(--accent); color: #fff; border: 0; border-radius: 10px; padding: 12px 18px; font: inherit; font-weight: 600; cursor: pointer; }
 button.primary:disabled { opacity: 0.5; cursor: default; }
 img.preview { max-width: 100%; border-radius: 10px; margin-top: 8px; }
+.timeline { list-style: none; padding: 0; margin: 12px 0; display: flex; gap: 8px; flex-wrap: wrap; }
+.timeline li { padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+.timeline li.done { border-color: var(--accent); color: var(--fg); }
+.timeline li.now { border-color: var(--accent); color: var(--accent); font-weight: 600; }

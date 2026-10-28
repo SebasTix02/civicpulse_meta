@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { t, type Lang } from "@/lib/i18n";
 import { browserClient } from "@/lib/supabase";
+import { ReportStatus } from "./ReportStatus";
 
 type Fix = { lat: number; lon: number; accuracy: number };
 type Phase = "idle" | "sending" | "done" | "error";
@@ -38,6 +39,7 @@ export function ReportForm({ lang }: { lang: Lang }) {
   const [photo, setPhoto] = useState<File | null>(null);
   const [phase, setPhase] = useState<Phase>("idle");
   const [error, setError] = useState("");
+  const [reportId, setReportId] = useState("");
 
   async function submit() {
     if (!photo) return;
@@ -64,8 +66,9 @@ export function ReportForm({ lang }: { lang: Lang }) {
         .upload(nonce.upload_path, blob, { contentType: "image/jpeg" });
       if (uploadError) throw uploadError;
       // Pin = GPS fix until the draggable pin lands (day 4).
+      const id = crypto.randomUUID();
       const { error: submitError } = await supabase.rpc("submit_report", {
-        p_report_id: crypto.randomUUID(),
+        p_report_id: id,
         p_location: { lat: fix.lat, lon: fix.lon },
         p_gps_location: { lat: fix.lat, lon: fix.lon },
         p_gps_accuracy_m: fix.accuracy,
@@ -78,6 +81,7 @@ export function ReportForm({ lang }: { lang: Lang }) {
         p_raw_text: text,
       });
       if (submitError) throw submitError;
+      setReportId(id);
       setPhase("done");
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -85,7 +89,7 @@ export function ReportForm({ lang }: { lang: Lang }) {
     }
   }
 
-  if (phase === "done") return <div className="card">{t(lang, "reportReceived")}</div>;
+  if (phase === "done") return <ReportStatus lang={lang} reportId={reportId} />;
 
   return (
     <div className="card">

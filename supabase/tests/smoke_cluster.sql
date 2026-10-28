@@ -42,5 +42,26 @@ begin
   assert (assign_cluster((x ->> 'report_id')::uuid) ->> 'skipped')::boolean, 'idempotent';
   assert (select status from reports where id = (x ->> 'report_id')::uuid) = 'clustered', 'report moved';
 end $$;
+
+-- Simulator: only in a sandbox session. A spammer (1 device x 5) and a Wi-Fi of 4 phones stay
+-- candidates; 3 neighbours on their own networks validate.
+do $$
+declare sid uuid; spam jsonb; wifi jsonb; ok jsonb;
+begin
+  insert into sandbox_sessions (city_id) values ('ambato') returning id into sid;
+  spam := simulate_reports(sid, 'pothole', -1.2400, -78.6200, p_devices => 1, p_reports_each => 5);
+  assert spam -> 'last' ->> 'status' = 'candidate' and (spam -> 'last' ->> 'report_count')::int = 5, spam::text;
+  wifi := simulate_reports(sid, 'garbage', -1.2400, -78.6200, p_devices => 4, p_network => '10.0.0.0/24');
+  assert wifi -> 'last' ->> 'status' = 'candidate' and (wifi -> 'last' ->> 'weighted_support')::real = 0.5, wifi::text;
+  ok := simulate_reports(sid, 'informal_stop', -1.2400, -78.6200, p_devices => 3);
+  assert ok -> 'last' ->> 'status' = 'validated', ok::text;
+  assert (select bool_and(is_sandbox) from clusters where sandbox_session_id = sid), 'sandbox clusters only';
+  assert not exists (select 1 from clusters where id = (ok -> 'last' ->> 'cluster_id')::uuid and not is_sandbox);
+  begin
+    perform simulate_reports(gen_random_uuid(), 'pothole', -1.24, -78.62);
+    raise exception 'expected sandbox_session_not_found';
+  exception when sqlstate 'PT404' then null;
+  end;
+end $$;
 rollback;
 \echo 'smoke_cluster: ok'

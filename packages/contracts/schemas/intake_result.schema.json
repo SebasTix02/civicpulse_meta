@@ -49,6 +49,14 @@
       "description": "One classifier call on the whole photo when no candidate was confirmed.",
       "oneOf": [{"type": "null"}, {"$ref": "#/$defs/crop_answer"}]
     },
+    "reused_photo": {
+      "type": "object", "additionalProperties": false, "required": ["matches"],
+      "description": "The same picture is attached to other reports (sha256 or perceptual hash): a moderation flag is open and the report adds no support. SAM and the classifier do not run.",
+      "properties": {"matches": {"type": "array", "items": {
+        "type": "object", "additionalProperties": false, "required": ["report_id", "distance"],
+        "properties": {"report_id": {"type": "string", "format": "uuid"}, "version": {"type": "integer"},
+                       "distance": {"type": "integer", "minimum": 0, "maximum": 64}}}}}
+    },
     "people_count": {"type": ["integer", "null"], "minimum": 0, "description": "From count_prompts; null when the domain does not count."},
     "anonymization": {
       "type": "object", "additionalProperties": false,

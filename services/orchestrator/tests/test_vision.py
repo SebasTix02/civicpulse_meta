@@ -33,6 +33,7 @@ class FakeDb:
             "domains": {"id": "roads", "count_prompts": []},
         }
         self.inserted, self.uploads, self.updates, self.downloads = [], {}, [], []
+        self.reuse = {"reused": False, "matches": []}
 
     def select_one(self, table, **eq):
         return self.rows.get(table)
@@ -48,10 +49,14 @@ class FakeDb:
 
     def download(self, path):
         self.downloads.append(path)
-        return b"RAW PHOTO"
+        return RAW
 
     def upload(self, path, data, content_type="image/jpeg"):
         self.uploads[path] = data
+
+    def rpc(self, fn, args):
+        assert fn == "check_photo_reuse" and len(args["p_phash"]) == 16
+        return self.reuse
 
     def compare_and_set(self, table, id_, expected, patch):
         if self.rows[table]["status"] != expected:
@@ -87,8 +92,11 @@ def router(answers, monkeypatch):
                      client=httpx.Client(transport=httpx.MockTransport(handler))), seen
 
 
+RAW = to_jpeg(np.full((300, 400, 3), 90, np.uint8))
+
+
 def anonymizer(photo: bytes) -> Anonymized:
-    assert photo == b"RAW PHOTO"
+    assert photo == RAW
     return Anonymized(ANON, 400, 300, faces=1, people=0, vehicles=0, blurred_share=0.02)
 
 
@@ -155,6 +163,19 @@ def test_category_without_photo_skips_sam(monkeypatch):
     assert sam.calls == [] and seen == [] and "public/reports/r1/v1.jpg" in db.uploads
 
 
+def test_reused_photo_skips_sam_and_adds_no_support(monkeypatch):
+    db, sam = FakeDb(spec_for("pothole")), FakeSAM({"pothole": [(0.9, [10, 10, 60, 60])]})
+    db.reuse = {"reused": True, "matches": [{"report_id": "r0", "version": 1, "distance": 2}]}
+    r, seen = router([], monkeypatch)
+    VisionStage(db, r, sam, anonymizer).run(db.rows["reports"])
+    rep = db.rows["reports"]
+    assert sam.calls == [] and seen == [] and rep["consistency_score"] == 0.0
+    assert rep["intake"]["reused_photo"]["matches"][0]["report_id"] == "r0"
+    assert "public/reports/r1/v1.jpg" in db.uploads  # the moderator still sees the anonymized copy
+    schema = json.loads((REPO_ROOT / "packages/contracts/schemas/intake_result.schema.json").read_text())
+    jsonschema.validate(rep["intake"], schema)
+
+
 def test_sam_error_is_recorded_and_raised(monkeypatch):
     class Broken(FakeSAM):
         def segment(self, *a, **k):
@@ -186,6 +207,8 @@ def test_pipeline_clusters_after_vision(monkeypatch):
     calls = []
 
     def rpc(fn, args):
+        if fn == "check_photo_reuse":
+            return {"reused": False, "matches": []}
         calls.append((fn, args))
         db.rows["reports"]["status"] = "clustered"
         return {"cluster_id": "c1", "status": "candidate"}
@@ -195,3 +218,15 @@ def test_pipeline_clusters_after_vision(monkeypatch):
     assert IntakePipeline(db, CATALOG, r, VisionStage(db, r, sam, anonymizer)).run("r1") == "clustered"
     assert calls == [("assign_cluster", {"p_report_id": "r1"})]
     assert [row["stage"] for _, row in db.inserted] == ["sam_ground", "classify", "cluster"]
+
+
+def test_phash_survives_resizing_and_tells_photos_apart():
+    import cv2
+
+    from civicpulse.fingerprint import distance, phash
+
+    rng = np.random.default_rng(1)
+    scene = cv2.GaussianBlur((rng.random((900, 1200, 3)) * 255).astype(np.uint8), (0, 0), 12)
+    other = cv2.GaussianBlur((rng.random((900, 1200, 3)) * 255).astype(np.uint8), (0, 0), 12)
+    same = distance(phash(to_jpeg(scene)), phash(to_jpeg(cv2.resize(scene, (800, 600)), 70)))
+    assert same <= 10 < distance(phash(to_jpeg(scene)), phash(to_jpeg(other)))

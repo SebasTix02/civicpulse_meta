@@ -24,6 +24,7 @@ import numpy as np
 
 from civicpulse.anonymize import Anonymized, load, to_jpeg
 from civicpulse.db import Db
+from civicpulse.fingerprint import phash, sha256
 from civicpulse.llm.prompts import crop_check_prompt, whole_image_check_prompt
 from civicpulse.llm.router import AllProvidersFailed, LLMRouter, image_part
 from civicpulse.models import ClassifierVerdict, IntakeStatus
@@ -143,7 +144,7 @@ class VisionStage:
             "status": "vision_done",
             "intake": intake,
             "intake_status": status,
-            "consistency_score": CONSISTENCY.get(status, 0.5),
+            "consistency_score": intake["consistency_score"] if intake else 0.5,
             "model_versions": (report.get("model_versions") or {}) | {
                 "sam_ground": self.sam_model, "classify": classifier_model},
         })
@@ -159,7 +160,11 @@ class VisionStage:
             return None, None
         link = self.db.select_one("report_photos", report_id=report["id"], version=version)
         photo = self.db.select_one("photos", id=link["photo_id"])
-        anon = self.anonymize(self.db.download(photo["storage_path"]))
+        raw = self.db.download(photo["storage_path"])
+        reuse = self.db.rpc("check_photo_reuse", {"p_photo_id": photo["id"], "p_sha256": sha256(raw),
+                                                  "p_phash": phash(raw)})
+        anon = self.anonymize(raw)
+        del raw
         public_dir = (f"public/sandbox/{report.get('sandbox_session_id')}/{report['id']}" if report.get("is_sandbox")
                       else f"public/reports/{report['id']}")
         public_path = f"{public_dir}/v{version}.jpg"
@@ -175,6 +180,10 @@ class VisionStage:
             "budget": "intake", "models": {"segmentation": self.sam_model, "classifier": None},
             "created_at": datetime.now(UTC).isoformat(),
         }
+        if reuse.get("reused"):  # same picture as another report: flagged for moderation, adds no support
+            intake |= {"reused_photo": {"matches": reuse["matches"]},
+                       "intake_status": "NOT_VERIFIABLE_ISSUE_NOT_FOUND_IN_PHOTO", "consistency_score": 0.0}
+            return intake, None
         if spec.get("photo_verifiability") == "none" or not spec.get("target_prompts"):
             intake["intake_status"] = decide_intake(spec, [], None, False)
             intake["consistency_score"] = CONSISTENCY.get(intake["intake_status"], 0.5)

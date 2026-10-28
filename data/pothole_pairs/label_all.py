@@ -17,8 +17,7 @@ Open it in your browser (double click) and label with the keyboard:
 Every label is kept in the browser at once. At the end of each batch the page asks you to press
 "Guardar CSV" and save the file as data/pothole_pairs/closure_labels_v2.csv (pair ids, labels and
 notes only, safe to commit). Running the script again preloads that file, so you can continue in
-another browser; "Cargar CSV" does the same from the page. The labels of closure_labels.csv (three
-labels only) are not preloaded: every pair is labeled again with the five.
+another browser; "Cargar CSV" does the same from the page.
 """
 
 from __future__ import annotations

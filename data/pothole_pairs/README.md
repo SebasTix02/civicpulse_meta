@@ -41,12 +41,20 @@ cases, so it cannot prove what happened at that place). `pairs.csv` gets `usable
 photos still feed the intake evaluation. `same_photo` (393 of 494 cases with two good photos) means the
 crew uploaded one identical file as both before and after: it proves nothing, so only 101 real pairs are left.
 
-`label_pairs.py` writes `data/private/label_pairs.html`, a local page to label real pairs by hand
-(repaired / not_repaired / not_comparable); its CSV goes to `closure_labels.csv`, ids and labels only.
-`label_all.py` writes `data/private/label_all.html` for every case with both photos anonymized, in
-batches of 100 (`--batch`), with two more labels: `already_repaired` (the street already looks
-fixed in "before") and `same_photo` ("after" repeats "before"). Its CSV goes to
-`closure_labels_v2.csv` and replaces `closure_labels.csv` once every pair is labeled again.
+`label_all.py` writes `data/private/label_all.html`, a local page to label by hand every case with
+both photos anonymized (629), in batches of 100 (`--batch`). Its CSV is `closure_labels_v2.csv`,
+ids, labels and notes only. Labels from the first full pass (2026-10-28):
+
+| Label | Meaning | Cases |
+|---|---|---|
+| `repaired` | the pothole in "before" is fixed in "after", same place | 70 |
+| `not_repaired` | same place, the pothole is still there | 2 |
+| `not_comparable` | other place, too blurred, or cannot tell | 81 |
+| `already_repaired` | the street already looks fixed in "before" | 410 |
+| `same_photo` | "after" is the same picture as "before" | 66 |
+
+Most `already_repaired` cases (337) are `same_photo` files showing a repaired street: the crew
+uploaded the "after" picture twice. Notes mark another angle or heavy blur on many `repaired` pairs.
 
 `banned.txt` lists photos removed by hand because they are not of the road (a drawing, an identity
 document). `download.py` skips them, `qc.py` marks them `banned` and deletes their anonymized copy,
@@ -77,8 +85,9 @@ its contact sheet, then unzip `anon.zip` into `data/private/anon/`.
 
 ## How CivicPulse uses it
 
-1. **Closure eval (main metric):** a hand-labelled subset (`eval/closure_labels.csv`, day 2)
-   with `repaired / not_repaired / not_comparable`. Goal: **zero false "resolved"**.
+1. **Closure eval (main metric):** the hand labels in `closure_labels_v2.csv`. The `repaired`
+   pairs are the positives; real `not_repaired` pairs are too few, so the negatives come from
+   other sources (see the plan). Goal: **zero false "resolved"**.
 2. **Intake eval:** the before photos check that SAM 3.1 finds the pothole.
 3. **Seed of the public map:** attended cases go through the real pipeline (day 8) so the map
    shows history, never with names, phones or exact coordinates.

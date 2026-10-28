@@ -54,6 +54,15 @@ def crop_check_prompt(spec: dict) -> str:
             + 'Answer ONLY with JSON: {"label": "...", "confidence": 0.0, "reason": "short phrase"}')
 
 
+def whole_image_check_prompt(spec: dict) -> str:
+    """Asked once when no outlined region was confirmed: is the problem anywhere in the photo?"""
+    return ("You are a municipal field inspector checking a citizen report against the photo they sent. "
+            + problem_text(spec)
+            + " Look at the whole photo. Faces, people and vehicles may be blurred for privacy; ignore the blur. "
+            + "Labels: " + LABEL_GLOSSARY + " Use issue_present only if you clearly see the reported problem. "
+            + 'Answer ONLY with JSON: {"label": "...", "confidence": 0.0, "reason": "short phrase, say where"}')
+
+
 def pair_check_prompt(spec: dict) -> str:
     return ("You are a municipal field inspector checking whether a reported problem was fixed. "
             + problem_text(spec)

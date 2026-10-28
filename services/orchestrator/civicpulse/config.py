@@ -72,6 +72,19 @@ class Settings:
     llm_providers: list[ProviderConfig] = field(default_factory=_provider_chain)
     max_stage_attempts: int = 5
 
+    def sam(self):
+        """The SAMService for `sam_backend`. Only meta_api is wired; modal_gpu stays the plan B."""
+        from civicpulse.sam.service import FixtureSAM, MetaApiSAM
+
+        if self.sam_backend == "fixtures":
+            return FixtureSAM(Path(os.environ.get("SAM_FIXTURES", REPO_ROOT / "fixtures/sam")))
+        if self.sam_backend != "meta_api":
+            raise RuntimeError(f"SAM_BACKEND={self.sam_backend} is not available yet")
+        key = os.environ.get("META_MODEL_API_KEY")
+        if not key:
+            raise RuntimeError("META_MODEL_API_KEY missing: SAM 3.1 runs on the Meta Model API")
+        return MetaApiSAM(key, os.environ.get("META_API_BASE", "https://api.meta.ai/v1"))
+
 
 def get_settings() -> Settings:
     return Settings()

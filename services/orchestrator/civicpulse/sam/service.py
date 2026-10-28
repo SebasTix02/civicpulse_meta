@@ -27,6 +27,8 @@ class Detection:
     score: float
     box_xywh: list[float]  # normalized 0..1
     mask_rle: dict | None = None  # COCO RLE (MetaApiSAM: box-local, with box_px); decoded on the CPU side when needed
+    box_px: list[int] | None = None  # [x1, y1, x2, y2] in image pixels, x2/y2 exclusive
+    mask_local: tuple[bytes, int, int] | None = field(default=None, repr=False)  # raster 0/1 bytes, width, height of the box
 
 
 @dataclass
@@ -74,7 +76,12 @@ class MetaApiSAM:
 
     @staticmethod
     def parse(prompt: str, text: str, threshold: float) -> list[Detection]:
-        from meta_sam_parser import CompletedOutcome, decode_mask_to_rle, image_segmentation_format
+        from meta_sam_parser import (
+            CompletedOutcome,
+            decode_mask_to_raster,
+            decode_mask_to_rle,
+            image_segmentation_format,
+        )
 
         parser = image_segmentation_format().create_parser()
         parser.push(text if text.endswith("\n") else text + "\n", emit=False)
@@ -97,6 +104,8 @@ class MetaApiSAM:
                 box_xywh=[b.left / width, b.top / height, (b.right - b.left) / width, (b.bottom - b.top) / height],
                 mask_rle={"size": list(rle.size), "counts": rle.counts, "box_px": [b.left, b.top, b.right, b.bottom],
                           "image_px": [width, height], "box_local": True, "score_reported": r.confidence is not None},
+                box_px=[int(b.left), int(b.top), int(b.right), int(b.bottom)],
+                mask_local=(bytes(decode_mask_to_raster(r.mask)), int(r.mask.width), int(r.mask.height)),
             ))
         return out
 

@@ -22,6 +22,7 @@ def test_parse_filters_by_confidence_and_normalizes_box():
     assert d.score == 0.93
     assert d.box_xywh == [0.1, 0.25, 0.2, 0.25]
     assert d.mask_rle["box_px"] == [10, 20, 30, 40] and d.mask_rle["size"] == [20, 20]
+    assert d.box_px == [10, 20, 30, 40] and d.mask_local[1:] == (20, 20) and sum(d.mask_local[0]) == 400
 
 
 def test_no_match_is_empty():

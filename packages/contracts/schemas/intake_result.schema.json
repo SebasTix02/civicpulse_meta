@@ -52,7 +52,12 @@
     "people_count": {"type": ["integer", "null"], "minimum": 0, "description": "From count_prompts; null when the domain does not count."},
     "anonymization": {
       "type": "object", "additionalProperties": false,
-      "properties": {"faces": {"type": "integer"}, "plates": {"type": "integer"}, "public_path": {"type": ["string", "null"]}}
+      "description": "Done on our CPU before any API call (civicpulse/anonymize.py): faces, people and close vehicles are blurred. Counts are detector boxes, not people.",
+      "properties": {
+        "faces": {"type": "integer"}, "plates": {"type": "integer"}, "people": {"type": "integer"},
+        "vehicles": {"type": "integer"}, "blurred_share": {"type": "number", "minimum": 0, "maximum": 1},
+        "public_path": {"type": ["string", "null"], "description": "bucket/name of the anonymized copy, e.g. public/reports/<id>/v1.jpg"}
+      }
     },
     "models": {
       "type": "object", "additionalProperties": false, "required": ["segmentation"],

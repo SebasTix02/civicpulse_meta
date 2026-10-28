@@ -11,6 +11,7 @@ import httpx
 class Db:
     def __init__(self, url: str, service_key: str, client: httpx.Client | None = None):
         self.base = url.rstrip("/") + "/rest/v1"
+        self.storage = url.rstrip("/") + "/storage/v1/object"
         self.client = client or httpx.Client(timeout=15.0)
         # New secret keys (sb_secret_...) are not JWTs and go only in `apikey`; the legacy
         # service_role JWT is also sent as Bearer, as PostgREST expected before.
@@ -27,6 +28,24 @@ class Db:
 
     def insert(self, table: str, row: dict) -> None:
         resp = self.client.post(f"{self.base}/{table}", json=row, headers=self.headers | {"Prefer": "return=minimal"})
+        resp.raise_for_status()
+
+    def update(self, table: str, patch: dict, **eq: Any) -> None:
+        params = {k: f"eq.{v}" for k, v in eq.items()}
+        resp = self.client.patch(f"{self.base}/{table}", params=params, json=patch,
+                                 headers=self.headers | {"Prefer": "return=minimal"})
+        resp.raise_for_status()
+
+    def download(self, path: str) -> bytes:
+        """`path` is bucket/name, as photos.storage_path stores it (raw/... or sandbox/...)."""
+        resp = self.client.get(f"{self.storage}/{path}", headers=self.headers)
+        resp.raise_for_status()
+        return resp.content
+
+    def upload(self, path: str, data: bytes, content_type: str = "image/jpeg") -> None:
+        """Writes bucket/name, replacing it: re-running a stage rewrites the same file."""
+        resp = self.client.post(f"{self.storage}/{path}", content=data,
+                                headers=self.headers | {"Content-Type": content_type, "x-upsert": "true"})
         resp.raise_for_status()
 
     def compare_and_set(self, table: str, id_: str, expected_status: str, patch: dict) -> bool:

@@ -4,14 +4,15 @@ Every stage is idempotent: it is skipped when stage_runs already has an `ok` row
 same (report_id, photo_version, stage), and status moves use compare-and-set. Duplicate
 webhooks, sweeper retries and /ops/reprocess are all safe.
 
-Built so far: the `spec` stage. Vision (day 2/4), cluster (day 5) and brief (day 7) are
-stubs that raise, so the sweeper leaves the report where it is instead of faking a result.
+Built so far: `spec` and vision (`sam_ground` + `classify`, pipeline/vision.py). Cluster
+(day 5) and brief (day 7) are not built: a report waits in vision_done instead of faking a result.
 """
 
 from __future__ import annotations
 
 import time
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 from civicpulse.catalog import Catalog
 from civicpulse.db import Db
@@ -19,6 +20,9 @@ from civicpulse.llm.prompts import spec_system
 from civicpulse.llm.router import AllProvidersFailed, LLMRouter
 from civicpulse.models import SpecLLMOutput
 from civicpulse.redact import redact
+
+if TYPE_CHECKING:  # vision needs OpenCV (extra "vision"); the spec stage does not
+    from civicpulse.pipeline.vision import VisionStage
 
 KEYWORD_PREFERRED_BELOW = 0.40
 
@@ -58,8 +62,8 @@ def build_spec(text: str, catalog: Catalog, router: LLMRouter) -> SpecOutcome:
 
 
 class IntakePipeline:
-    def __init__(self, db: Db, catalog: Catalog, router: LLMRouter):
-        self.db, self.catalog, self.router = db, catalog, router
+    def __init__(self, db: Db, catalog: Catalog, router: LLMRouter, vision: VisionStage | None = None):
+        self.db, self.catalog, self.router, self.vision = db, catalog, router, vision
 
     def run(self, report_id: str) -> str:
         report = self.db.select_one("reports", id=report_id)
@@ -69,7 +73,10 @@ class IntakePipeline:
             self.stage_spec(report)
             report = self.db.select_one("reports", id=report_id)
         if report["status"] == "spec_ready":
-            raise NotImplementedError("stage sam_ground/classify: day 2 and day 4")
+            if self.vision is None:
+                raise RuntimeError("vision stage not configured (SAM backend or anonymizer missing)")
+            self.vision.run(report)
+            report = self.db.select_one("reports", id=report_id)
         return report["status"]
 
     def stage_spec(self, report: dict) -> None:

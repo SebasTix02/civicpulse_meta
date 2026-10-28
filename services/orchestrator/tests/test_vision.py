@@ -111,7 +111,7 @@ def verdict(label, conf):
 
 def test_confirmed_by_crop_and_only_the_anonymized_copy_leaves(monkeypatch):
     db, sam = FakeDb(spec_for("pothole")), FakeSAM({"pothole": [(0.8, [100, 100, 180, 160])]})
-    r, seen = router([verdict("issue_present", 0.9)], monkeypatch)
+    r, seen = router([verdict("issue_present", 0.9), verdict("issue_present", 0.8)], monkeypatch)
     VisionStage(db, r, sam, anonymizer).run(db.rows["reports"])
 
     rep = db.rows["reports"]
@@ -123,11 +123,38 @@ def test_confirmed_by_crop_and_only_the_anonymized_copy_leaves(monkeypatch):
     assert db.updates[0][1]["public_path"] == "public/reports/r1/v1.jpg"
     cand = rep["intake"]["candidates"][0]
     assert cand["box_xyxy"] == [100, 100, 180, 160] and cand["classifier"]["label"] == "issue_present"
-    assert rep["intake"]["whole_image_check"] is None and len(seen) == 1  # confirmed: no extra calls
+    assert cand["second_view"]["confidence"] == 0.8  # the wider crop agreed
+    assert rep["intake"]["whole_image_check"] is None and len(seen) == 2  # confirmed: no whole-photo call
     assert seen[0]["messages"][1]["content"][1]["image_url"]["url"].startswith("data:image/jpeg;base64,")
     assert [row["stage"] for t, row in db.inserted] == ["sam_ground", "classify"]
     schema = json.loads((REPO_ROOT / "packages/contracts/schemas/intake_result.schema.json").read_text())
     jsonschema.validate(rep["intake"], schema)  # the stored intake keeps the contract
+
+
+def test_second_view_that_disagrees_sends_the_report_to_review(monkeypatch):
+    db, sam = FakeDb(spec_for("pothole")), FakeSAM({"pothole": [(0.8, [100, 100, 180, 160])]})
+    r, seen = router([verdict("issue_present", 0.9), verdict("shadow", 0.8), verdict("uncertain", 0.4)], monkeypatch)
+    VisionStage(db, r, sam, anonymizer).run(db.rows["reports"])
+    rep = db.rows["reports"]
+    assert rep["intake_status"] == "CANDIDATE_REGIONS_FOUND_REQUIRES_REVIEW" and len(seen) == 3
+
+
+def test_crop_wider_than_a_narrow_photo_is_drawn():
+    from civicpulse.anonymize import load
+    from civicpulse.pipeline.vision import outlined_crop
+
+    narrow = load(to_jpeg(np.full((400, 300, 3), 100, np.uint8)))  # full-width crops used to be read-only
+    jpeg, box = outlined_crop(narrow, Detection("pothole", 0.8, [0, 0, 0, 0], box_px=[100, 100, 180, 160]))
+    assert jpeg[:2] == b"\xff\xd8" and box[0] == 0 and box[2] == 300
+
+
+def test_second_view_can_be_turned_off(monkeypatch):
+    from civicpulse.pipeline.vision import Budget
+
+    db, sam = FakeDb(spec_for("pothole")), FakeSAM({"pothole": [(0.8, [100, 100, 180, 160])]})
+    r, seen = router([verdict("issue_present", 0.9)], monkeypatch)
+    VisionStage(db, r, sam, anonymizer, budget=Budget(second_view=False)).run(db.rows["reports"])
+    assert db.rows["reports"]["intake_status"] == "REPORT_CONFIRMED_BY_PHOTO" and len(seen) == 1
 
 
 def test_classifier_down_leaves_candidates_for_review(monkeypatch):
@@ -184,7 +211,7 @@ def test_reused_photo_skips_sam_and_adds_no_support(monkeypatch):
 def test_impossible_gps_flag_removes_support(monkeypatch):
     db, sam = FakeDb(spec_for("pothole")), FakeSAM({"pothole": [(0.8, [100, 100, 180, 160])]})
     db.flags = [{"id": "f1"}]
-    r, _ = router([verdict("issue_present", 0.9)], monkeypatch)
+    r, _ = router([verdict("issue_present", 0.9), verdict("issue_present", 0.9)], monkeypatch)
     VisionStage(db, r, sam, anonymizer).run(db.rows["reports"])
     rep = db.rows["reports"]
     assert rep["intake_status"] == "REPORT_CONFIRMED_BY_PHOTO" and rep["consistency_score"] == 0.0

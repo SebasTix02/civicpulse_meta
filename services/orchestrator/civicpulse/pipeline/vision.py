@@ -6,7 +6,9 @@
    the main confusers and the domain's count prompts. The extra target prompts run only when
    the main ones found nothing (budget "widened").
 3. The Muse classifier checks up to 3 candidate crops, each with the mask outlined in magenta,
-   and stops at the first confirmation. If no crop was confirmed it looks at the whole photo once.
+   and stops at the first confirmation. A crop it confirms is asked again with more context
+   around it (test-time augmentation, one more call per confirmed report): both views must
+   agree. If no crop was confirmed it looks at the whole photo once.
 4. decide_intake() turns that into intake_status. A photo never rejects a report: "not found"
    means "not verifiable with this photo", and a classifier that is down never confirms anything.
 """
@@ -52,6 +54,7 @@ class Budget:
     confusers: int = int(os.environ.get("SAM_CONFUSER_PROMPTS", "2"))
     extra: int = int(os.environ.get("SAM_EXTRA_PROMPTS", "2"))
     classify: int = int(os.environ.get("CLASSIFY_MAX_CANDIDATES", "3"))
+    second_view: bool = os.environ.get("CLASSIFY_SECOND_VIEW", "1") != "0"
 
 
 def _iou(a: list[int], b: list[int]) -> float:
@@ -87,7 +90,7 @@ def outlined_crop(rgb: np.ndarray, d: Detection, pad: float = 0.25, min_side: in
     half_h = max((y2 - y1) * (1 + 2 * pad), min_side) / 2
     cx1, cy1 = max(0, int(cx - half_w)), max(0, int(cy - half_h))
     cx2, cy2 = min(w, int(cx + half_w)), min(h, int(cy + half_h))
-    crop = np.ascontiguousarray(rgb[cy1:cy2, cx1:cx2])
+    crop = rgb[cy1:cy2, cx1:cx2].copy()  # a copy: the loaded photo can be read-only
     mask = np.zeros(crop.shape[:2], np.uint8)
     if d.mask_local and x2 > x1 and y2 > y1:
         raster, mw, mh = d.mask_local
@@ -105,6 +108,15 @@ def outlined_crop(rgb: np.ndarray, d: Detection, pad: float = 0.25, min_side: in
     return to_jpeg(crop, 88), [cx1, cy1, cx2, cy2]
 
 
+def _confirms(answer: dict | None) -> bool:
+    return bool(answer) and answer["label"] == "issue_present" and answer["confidence"] >= CONFIRM_MIN
+
+
+def _confirmed(cand: dict) -> bool:
+    """The crop confirms, and so does its wider second view when it was asked."""
+    return _confirms(cand.get("classifier")) and ("second_view" not in cand or _confirms(cand["second_view"]))
+
+
 def decide_intake(spec: dict, candidates: list[dict], whole_image: dict | None, classifier_on: bool) -> IntakeStatus:
     """Asymmetric like the closure rule: only a confident classifier answer confirms."""
     if spec.get("photo_verifiability") == "none":
@@ -112,9 +124,9 @@ def decide_intake(spec: dict, candidates: list[dict], whole_image: dict | None, 
     if not spec.get("target_prompts"):
         return "NOT_VERIFIABLE_NO_VISUAL_SPEC"
     answers = [c["classifier"] for c in candidates if c.get("classifier")]
-    if any(a["label"] == "issue_present" and a["confidence"] >= CONFIRM_MIN for a in answers):
+    if any(_confirmed(c) for c in candidates):
         return "REPORT_CONFIRMED_BY_PHOTO"
-    if whole_image and whole_image["label"] == "issue_present" and whole_image["confidence"] >= CONFIRM_MIN:
+    if _confirms(whole_image):
         return "ISSUE_VISIBLE_NOT_LOCALIZED_REQUIRES_REVIEW"
     if candidates and (not classifier_on or any(a["label"] in ("issue_present", "uncertain") for a in answers)):
         return "CANDIDATE_REGIONS_FOUND_REQUIRES_REVIEW"  # a person decides
@@ -223,15 +235,16 @@ class VisionStage:
                     "box_xyxy": d.box_px, "crop_box_xyxy": crop_box,
                     "main_confuser": confuser if overlap >= MAIN_CONFUSER_OVERLAP else None,
                     "confuser_overlap": round(overlap, 3), "classifier": None, "crop_public_path": None}
-            confirmed = any((c["classifier"] or {}).get("label") == "issue_present"
-                            and c["classifier"]["confidence"] >= CONFIRM_MIN for c in intake["candidates"])
-            if i <= self.budget.classify and not confirmed:
+            if i <= self.budget.classify and not any(_confirmed(c) for c in intake["candidates"]):
                 cand["crop_public_path"] = f"{public_dir}/v{version}_c{i}.jpg"
                 self.db.upload(cand["crop_public_path"], crop_jpeg)
                 answer, model = self._ask(crop_check_prompt(spec), crop_jpeg)
                 cand["classifier"] = answer
                 if model:
                     classifier_model, classifier_on = model, True
+                if _confirms(answer) and self.budget.second_view:
+                    wide_jpeg, _ = outlined_crop(rgb, d, pad=0.75, min_side=480)
+                    cand["second_view"], _ = self._ask(crop_check_prompt(spec), wide_jpeg)
             intake["candidates"].append(cand)
 
         if decide_intake(spec, intake["candidates"], None, classifier_on) != "REPORT_CONFIRMED_BY_PHOTO":

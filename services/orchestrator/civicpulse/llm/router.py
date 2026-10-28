@@ -79,6 +79,7 @@ class LLMRouter:
         self.client = client or httpx.Client(timeout=httpx.Timeout(90.0, connect=5.0))  # reasoning is slow
         self.clock = clock
         self.breakers = {p.name: Breaker() for p in providers}
+        self.usage: dict[str, dict[str, int]] = {}  # tokens per provider, for cost estimates
 
     def _chat(self, p: ProviderConfig, messages: list[dict], max_tokens: int) -> str:
         body = {"model": p.model, "messages": messages, "temperature": 0,
@@ -88,7 +89,12 @@ class LLMRouter:
         resp = self.client.post(f"{p.base_url.rstrip('/')}/chat/completions",
                                 headers={"Authorization": f"Bearer {p.api_key}"}, json=body)
         resp.raise_for_status()
-        return resp.json()["choices"][0]["message"]["content"] or ""  # None when reasoning ate the budget
+        out = resp.json()
+        used = self.usage.setdefault(p.name, {"calls": 0, "prompt_tokens": 0, "completion_tokens": 0})
+        used["calls"] += 1
+        for k in ("prompt_tokens", "completion_tokens"):
+            used[k] += int((out.get("usage") or {}).get(k) or 0)
+        return out["choices"][0]["message"]["content"] or ""  # None when reasoning ate the budget
 
     def structured(self, system: str, user: list[dict] | str, schema: type[BaseModel], *,
                    vision: bool = False, max_tokens: int = 400) -> CallResult:

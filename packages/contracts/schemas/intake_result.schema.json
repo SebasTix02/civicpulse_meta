@@ -33,6 +33,7 @@
           "main_confuser": {"type": ["string", "null"]},
           "confuser_overlap": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
           "classifier": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/crop_answer"}]},
+          "second_view": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/crop_answer"}], "description": "Same check on a wider crop, asked only when the crop confirmed (test-time augmentation). Both must confirm."},
           "crop_public_path": {"type": ["string", "null"], "description": "Anonymized crop with the magenta outline, in the public (or sandbox) bucket."}
         }
       }

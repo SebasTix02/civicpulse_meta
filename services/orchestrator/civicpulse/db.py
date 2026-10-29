@@ -59,6 +59,13 @@ class Db:
                                 headers=self.headers | {"Content-Type": content_type, "x-upsert": "true"})
         resp.raise_for_status()
 
+    def update_where(self, table: str, patch: dict, params: dict[str, str]) -> bool:
+        """update ... where <raw PostgREST filters>. False if no row matched."""
+        resp = self.client.patch(f"{self.base}/{table}", params=params, json=patch,
+                                 headers=self.headers | {"Prefer": "return=representation"})
+        resp.raise_for_status()
+        return bool(resp.json())
+
     def compare_and_set(self, table: str, id_: str, expected_status: str, patch: dict) -> bool:
         """update ... where id = :id and status = :expected. False if another worker moved it."""
         resp = self.client.patch(

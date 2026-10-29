@@ -84,9 +84,16 @@ def _anonymizer():
 def run_job(kind: str, key: str) -> str:
     if kind in ("intake", "photo_replaced"):
         return _pipeline().run(key)
-    if kind in ("brief", "closure"):
-        # Dispatches already fire the webhook; the brief (day 7) and closure (day 8) stages come later.
-        print(f"job {kind} {key}: not built yet, skipped")
+    if kind == "brief":
+        from civicpulse.config import get_settings
+        from civicpulse.db import Db
+        from civicpulse.llm.router import LLMRouter
+        from civicpulse.pipeline.brief import BriefStage
+
+        s = get_settings()
+        return BriefStage(Db(s.supabase_url, s.supabase_service_key), LLMRouter(s.llm_providers)).run(key)
+    if kind == "closure":
+        print(f"job closure {key}: the closure stage comes with day 8, skipped")
         return "skipped"
     raise ValueError(f"unknown job {kind}")
 

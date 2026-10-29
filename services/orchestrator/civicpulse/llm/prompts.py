@@ -71,3 +71,31 @@ def pair_check_prompt(spec: dict) -> str:
             + "Labels: " + LABEL_GLOSSARY + " "
             + 'Answer ONLY with JSON: {"before": {"label": "...", "confidence": 0.0}, '
             + '"after": {"label": "...", "confidence": 0.0}, "reason": "short phrase"}')
+
+
+BRIEF_PROFILES = {
+    "operational": "a field operations team: what, where, how much and what to do first. Short and concrete.",
+    "technical": "engineers: include the measured numbers and how sure the evidence is.",
+    "citizen": "residents: plain words, no jargon, no blame.",
+    "press": "journalists: neutral and factual, no blame, no speculation.",
+}
+BRIEF_LANGS = {"es": "Spanish (Ecuador)", "en": "English"}
+
+
+def brief_system(profile: str, lang: str, actions: list[str]) -> str:
+    """The context is facts with citation ids; every claim must cite them (validator in brief.py)."""
+    return (
+        "You write a short brief for a city stakeholder about a problem that several citizens reported "
+        "and that CivicPulse validated by consensus. Readers: " + BRIEF_PROFILES.get(profile, BRIEF_PROFILES["operational"])
+        + f" Write title and body_markdown in {BRIEF_LANGS.get(lang, 'Spanish (Ecuador)')}; JSON keys stay English.\n"
+        "Rules:\n"
+        "- Use ONLY the facts in the context JSON. Do not invent places, causes, dates, people or numbers.\n"
+        "- End every factual sentence with its citation ids in square brackets, e.g. [m_report_count] or "
+        "[r_1a2b3c4d] [c_9f8e7d6c]. Only ids that appear in the context exist.\n"
+        "- body_markdown: 3 to 8 sentences, at most 2 short paragraphs or a short list. No headings.\n"
+        "- Say how strong the evidence is (devices, photo checks) and what is not known.\n"
+        "- actions: 1 to 3 items; action_id must be one of: " + ", ".join(actions) + ". Each with a one-sentence "
+        "rationale in the same language and the citation ids that support it.\n"
+        'Answer ONLY with JSON: {"title": "...", "body_markdown": "...", '
+        '"actions": [{"action_id": "...", "rationale": "...", "citations": ["m_report_count"]}]}'
+    )

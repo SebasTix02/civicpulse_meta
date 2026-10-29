@@ -46,6 +46,16 @@ begin
   assert (select array_agg(stakeholder_id::text) from dispatches where cluster_id = first_cluster)
          = array['c0000000-0000-4000-8000-000000000001'], 'routed to the verified roads stakeholder only';
 
+  -- The brief context: counts, citation ids and the domain's actions, never citizen text.
+  x := brief_context(first_cluster, 'c0000000-0000-4000-8000-000000000001');
+  assert x -> 'metrics' ->> 'm_report_count' = '6' and x -> 'metrics' ->> 'm_distinct_devices' = '4', x::text;
+  assert x -> 'cluster' ->> 'ref' = 'c_' || left(first_cluster::text, 8), x::text;
+  assert jsonb_array_length(x -> 'reports') = 6 and x -> 'reports' -> 0 ->> 'ref' ~ '^r_[0-9a-f]{8}$', x::text;
+  assert x -> 'actions' ? 'pothole_patching' and x -> 'stakeholder' ->> 'lang' = 'es', x::text;
+  assert not (x::text ~ 'raw_text|summary_en'), 'no citizen text in the context';
+  insert into stage_runs (cluster_id, stakeholder_id, stage, status)
+  values (first_cluster, 'c0000000-0000-4000-8000-000000000001', 'brief', 'ok');
+
   -- 500 m away: another cluster. A report already clustered is skipped.
   x := assign_cluster(pg_temp.report(2, -1.24620, -78.61970, '190.1.1.0/24'));
   assert (x ->> 'cluster_id')::uuid <> first_cluster, 'far report opens its own cluster';

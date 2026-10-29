@@ -74,6 +74,21 @@ class ClassifierVerdict(BaseModel):
     reason: str = ""
 
 
+class BriefAction(BaseModel):
+    action_id: str
+    rationale: str = Field(max_length=400)
+    citations: list[str] = Field(min_length=1)
+
+
+class BriefLLMOutput(BaseModel):
+    """What the brief model writes; the stage adds lang, profile, citations, validator and model
+    (contracts/schemas/brief.schema.json)."""
+
+    title: str = Field(max_length=140)
+    body_markdown: str = Field(max_length=6000)
+    actions: list[BriefAction] = Field(default_factory=list, max_length=5)
+
+
 class PairVerdict(BaseModel):
     """Classifier answer on a before/after pair of aligned crops."""
 

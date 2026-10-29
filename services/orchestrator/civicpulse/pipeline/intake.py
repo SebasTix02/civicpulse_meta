@@ -5,8 +5,8 @@ same (report_id, photo_version, stage), and status moves use compare-and-set. Du
 webhooks, sweeper retries and /ops/reprocess are all safe.
 
 Built so far: `spec`, vision (`sam_ground` + `classify`, pipeline/vision.py) and `cluster`
-(assign_cluster() in Postgres, migration 08). Routing and briefs for validated clusters come
-with day 7.
+(assign_cluster() in Postgres, migration 08). A validated cluster is routed to its stakeholders
+in Postgres (migration 12), and each dispatch gets its brief in pipeline/brief.py.
 """
 
 from __future__ import annotations

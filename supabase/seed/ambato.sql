@@ -24,3 +24,13 @@ insert into stakeholder_coverage (stakeholder_id, domain_id) values
   ('00000000-0000-4000-8000-000000000001', 'transit'),
   ('00000000-0000-4000-8000-000000000002', 'water')
 on conflict do nothing;
+
+-- The sandbox's stakeholder: every validated sandbox cluster is routed to it (migration 12), so a
+-- visitor sees the whole cycle up to the brief. Sandbox only: it never receives real clusters.
+insert into stakeholders (id, is_sandbox, city_id, name, kind, brief_profile, brief_lang, verified) values
+  ('00000000-0000-4000-8000-0000000000a1', true, 'ambato', 'SBX - Sandbox Test Crew', 'government', 'operational', 'es', false)
+on conflict (id) do update set name = excluded.name;
+
+insert into stakeholder_coverage (stakeholder_id, domain_id)
+select '00000000-0000-4000-8000-0000000000a1', id from domains
+on conflict do nothing;

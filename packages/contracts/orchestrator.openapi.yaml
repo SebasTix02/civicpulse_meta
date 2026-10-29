@@ -14,7 +14,7 @@ info:
     | `reports` | INSERT | Ingestion flow A from `received` |
     | `report_photos` | INSERT | Only when `record.version > 1`: re-run `sam_ground`, `classify`, `cluster` for the new photo. Version 1 is ignored (already covered by the `reports` INSERT). |
     | `resolutions` | INSERT | Closure flow B |
-    | `dispatches` | INSERT | Only when `record.brief` is null (created by `redispatch_cluster`, v0.2): run the `brief` stage for that stakeholder. Dispatches the orchestrator creates itself already carry a brief and are ignored. |
+    | `dispatches` | INSERT | Only when `record.brief` is null (created by the routing trigger on validation, migration 12, or by `redispatch_cluster`): run the `brief` stage for that stakeholder. A dispatch that already carries a brief is ignored. |
 
     The endpoint answers `202` fast and runs the job with `Function.spawn()`. If a webhook
     is lost or Modal is cold past the webhook timeout, the **sweeper** (Modal cron, every

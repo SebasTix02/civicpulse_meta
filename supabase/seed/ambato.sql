@@ -10,12 +10,13 @@ values ('ambato', 'Ambato',
         'es', 'America/Guayaquil', true, true)
 on conflict (id) do update set boundary = excluded.boundary;
 
--- Real stakeholders are created unverified; nobody receives dispatches until an admin
--- verifies them and invites members.
+-- Fictitious test stakeholders: the demo never uses a real institution's name. Stakeholders
+-- are created unverified; nobody receives dispatches until an admin verifies them and invites
+-- members.
 insert into stakeholders (id, city_id, name, kind, brief_profile, brief_lang, verified) values
   ('00000000-0000-4000-8000-000000000001', 'ambato', 'RRT - Road Repair Test Co.', 'government', 'operational', 'es', false),
   ('00000000-0000-4000-8000-000000000002', 'ambato', 'WST - Water Services Test', 'utility', 'operational', 'es', false)
-on conflict (id) do nothing;
+on conflict (id) do update set name = excluded.name;
 
 insert into stakeholder_coverage (stakeholder_id, domain_id) values
   ('00000000-0000-4000-8000-000000000001', 'roads'),

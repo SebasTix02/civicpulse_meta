@@ -25,6 +25,14 @@ export function browserClient() {
   return createBrowserClient(url, anonKey);
 }
 
+// Only to email an actor's sign-in link. The implicit flow puts the session in the link itself,
+// so it works when the email is opened in another browser or on the phone; the PKCE flow of
+// createBrowserClient needs the same browser that asked for it.
+export function signInLinkClient() {
+  if (!url || !anonKey) throw new Error("Supabase env vars are not set");
+  return createClient(url, anonKey, { auth: { flowType: "implicit", persistSession: false, detectSessionInUrl: false } });
+}
+
 // Server, no session: only public views (public_clusters).
 export function publicServerClient() {
   if (!url || !anonKey) return null;

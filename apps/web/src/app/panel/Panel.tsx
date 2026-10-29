@@ -2,7 +2,7 @@
 
 import { Fragment, useCallback, useEffect, useState } from "react";
 import { t, type Key, type Lang } from "@/lib/i18n";
-import { browserClient } from "@/lib/supabase";
+import { browserClient, signInLinkClient } from "@/lib/supabase";
 
 type Citation = { id: string; kind: "report" | "geo_feature" | "cluster" | "metric"; ref: string };
 type Brief = {
@@ -97,9 +97,8 @@ function Login({ lang }: { lang: Lang }) {
 
   async function send() {
     setState("sending");
-    const supabase = browserClient();
-    await supabase.auth.signOut(); // a citizen's anonymous session must not carry over
-    const { error: e } = await supabase.auth.signInWithOtp({
+    await browserClient().auth.signOut(); // a citizen's anonymous session must not carry over
+    const { error: e } = await signInLinkClient().auth.signInWithOtp({
       email: email.trim(),
       options: { shouldCreateUser: false, emailRedirectTo: `${window.location.origin}/auth/callback?next=/panel` },
     });

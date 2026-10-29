@@ -160,7 +160,9 @@ const CANDIDATE = "RESOLVED_CANDIDATE_REQUIRES_HUMAN_REVIEW";
 
 // Stakeholder closure (plan §5.4): upload the AFTER photo, see what the AI found, and let a member
 // with resolutions.approve decide. The AI never closes a case on its own.
-function ResolutionBox({ lang, row, onChanged }: { lang: Lang; row: InboxRow; onChanged: () => void }) {
+function ResolutionBox({ lang, row, beforeUrl, onChanged }: {
+  lang: Lang; row: InboxRow; beforeUrl: string | null; onChanged: () => void;
+}) {
   const res = row.latest_resolution;
   const [photo, setPhoto] = useState<File | null>(null);
   const [issue, setIssue] = useState<PhotoIssue | null>(null);
@@ -284,6 +286,10 @@ function ResolutionBox({ lang, row, onChanged }: { lang: Lang; row: InboxRow; on
       {canSend ? (
         <>
           <p className="muted">{t(lang, "resIntro")}</p>
+          {/* Alignment needs the same framing: most failures in the eval were a different angle. */}
+          {beforeUrl ? (
+            <figure className="guide"><img src={beforeUrl} alt="" /><figcaption>{t(lang, "resFrameLikeThis")}</figcaption></figure>
+          ) : null}
           <label>
             {t(lang, "resPhoto")}{" "}
             <input key={inputKey} type="file" accept="image/*" capture="environment"
@@ -396,7 +402,9 @@ function Case({ lang, row, onBack, onChanged }: { lang: Lang; row: InboxRow; onB
         {error ? <p role="alert">{error}</p> : null}
       </div>
 
-      <ResolutionBox lang={lang} row={row} onChanged={onChanged} />
+      <ResolutionBox lang={lang} row={row} onChanged={onChanged}
+        beforeUrl={photoUrl((reports.find((r) => r.intake_status === "REPORT_CONFIRMED_BY_PHOTO" && r.photo_public_path)
+          ?? reports.find((r) => r.photo_public_path))?.photo_public_path ?? null)} />
 
       <h3>{t(lang, "panelEvidence")}</h3>
       {reports.map((r) => {

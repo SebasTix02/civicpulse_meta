@@ -106,6 +106,10 @@ const dict = {
     es: "Cuando el arreglo esté hecho, sube una foto desde el mismo punto y ángulo que los reportes. La IA compara ambas fotos; la decisión final es de una persona.",
     en: "Once the fix is done, upload a photo from the same spot and angle as the reports. The AI compares both photos; a person makes the final call.",
   },
+  resFrameLikeThis: {
+    es: "Encuadra igual que esta foto del reporte: mismo punto, misma altura, mismo ángulo.",
+    en: "Frame it like this report photo: same spot, same height, same angle.",
+  },
   resPhoto: { es: "Foto después del arreglo", en: "Photo after the fix" },
   resSend: { es: "Enviar para verificación", en: "Send for verification" },
   resSending: { es: "Enviando…", en: "Sending…" },

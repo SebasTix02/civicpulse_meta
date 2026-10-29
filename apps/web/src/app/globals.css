@@ -50,3 +50,6 @@ a.cite { color: var(--accent); }
 .figures figure { margin: 0; }
 .figures img { width: 100%; border-radius: 8px; display: block; }
 .figures figcaption { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+.guide { margin: 8px 0; max-width: 320px; }
+.guide img { width: 100%; border-radius: 8px; display: block; }
+.guide figcaption { font-size: 0.85rem; color: var(--muted); margin-top: 4px; }

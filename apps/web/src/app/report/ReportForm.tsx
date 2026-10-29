@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { t, type Lang } from "@/lib/i18n";
+import { photoIssue, type PhotoIssue } from "@/lib/photoQuality";
 import { browserClient } from "@/lib/supabase";
 import { ReportStatus } from "./ReportStatus";
 
@@ -40,6 +41,20 @@ export function ReportForm({ lang }: { lang: Lang }) {
   const [phase, setPhase] = useState<Phase>("idle");
   const [error, setError] = useState("");
   const [reportId, setReportId] = useState("");
+  const [issue, setIssue] = useState<PhotoIssue | null>(null);
+  const [inputKey, setInputKey] = useState(0);
+
+  async function choose(file: File | null) {
+    setPhoto(file);
+    setIssue(null);
+    if (file) setIssue(await photoIssue(file).catch(() => null)); // a failed check never blocks
+  }
+
+  function retake() {
+    setPhoto(null);
+    setIssue(null);
+    setInputKey((k) => k + 1); // a fresh input, so the same camera flow opens again
+  }
 
   async function submit() {
     if (!photo) return;
@@ -101,13 +116,23 @@ export function ReportForm({ lang }: { lang: Lang }) {
         <label>
           {t(lang, "reportPhoto")}{" "}
           {/* capture="environment" opens the rear camera on phones: live photos only (UX flows). */}
-          <input type="file" accept="image/*" capture="environment" onChange={(e) => setPhoto(e.target.files?.[0] ?? null)} />
+          <input key={inputKey} type="file" accept="image/*" capture="environment"
+            onChange={(e) => choose(e.target.files?.[0] ?? null)} />
         </label>
       </p>
       {photo ? <img className="preview" src={URL.createObjectURL(photo)} alt="" /> : null}
+      {issue ? (
+        <div className="notice" role="status">
+          <p>
+            <b>{t(lang, issue === "dark" ? "photoDark" : issue === "bright" ? "photoBright" : "photoBlurry")}</b>{" "}
+            {t(lang, "photoRetakeHint")}
+          </p>
+          <button className="primary" onClick={retake}>{t(lang, "photoRetake")}</button>
+        </div>
+      ) : null}
       <p>
         <button className="primary" disabled={!photo || phase === "sending"} onClick={submit}>
-          {phase === "sending" ? t(lang, "reportSending") : t(lang, "reportSend")}
+          {phase === "sending" ? t(lang, "reportSending") : issue ? t(lang, "photoSendAnyway") : t(lang, "reportSend")}
         </button>
       </p>
       {error ? <p role="alert">{error}</p> : null}

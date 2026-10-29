@@ -38,6 +38,15 @@ const dict = {
     es: "Así se verá tu foto en público: caras, personas y placas difuminadas.",
     en: "This is how your photo looks in public: faces, people and plates blurred.",
   },
+  photoDark: { es: "La foto salió muy oscura.", en: "The photo came out too dark." },
+  photoBright: { es: "La foto salió con demasiada luz.", en: "The photo came out too bright." },
+  photoBlurry: { es: "La foto salió borrosa.", en: "The photo came out blurry." },
+  photoRetakeHint: {
+    es: "Con una foto clara la IA puede confirmar el problema. ¿La repites?",
+    en: "With a clear photo the AI can confirm the problem. Take it again?",
+  },
+  photoRetake: { es: "Repetir foto", en: "Take it again" },
+  photoSendAnyway: { es: "Enviar igual", en: "Send anyway" },
   reportNeedsGps: { es: "Necesitamos tu ubicación para ubicar el problema.", en: "We need your location to place the problem." },
   sandboxTitle: { es: "Modo sandbox", en: "Sandbox mode" },
   sandboxBody: {

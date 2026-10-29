@@ -22,6 +22,8 @@ main { max-width: 720px; margin: 0 auto; padding: 16px; }
 textarea, input { width: 100%; font: inherit; padding: 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: var(--fg); }
 button.primary { background: var(--accent); color: #fff; border: 0; border-radius: 10px; padding: 12px 18px; font: inherit; font-weight: 600; cursor: pointer; }
 button.primary:disabled { opacity: 0.5; cursor: default; }
+.notice { border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 10px; padding: 10px 12px; margin-top: 10px; }
+.notice p { margin: 0 0 8px; }
 img.preview { max-width: 100%; border-radius: 10px; margin-top: 8px; }
 .timeline { list-style: none; padding: 0; margin: 12px 0; display: flex; gap: 8px; flex-wrap: wrap; }
 .timeline li { padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }

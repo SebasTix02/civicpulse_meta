@@ -47,8 +47,8 @@ ids, labels and notes only. Labels from the first full pass (2026-10-28):
 
 | Label | Meaning | Cases |
 |---|---|---|
-| `repaired` | the pothole in "before" is fixed in "after", same place | 70 |
-| `not_repaired` | same place, the pothole is still there | 2 |
+| `repaired` | the pothole in "before" is fixed in "after", same place | 68 |
+| `not_repaired` | same place, the pothole is still there (bach_0006 and bach_0060: partial repairs) | 4 |
 | `not_comparable` | other place, too blurred, or cannot tell | 81 |
 | `already_repaired` | the street already looks fixed in "before" | 410 |
 | `same_photo` | "after" is the same picture as "before" | 66 |

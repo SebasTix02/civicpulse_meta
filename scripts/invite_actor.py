@@ -1,0 +1,106 @@
+"""Give someone access to the stakeholder panel (there is no open sign-up).
+
+    pip install -e services/orchestrator
+    python scripts/invite_actor.py you@example.com --stakeholder SBX              # sandbox crew
+    python scripts/invite_actor.py jefe@example.com --stakeholder RRT --role stakeholder_admin
+    python scripts/invite_actor.py you@example.com --revoke --stakeholder SBX
+
+Uses SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY from .env (never printed). It creates the
+Supabase Auth user (confirmed, no password: they sign in with the emailed link on /panel), the
+profiles row and the user_roles grant, and writes audit_log. --stakeholder matches the start of
+a stakeholder's name (RRT, WST, SBX) or its id. Running it twice changes nothing.
+"""
+
+from __future__ import annotations
+
+import argparse
+import os
+import sys
+from datetime import UTC, datetime
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "services" / "orchestrator"))
+sys.path.insert(0, str(ROOT / "scripts"))
+
+from civicpulse.db import Db
+from smoke_models import load_env
+
+STAKEHOLDER_ROLES = ("stakeholder_agent", "stakeholder_admin")
+
+
+def find_user(db: Db, email: str) -> str | None:
+    """The Auth admin API takes the service key in `apikey` (sb_secret_ keys go nowhere else)."""
+    auth = db.base.removesuffix("/rest/v1") + "/auth/v1/admin/users"
+    for page in range(1, 50):
+        resp = db.client.get(auth, params={"page": page, "per_page": 200}, headers=db.headers)
+        resp.raise_for_status()
+        users = resp.json().get("users", [])
+        for u in users:
+            if (u.get("email") or "").lower() == email.lower():
+                return u["id"]
+        if len(users) < 200:
+            return None
+    return None
+
+
+def create_user(db: Db, email: str) -> str:
+    auth = db.base.removesuffix("/rest/v1") + "/auth/v1/admin/users"
+    resp = db.client.post(auth, json={"email": email, "email_confirm": True}, headers=db.headers)
+    resp.raise_for_status()
+    return resp.json()["id"]
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("email")
+    ap.add_argument("--stakeholder", required=True, help="start of the name (RRT, WST, SBX) or the id")
+    ap.add_argument("--role", default="stakeholder_agent", choices=STAKEHOLDER_ROLES)
+    ap.add_argument("--name", help="display name in the panel (default: the part before @)")
+    ap.add_argument("--revoke", action="store_true")
+    args = ap.parse_args()
+    load_env()
+    url, key = os.environ.get("SUPABASE_URL"), os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+    if not url or not key:
+        print("SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY missing in .env", file=sys.stderr)
+        return 2
+    db = Db(url, key)
+
+    matches = [s for s in db.select("stakeholders", {"select": "id,name,city_id,is_sandbox"})
+               if s["id"] == args.stakeholder or s["name"].lower().startswith(args.stakeholder.lower())]
+    if len(matches) != 1:
+        print(f"--stakeholder matches {len(matches)} stakeholders: {[s['name'] for s in matches]}", file=sys.stderr)
+        return 2
+    st = matches[0]
+
+    user_id = find_user(db, args.email)
+    if args.revoke:
+        if not user_id:
+            print("no such user", file=sys.stderr)
+            return 2
+        db.update_where("user_roles", {"revoked_at": datetime.now(UTC).isoformat()}, {
+            "user_id": f"eq.{user_id}", "stakeholder_id": f"eq.{st['id']}", "revoked_at": "is.null"})
+        db.insert("audit_log", {"city_id": st["city_id"], "action": "role.revoke", "entity": "user_roles",
+                                "entity_id": f"{user_id}:{st['id']}"})
+        print(f"revoked {args.email} on {st['name']}")
+        return 0
+
+    created = user_id is None
+    user_id = user_id or create_user(db, args.email)
+    if not db.select("profiles", {"select": "user_id", "user_id": f"eq.{user_id}"}):
+        db.insert("profiles", {"user_id": user_id, "display_name": args.name or args.email.split("@")[0]})
+    active = db.select("user_roles", {"select": "id,role_id", "user_id": f"eq.{user_id}",
+                                      "stakeholder_id": f"eq.{st['id']}", "revoked_at": "is.null"})
+    if any(r["role_id"] == args.role for r in active):
+        print(f"{args.email} already is {args.role} of {st['name']}")
+        return 0
+    db.insert("user_roles", {"user_id": user_id, "role_id": args.role, "stakeholder_id": st["id"]})
+    db.insert("audit_log", {"city_id": st["city_id"], "action": "role.grant", "entity": "user_roles",
+                            "entity_id": f"{user_id}:{st['id']}", "after": {"role": args.role}})
+    print(f"{'created and ' if created else ''}granted {args.role} of {st['name']}"
+          f"{' (sandbox)' if st['is_sandbox'] else ''} to {args.email}. They sign in at /panel with the emailed link.")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

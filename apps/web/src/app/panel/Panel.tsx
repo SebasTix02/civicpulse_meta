@@ -5,7 +5,10 @@ import { t, type Key, type Lang } from "@/lib/i18n";
 import { browserClient, signInLinkClient } from "@/lib/supabase";
 
 type Citation = { id: string; kind: "report" | "geo_feature" | "cluster" | "metric"; ref: string };
+type BriefVersion = { title: string; body_markdown: string; actions: Brief["actions"] };
 type Brief = {
+  lang: Lang;
+  translations?: Partial<Record<Lang, BriefVersion>>;
   title: string;
   body_markdown: string;
   actions: { action_id: string; rationale: string; citations: string[] }[];
@@ -47,6 +50,12 @@ const TABS: { key: Key; statuses: InboxRow["dispatch_status"][] }[] = [
   { key: "panelTabAccepted", statuses: ["accepted"] },
   { key: "panelTabDone", statuses: ["declined", "closed"] },
 ];
+
+// The brief in the reader's language when its translation exists (same citations, checked by
+// the orchestrator), otherwise as written.
+function inLang(brief: Brief, lang: Lang): BriefVersion {
+  return (brief.lang !== lang && brief.translations?.[lang]) || brief;
+}
 
 function fmtDate(lang: Lang, iso: string) {
   return new Date(iso).toLocaleString(lang === "es" ? "es-EC" : "en-US", { dateStyle: "medium", timeStyle: "short" });
@@ -135,6 +144,7 @@ function Case({ lang, row, onBack, onChanged }: { lang: Lang; row: InboxRow; onB
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const cites = new Map(row.brief.citations.map((c) => [c.id, c]));
+  const text = inLang(row.brief, lang);
 
   useEffect(() => {
     const supabase = browserClient();
@@ -169,13 +179,13 @@ function Case({ lang, row, onBack, onChanged }: { lang: Lang; row: InboxRow; onB
           {row.cluster.distinct_devices} {t(lang, "panelDevices")} · {t(lang, `panelStatus_${row.dispatch_status}` as Key)}
           {row.is_sandbox ? <span className="badge">{t(lang, "panelSandbox")}</span> : null}
         </p>
-        <h2>{row.brief.title}</h2>
-        <BriefText text={row.brief.body_markdown} cites={cites} />
-        {row.brief.actions.length ? (
+        <h2>{text.title}</h2>
+        <BriefText text={text.body_markdown} cites={cites} />
+        {text.actions.length ? (
           <>
             <h3>{t(lang, "panelActions")}</h3>
             <ul>
-              {row.brief.actions.map((a) => (
+              {text.actions.map((a) => (
                 <li key={a.action_id}>
                   <b>{a.action_id.replace(/_/g, " ")}</b>: <BriefText inline text={`${a.rationale} [${a.citations.join("] [")}]`} cites={cites} />
                 </li>
@@ -301,7 +311,7 @@ export function Panel({ lang }: { lang: Lang }) {
             {r.dispatch_status === "sent" ? <span className="badge new">{t(lang, "panelStatus_sent")}</span> : null}
             {r.is_sandbox ? <span className="badge">{t(lang, "panelSandbox")}</span> : null}
           </span>
-          <b>{r.brief.title}</b>
+          <b>{inLang(r.brief, lang).title}</b>
           <span className="muted small">{r.stakeholder_name}</span>
         </button>
       ))}

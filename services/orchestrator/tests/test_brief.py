@@ -98,7 +98,7 @@ def test_invented_id_gets_one_retry(monkeypatch):
     r, seen = router([answer(GOOD + " Lo reportó la junta parroquial [r_deadbeef]."), answer(GOOD)], monkeypatch)
     BriefStage(db, r).run(KEY)
     brief = db.dispatch["brief"]
-    assert len(seen) == 2 and "r_deadbeef" in seen[1]["messages"][1]["content"]
+    assert len(seen) == 3 and "r_deadbeef" in seen[1]["messages"][1]["content"]  # 3rd call: the translation
     assert brief["validator"]["ok"] and brief["validator"]["retries"] == 1 and brief["model"]["provider"] == "a"
 
 
@@ -130,3 +130,52 @@ def test_a_written_brief_is_never_rewritten(monkeypatch):
     db.dispatch["brief"] = {"title": "ya"}
     r, seen = router([answer(GOOD)], monkeypatch)
     assert BriefStage(db, r).run(KEY) == "already_written" and not seen and not db.rpcs
+
+
+def translation(body, rationales=("There are confirmed photos.",)):
+    return 200, json.dumps({"title": "Pothole with 4 reports", "body_markdown": body, "rationales": list(rationales)})
+
+
+GOOD_EN = ("Four reports of a pothole from three devices [m_report_count] [m_distinct_devices]. "
+           "Two photos confirm it [m_photo_confirmed] [r_1a2b3c4d]. There is a school 80 m away [osm_4412].")
+
+
+def test_brief_is_translated_to_the_other_language_with_the_same_citations(monkeypatch):
+    db = FakeDb(context())
+    r, seen = router([answer(GOOD), translation(GOOD_EN)], monkeypatch)
+    BriefStage(db, r).run(KEY)
+    brief = db.dispatch["brief"]
+    jsonschema.validate(brief, SCHEMA)
+    en = brief["translations"]["en"]
+    assert en["title"] == "Pothole with 4 reports" and en["body_markdown"] == GOOD_EN
+    assert en["actions"] == [{"action_id": "pothole_patching", "rationale": "There are confirmed photos.",
+                              "citations": ["m_photo_confirmed"]}]
+    assert "from Spanish (Ecuador) to English" in seen[1]["messages"][0]["content"]
+
+
+def test_translation_that_changes_the_citations_is_dropped(monkeypatch):
+    db = FakeDb(context())
+    r, _ = router([answer(GOOD), translation(GOOD_EN.replace(" [osm_4412]", ""))], monkeypatch)
+    BriefStage(db, r).run(KEY)
+    assert "translations" not in db.dispatch["brief"] and db.dispatch["brief"]["validator"]["ok"]
+
+
+def test_template_brief_is_rebuilt_in_the_other_language(monkeypatch):
+    db = FakeDb(context())
+    r, _ = router([], monkeypatch)
+    BriefStage(db, r).run(KEY)
+    brief = db.dispatch["brief"]
+    jsonschema.validate(brief, SCHEMA)
+    assert brief["translations"]["en"]["title"] == "4 reports of pothole"
+
+
+def test_an_old_brief_gets_its_translation(monkeypatch):
+    db = FakeDb(context())
+    r, _ = router([answer(GOOD)], monkeypatch)
+    BriefStage(db, r).run(KEY)
+    assert "translations" not in db.dispatch["brief"]  # the model was down for the translation
+    r2, _ = router([translation(GOOD_EN)], monkeypatch)
+    db.update_where = lambda table, patch, params: db.dispatch.update(patch) or True
+    assert BriefStage(db, r2).add_translation(KEY) == "translated"
+    assert db.dispatch["brief"]["translations"]["en"]["body_markdown"] == GOOD_EN
+    assert BriefStage(db, r2).add_translation(KEY) == "nothing_to_do"

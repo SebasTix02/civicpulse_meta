@@ -8,6 +8,9 @@
    the domain's action catalog. A failure gets one retry with the problems shown to the model.
 4. If the model is down or still invents ids, a fixed template writes the brief from the
    metrics alone (model null): the panel always gets a brief, and never an unchecked claim.
+5. A second call translates it to the other UI language (es <-> en), so the panel can follow
+   the reader's language. The translation must keep exactly the same citations; if it does not,
+   or the model is down, the panel shows the original.
 
 The brief is stored in dispatches.brief only while it is null, so duplicate webhooks are safe.
 """
@@ -22,9 +25,9 @@ from datetime import UTC, datetime
 from pydantic import ValidationError
 
 from civicpulse.db import Db
-from civicpulse.llm.prompts import brief_system
+from civicpulse.llm.prompts import brief_system, brief_translate_system
 from civicpulse.llm.router import AllProvidersFailed, LLMRouter
-from civicpulse.models import BriefLLMOutput
+from civicpulse.models import BriefLLMOutput, BriefTranslation
 
 CITATION = re.compile(r"\[([^\[\]]+)\]")
 SPACE_AFTER_CITATION = re.compile(r"\](?=\w)")  # models sometimes glue the next word: "[m_x]y"
@@ -38,6 +41,10 @@ def allowed_ids(ctx: dict) -> dict[str, tuple[str, str]]:
     ids |= {f["ref"]: ("geo_feature", f["ref"]) for f in ctx.get("nearby", [])}
     ids |= {k: ("metric", k) for k, v in (ctx.get("metrics") or {}).items() if v is not None}
     return ids
+
+
+def _text_ids(text: str) -> list[str]:
+    return sorted(i for m in CITATION.findall(text) for i in re.split(r"[,;\s]+", m) if i)
 
 
 def cited(out: BriefLLMOutput) -> list[str]:
@@ -143,7 +150,48 @@ class BriefStage:
             "model": {"provider": provider, "model": model},
             "generated_at": datetime.now(UTC).isoformat(),
         }
+        translation = self._translate(brief, ctx)
+        if translation:
+            brief["translations"] = translation
         return brief, provider, model
+
+    def add_translation(self, key: str) -> str:
+        """Translate a brief written before translations existed (scripts/translate_briefs.py)."""
+        cluster_id, stakeholder_id = key.split(":", 1)
+        dispatch = self.db.select_one("dispatches", cluster_id=cluster_id, stakeholder_id=stakeholder_id)
+        brief = (dispatch or {}).get("brief")
+        if not brief or brief.get("translations"):
+            return "nothing_to_do"
+        ctx = self.db.rpc("brief_context", {"p_cluster": cluster_id, "p_stakeholder": stakeholder_id})
+        translation = self._translate(brief, ctx)
+        if not translation:
+            return "failed"
+        self.db.update_where("dispatches", {"brief": brief | {"translations": translation}}, {
+            "cluster_id": f"eq.{cluster_id}", "stakeholder_id": f"eq.{stakeholder_id}"})
+        return "translated"
+
+    def _translate(self, brief: dict, ctx: dict) -> dict | None:
+        """{other_lang: {title, body_markdown, actions}} or None. A template brief is rebuilt in
+        the other language instead of translated."""
+        other = "en" if brief["lang"] == "es" else "es"
+        if not (brief.get("model") or {}).get("model"):
+            t = template_brief(ctx, other)
+            return {other: {"title": t.title, "body_markdown": t.body_markdown, "actions": []}}
+        source = {"title": brief["title"], "body_markdown": brief["body_markdown"],
+                  "rationales": [a["rationale"] for a in brief["actions"]]}
+        try:
+            res = self.router.structured(brief_translate_system(brief["lang"], other),
+                                         json.dumps(source, ensure_ascii=False), BriefTranslation,
+                                         max_tokens=self.max_tokens)
+        except (AllProvidersFailed, ValidationError):
+            return None
+        tr: BriefTranslation = res.data  # type: ignore[assignment]
+        body = SPACE_AFTER_CITATION.sub("] ", tr.body_markdown)
+        if _text_ids(tr.title + " " + body) != _text_ids(brief["title"] + " " + brief["body_markdown"]) \
+                or len(tr.rationales) != len(brief["actions"]):
+            return None  # a translation that changes the evidence is not shown
+        actions = [a | {"rationale": r[:400]} for a, r in zip(brief["actions"], tr.rationales, strict=True)]
+        return {other: {"title": tr.title[:140], "body_markdown": body, "actions": actions}}
 
     def _log(self, cluster_id, stakeholder_id, status, provider, model, started, error=None) -> None:
         self.db.insert("stage_runs", {"cluster_id": cluster_id, "stakeholder_id": stakeholder_id, "stage": "brief",

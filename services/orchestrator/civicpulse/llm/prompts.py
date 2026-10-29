@@ -99,3 +99,13 @@ def brief_system(profile: str, lang: str, actions: list[str]) -> str:
         'Answer ONLY with JSON: {"title": "...", "body_markdown": "...", '
         '"actions": [{"action_id": "...", "rationale": "...", "citations": ["m_report_count"]}]}'
     )
+
+
+def brief_translate_system(src: str, dst: str) -> str:
+    return (
+        f"Translate a stakeholder brief from {BRIEF_LANGS.get(src, src)} to {BRIEF_LANGS.get(dst, dst)}. "
+        "Translate faithfully: add nothing, drop nothing, keep numbers and dates as they are. "
+        "Keep every citation in square brackets exactly as written and in the same place, e.g. [m_report_count]. "
+        "rationales: the action rationales in the same order, translated the same way.\n"
+        'Answer ONLY with JSON: {"title": "...", "body_markdown": "...", "rationales": ["..."]}'
+    )

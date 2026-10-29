@@ -48,7 +48,20 @@
       "type": "object", "additionalProperties": false,
       "properties": {"provider": {"type": ["string", "null"]}, "model": {"type": ["string", "null"]}}
     },
-    "generated_at": {"type": "string", "format": "date-time"}
+    "generated_at": {"type": "string", "format": "date-time"},
+    "translations": {
+      "type": "object",
+      "description": "The same brief in the other UI language (es <-> en), with exactly the same citations, so the panel can follow the reader's language. Missing when the translation failed: the panel shows the original.",
+      "propertyNames": {"enum": ["es", "en"]},
+      "additionalProperties": {
+        "type": "object", "additionalProperties": false, "required": ["title", "body_markdown", "actions"],
+        "properties": {
+          "title": {"type": "string", "maxLength": 140},
+          "body_markdown": {"type": "string", "maxLength": 6000},
+          "actions": {"type": "array", "maxItems": 5, "items": {"$ref": "#/properties/actions/items"}}
+        }
+      }
+    }
   },
   "$defs": {
     "citation_id": {

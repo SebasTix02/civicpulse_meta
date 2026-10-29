@@ -89,6 +89,14 @@ class BriefLLMOutput(BaseModel):
     actions: list[BriefAction] = Field(default_factory=list, max_length=5)
 
 
+class BriefTranslation(BaseModel):
+    """The same brief in the other UI language: citations kept, one rationale per action."""
+
+    title: str = Field(max_length=140)
+    body_markdown: str = Field(max_length=6000)
+    rationales: list[str] = Field(default_factory=list, max_length=5)
+
+
 class PairVerdict(BaseModel):
     """Classifier answer on a before/after pair of aligned crops."""
 

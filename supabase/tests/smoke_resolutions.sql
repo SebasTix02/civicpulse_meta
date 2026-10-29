@@ -14,6 +14,12 @@ insert into user_roles (user_id, role_id, stakeholder_id) values
 insert into clusters (id, city_id, domain_id, category_id, centroid, status, report_count, distinct_devices)
 values ('b2000000-0000-4000-8000-000000000001', 'ambato', 'roads', 'pothole',
         st_setsrid(st_makepoint(-78.62, -1.24), 4326)::geography, 'validated', 1, 1);
+insert into devices (id, trust) values ('a2000000-0000-4000-8000-000000000001', 0.5);
+insert into reports (id, device_id, city_id, geom, gps_geom, gps_accuracy_m, ip_prefix, status, domain_id, category_id,
+                     catalog_version, severity, cluster_id, raw_text)
+values ('d2000000-0000-4000-8000-000000000001', 'a2000000-0000-4000-8000-000000000001', 'ambato',
+        st_setsrid(st_makepoint(-78.62, -1.24), 4326)::geography, st_setsrid(st_makepoint(-78.62, -1.24), 4326)::geography,
+        8, '190.1.1.0/24', 'clustered', 'roads', 'pothole', 1, 3, 'b2000000-0000-4000-8000-000000000001', 'Bache');
 insert into dispatches (cluster_id, stakeholder_id, brief) values
   ('b2000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-000000000001', '{"title": "Bache"}');
 
@@ -80,7 +86,11 @@ begin
 
   -- A second photo; the orchestrator marks it a candidate; the admin approves it.
   n := issue_resolution_nonce(cl, sh);
-  res := (submit_stakeholder_resolution(cl, sh, n ->> 'nonce', n ->> 'upload_path') ->> 'resolution_id')::uuid;
+  res := (submit_stakeholder_resolution(cl, sh, n ->> 'nonce', n ->> 'upload_path',
+          p_gps_location => '{"lat": -1.24005, "lon": -78.62}', p_gps_accuracy_m => 6) ->> 'resolution_id')::uuid;
+  x := closure_location(res, 'd2000000-0000-4000-8000-000000000001');
+  assert (x ->> 'distance_m')::float between 5 and 6 and (x ->> 'after_accuracy_m')::float = 6
+         and (x ->> 'before_accuracy_m')::float = 8, x::text;
   update resolutions set ai_status = 'RESOLVED_CANDIDATE_REQUIRES_HUMAN_REVIEW' where id = res;
   x := review_resolution(res, 'approve');
   assert x ->> 'outcome' = 'resolved' and not (x ->> 'ai_overridden')::boolean, x::text;

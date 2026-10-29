@@ -110,6 +110,14 @@ const dict = {
     es: "Encuadra igual que esta foto del reporte: mismo punto, misma altura, mismo ángulo.",
     en: "Frame it like this report photo: same spot, same height, same angle.",
   },
+  resGpsHint: {
+    es: "Envíala desde el teléfono, en el lugar y con la ubicación activada: si el ángulo no coincide, la IA usa el GPS para comparar.",
+    en: "Send it from your phone, on site, with location on: if the angle does not match, the AI uses GPS to compare.",
+  },
+  resByLocation: {
+    es: "Comparado por ubicación GPS, no por alineación de las fotos: revisa que sea el mismo lugar.",
+    en: "Compared by GPS location, not by aligning the photos: check that it is the same place.",
+  },
   resPhoto: { es: "Foto después del arreglo", en: "Photo after the fix" },
   resSend: { es: "Enviar para verificación", en: "Send for verification" },
   resSending: { es: "Enviando…", en: "Sending…" },

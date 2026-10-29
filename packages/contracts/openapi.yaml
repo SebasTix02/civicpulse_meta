@@ -619,8 +619,9 @@ paths:
         stakeholder_id)`; cluster → `resolution_pending`; dispatch status is left as is; audited.
         One open resolution per cluster. Webhook → closure check (the sweeper re-spawns it if
         lost). The closure stage picks the BEFORE report (latest photo-confirmed report of the
-        cluster). Approval is a separate step (`reviewResolution`) by someone with
-        `resolutions.approve`.
+        cluster). With `p_gps_location`, the closure stage can also compare photos that do not
+        register, when the fix is near the BEFORE report (`evidence = location`). Approval is a
+        separate step (`reviewResolution`) by someone with `resolutions.approve`.
       requestBody:
         required: true
         content:
@@ -1199,6 +1200,10 @@ components:
         p_stakeholder_id: {type: string, format: uuid}
         p_nonce: {type: string}
         p_photo_path: {type: string, pattern: '^resolutions/[0-9a-f-]{36}/[A-Za-z0-9_-]+\.jpg$'}
+        p_gps_location:
+          $ref: '#/components/schemas/GeoPoint'
+          description: Phone fix when the photo was sent. Optional; enables the closure's location path.
+        p_gps_accuracy_m: {type: number, exclusiveMinimum: 0, description: Required with p_gps_location.}
         p_width: {type: integer}
         p_height: {type: integer}
         p_captured_at: {type: string, format: date-time}

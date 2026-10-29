@@ -2,89 +2,351 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://civicpulse.dev/schemas/closure_verification.schema.json",
   "title": "ClosureVerification",
-  "description": "Stored in resolutions.verification by the orchestrator (stage `closure`). Same spec as the intake, SAM 3.1 on both photos, homography registration, classifier on pairs of crops, asymmetric decision (plan §5.4 B). The panel draws its figures from this object. When in doubt, never resolved.",
+  "description": "Stored in resolutions.verification by the orchestrator (stage `closure`). Same spec as the intake, SAM 3.1 on both photos, homography registration, classifier on pairs of crops, asymmetric decision (plan §5.4 B). The panel draws its figures from this object. When registration fails but the AFTER GPS is close to the BEFORE report, a stricter comparison without alignment runs (evidence = location). When in doubt, never resolved.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "before_report_id", "before_photo_id", "after_photo_id", "catalog_version", "registration", "region_checks", "ai_status", "models", "created_at"],
+  "required": [
+    "schema_version",
+    "before_report_id",
+    "before_photo_id",
+    "after_photo_id",
+    "catalog_version",
+    "registration",
+    "region_checks",
+    "ai_status",
+    "models",
+    "created_at"
+  ],
   "properties": {
-    "schema_version": {"const": "1.0"},
-    "before_report_id": {"type": "string", "format": "uuid"},
-    "before_photo_id": {"type": "string", "format": "uuid"},
-    "after_photo_id": {"type": "string", "format": "uuid"},
-    "catalog_version": {"type": "integer", "minimum": 1, "description": "Taken from the BEFORE report's spec, so both photos are checked with the same prompts."},
+    "schema_version": {
+      "const": "1.0"
+    },
+    "before_report_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "before_photo_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "after_photo_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "catalog_version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Taken from the BEFORE report's spec, so both photos are checked with the same prompts."
+    },
     "registration": {
-      "type": "object", "additionalProperties": false, "required": ["ok"],
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ok"
+      ],
       "description": "An accepted registration only enables the comparison; it never certifies anything.",
       "properties": {
-        "ok": {"type": "boolean"},
-        "reason": {"type": ["string", "null"]},
-        "inliers": {"type": ["integer", "null"]},
-        "inlier_ratio": {"type": ["number", "null"]},
-        "context_overlap_iou": {"type": ["number", "null"]}
+        "ok": {
+          "type": "boolean"
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "inliers": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "inlier_ratio": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "context_overlap_iou": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
       }
     },
     "region_checks": {
       "type": "array",
       "items": {
-        "type": "object", "additionalProperties": false,
-        "required": ["region_id", "prompt", "status"],
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "region_id",
+          "prompt",
+          "status"
+        ],
         "properties": {
-          "region_id": {"type": "integer", "minimum": 1},
-          "prompt": {"type": "string"},
-          "initial_confidence": {"type": "number"},
-          "initial_area_px": {"type": "integer"},
-          "crop_box_xyxy": {"type": "array", "items": {"type": "number"}, "minItems": 4, "maxItems": 4},
-          "region_visible_after": {"type": "number", "minimum": 0, "maximum": 1},
-          "remaining_issue_ratio": {"type": "number", "minimum": 0, "maximum": 1},
-          "resolved_evidence_coverage": {"type": "number", "minimum": 0, "maximum": 1},
-          "confuser_region_coverage": {"type": "number", "minimum": 0, "maximum": 1},
-          "confuser_matches_resolved_iou": {"type": "number", "minimum": 0, "maximum": 1},
+          "region_id": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "prompt": {
+            "type": "string"
+          },
+          "initial_confidence": {
+            "type": "number"
+          },
+          "initial_area_px": {
+            "type": "integer"
+          },
+          "crop_box_xyxy": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            },
+            "minItems": 4,
+            "maxItems": 4
+          },
+          "region_visible_after": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "remaining_issue_ratio": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "resolved_evidence_coverage": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "confuser_region_coverage": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "confuser_matches_resolved_iou": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
           "classifier": {
             "oneOf": [
-              {"type": "null"},
               {
-                "type": "object", "additionalProperties": false,
+                "type": "null"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
                 "properties": {
-                  "model": {"type": ["string", "null"]},
-                  "before": {"$ref": "#/$defs/pair_side"},
-                  "after": {"$ref": "#/$defs/pair_side"},
-                  "reason": {"type": ["string", "null"], "maxLength": 300},
-                  "error": {"type": ["string", "null"], "maxLength": 300}
+                  "model": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "before": {
+                    "$ref": "#/$defs/pair_side"
+                  },
+                  "after": {
+                    "$ref": "#/$defs/pair_side"
+                  },
+                  "reason": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "maxLength": 300
+                  },
+                  "error": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "maxLength": 300
+                  }
                 }
               }
             ]
           },
-          "status": {"$ref": "#/$defs/region_status"},
+          "status": {
+            "$ref": "#/$defs/region_status"
+          },
           "figure_paths": {
-            "type": "object", "additionalProperties": false,
+            "type": "object",
+            "additionalProperties": false,
             "description": "Anonymized crops for the panel (public or sandbox bucket).",
-            "properties": {"before": {"type": ["string", "null"]}, "after_aligned": {"type": ["string", "null"]}}
+            "properties": {
+              "before": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "after_aligned": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          },
+          "after_box_xyxy": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            },
+            "minItems": 4,
+            "maxItems": 4,
+            "description": "Location path only: the repair SAM found in the AFTER photo (AFTER pixels)."
           }
         }
       }
     },
-    "ai_status": {"$ref": "#/$defs/ai_status"},
+    "ai_status": {
+      "$ref": "#/$defs/ai_status"
+    },
     "figures": {
-      "type": "object", "additionalProperties": false,
+      "type": "object",
+      "additionalProperties": false,
       "properties": {
-        "masks_before": {"type": ["string", "null"]},
-        "masks_after": {"type": ["string", "null"]},
-        "alignment": {"type": ["string", "null"]}
+        "masks_before": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "masks_after": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "alignment": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
       }
     },
     "models": {
-      "type": "object", "additionalProperties": false, "required": ["segmentation"],
-      "properties": {"segmentation": {"type": "string"}, "classifier": {"type": ["string", "null"]}}
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "segmentation"
+      ],
+      "properties": {
+        "segmentation": {
+          "type": "string"
+        },
+        "classifier": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
     },
-    "note": {"type": "string", "default": "Visual support for inspection, not a guarantee of repair. When in doubt the system does not declare resolved."},
-    "created_at": {"type": "string", "format": "date-time"}
+    "note": {
+      "type": "string",
+      "default": "Visual support for inspection, not a guarantee of repair. When in doubt the system does not declare resolved."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "evidence": {
+      "enum": [
+        "aligned",
+        "location",
+        "none"
+      ],
+      "description": "How the two photos were compared: aligned by homography, by GPS proximity without alignment (stricter thresholds, the panel says so), or not compared."
+    },
+    "location": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "ok"
+          ],
+          "description": "AFTER GPS vs the BEFORE report's GPS. Enables the location path when registration fails.",
+          "properties": {
+            "ok": {
+              "type": "boolean"
+            },
+            "distance_m": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "after_accuracy_m": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "before_accuracy_m": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "radius_m": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "score": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "reason": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        }
+      ]
+    }
   },
   "$defs": {
     "pair_side": {
-      "type": "object", "additionalProperties": false, "required": ["label", "confidence"],
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "label",
+        "confidence"
+      ],
       "properties": {
-        "label": {"enum": ["issue_present", "no_issue", "shadow", "water_or_wet_surface", "occlusion", "not_visible", "uncertain"]},
-        "confidence": {"type": "number", "minimum": 0, "maximum": 1}
+        "label": {
+          "enum": [
+            "issue_present",
+            "no_issue",
+            "shadow",
+            "water_or_wet_surface",
+            "occlusion",
+            "not_visible",
+            "uncertain"
+          ]
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
       }
     },
     "region_status": {

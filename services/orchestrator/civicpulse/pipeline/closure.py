@@ -12,6 +12,12 @@
 
 "I no longer detect it" is never enough: no registration, no visible region or no classifier
 confirmation means NOT_VERIFIABLE_*.
+
+Location path (sebas, 2026-10-29): real AFTER photos are often taken from another angle and do not
+register. When the AFTER photo's GPS is close to the BEFORE report's (location_check), the case is
+compared without alignment: SAM must not see the problem anywhere in the AFTER photo, must see a
+repair, and the classifier must confirm it on the two outlined crops with a stricter threshold. The
+result says evidence = "location" so the reviewer knows the photos were not aligned.
 """
 
 from __future__ import annotations
@@ -42,6 +48,10 @@ AFTER_FIXED_MIN = 0.80     # ... and no_issue in AFTER
 AFTER_PERSISTS_MIN = 0.50  # issue_present in AFTER this sure -> PERSISTENT_ISSUE
 NO_CLASSIFIER_REMAINING = 0.10
 NO_CLASSIFIER_REPAIR = 0.30
+LOCATION_AFTER_FIXED_MIN = 0.85  # stricter: the two crops are not the same pixels
+LOCATION_PERSISTS_SCORE = 0.5    # a target this sure anywhere in the AFTER photo -> persists
+MAX_AFTER_ACCURACY_M = 25.0
+MAX_LOCATION_RADIUS_M = 40.0
 CONFUSER_LABELS = {"shadow", "water_or_wet_surface", "occlusion"}
 MAGENTA = (255, 0, 255)
 
@@ -151,6 +161,45 @@ def decide_region(m: dict, verdict: dict | None) -> str:
     return "NOT_VERIFIABLE_INSUFFICIENT_EVIDENCE"
 
 
+def location_check(distance_m: float | None, after_accuracy_m: float | None,
+                   before_accuracy_m: float | None) -> dict:
+    """Is the AFTER photo at the reported place? Both GPS errors widen the radius, up to a cap;
+    the score falls from 1 at the exact spot to 0 at the radius."""
+    out = {"ok": False, "distance_m": None if distance_m is None else round(distance_m, 1),
+           "after_accuracy_m": after_accuracy_m, "before_accuracy_m": before_accuracy_m,
+           "radius_m": None, "score": 0.0, "reason": None}
+    if distance_m is None or after_accuracy_m is None:
+        return out | {"reason": "no_after_gps"}
+    if after_accuracy_m > MAX_AFTER_ACCURACY_M:
+        return out | {"reason": "after_gps_too_coarse"}
+    radius = min(MAX_LOCATION_RADIUS_M, 10.0 + after_accuracy_m + (before_accuracy_m or 15.0))
+    score = max(0.0, 1.0 - distance_m / radius)
+    return out | {"ok": distance_m <= radius, "radius_m": round(radius, 1), "score": round(score, 3),
+                  "reason": None if distance_m <= radius else "too_far"}
+
+
+def decide_location(verdict: dict | None, persists_anywhere: bool, has_repair: bool, conflict: bool) -> str:
+    """The location path, in the same spirit as decide_region but stricter."""
+    if persists_anywhere:
+        return "PERSISTENT_ISSUE"
+    if not has_repair:
+        return "NOT_VERIFIABLE_INSUFFICIENT_EVIDENCE"
+    if conflict:
+        return "NOT_VERIFIABLE_REPAIR_VS_CONFUSER_CONFLICT"
+    if verdict is None:
+        return "NOT_VERIFIABLE_CLASSIFIER_UNAVAILABLE"
+    before, after = verdict["before"], verdict["after"]
+    if after["label"] == "issue_present" and after["confidence"] >= AFTER_PERSISTS_MIN:
+        return "PERSISTENT_ISSUE"
+    if not (before["label"] == "issue_present" and before["confidence"] >= BEFORE_MIN):
+        return "NOT_VERIFIABLE_INITIAL_ISSUE_NOT_CONFIRMED"
+    if after["label"] in CONFUSER_LABELS:
+        return "NOT_VERIFIABLE_CONFUSER_OR_OCCLUSION"
+    if after["label"] == "no_issue" and after["confidence"] >= LOCATION_AFTER_FIXED_MIN:
+        return RESOLVED
+    return "NOT_VERIFIABLE_INSUFFICIENT_EVIDENCE"
+
+
 def decide_closure(statuses: list[str], registration_ok: bool) -> str:
     if not registration_ok:
         return "NOT_VERIFIABLE_REGION_NOT_VISIBLE"
@@ -171,8 +220,10 @@ class PairResult:
 
 
 def verify_pair(before: Anonymized, after: Anonymized, spec: dict, sam: SAMService, router: LLMRouter | None,
-                sam_model: str = "sam-3.1 (Meta Model API)") -> PairResult:
-    """The whole check on two already anonymized photos. No database: the eval uses it as is."""
+                sam_model: str = "sam-3.1 (Meta Model API)", location: dict | None = None,
+                force_location: bool = False) -> PairResult:
+    """The whole check on two already anonymized photos. No database: the eval uses it as is.
+    `location` is location_check()'s result; `force_location` (eval only) skips the registration."""
     brgb, argb = load(before.jpeg), load(after.jpeg)
     bh, bw = brgb.shape[:2]
     ah, aw = argb.shape[:2]
@@ -187,13 +238,17 @@ def verify_pair(before: Anonymized, after: Anonymized, spec: dict, sam: SAMServi
         found_b |= _segment(sam, before.jpeg, bw, bh, extra)
         regions = _regions(found_b, targets + extra, bw, bh)
 
-    reg: Registration = register(brgb, argb)
+    reg: Registration = Registration(False, "skipped") if force_location else register(brgb, argb)
     out = {"schema_version": "1.0", "catalog_version": 1,  # the stage sets the BEFORE report's
            "registration": reg.as_json(), "region_checks": [], "figures": {}, "note": NOTE,
+           "evidence": "aligned" if reg.ok else "none", "location": location,
            "models": {"segmentation": sam_model, "classifier": None},
            "created_at": datetime.now(UTC).isoformat()}
     figures: dict[str, bytes] = {}
     classifier_model = None
+    if regions and not reg.ok and location and location.get("ok"):
+        return _verify_by_location(out, brgb, argb, before, after, regions, spec, sam, router,
+                                   targets, resolved, confusers)
     if not regions or not reg.ok:
         out["ai_status"] = decide_closure([], reg.ok)
         return PairResult(out, figures, None)
@@ -239,6 +294,46 @@ def verify_pair(before: Anonymized, after: Anonymized, spec: dict, sam: SAMServi
     return PairResult(out, figures, classifier_model)
 
 
+def _verify_by_location(out: dict, brgb: np.ndarray, argb: np.ndarray, before: Anonymized, after: Anonymized,
+                        regions: list, spec: dict, sam: SAMService, router: LLMRouter | None,
+                        targets: list[str], resolved: list[str], confusers: list[str]) -> PairResult:
+    """No alignment: one comparison of the best BEFORE region with the repair SAM finds in AFTER."""
+    ah, aw = argb.shape[:2]
+    out["evidence"] = "location"
+    found_a = _segment(sam, after.jpeg, aw, ah, list(dict.fromkeys(targets + resolved + confusers)))
+
+    def local(prompts: list[str], min_score: float = 0.0) -> list[tuple[Detection, np.ndarray]]:
+        ds = sorted((d for p in prompts for d in found_a.get(p, []) if d.score >= min_score), key=lambda d: -d.score)
+        return [(d, m) for d in ds if (m := full_mask(d, aw, ah)).any() and m.mean() <= GLOBAL_SHARE]
+
+    persists = local(targets, LOCATION_PERSISTS_SCORE)
+    repairs = local(resolved)
+    confuser_mask = _union(found_a, confusers, aw, ah)
+    d, mask = regions[0]
+    box = _crop_box(mask)
+    check = {"region_id": 1, "prompt": d.prompt, "initial_confidence": round(d.score, 3),
+             "initial_area_px": int(mask.sum()), "crop_box_xyxy": box, "classifier": None,
+             "remaining_issue_ratio": 1.0 if persists else 0.0,
+             "figure_paths": {"before": None, "after_aligned": None}}
+    figures: dict[str, bytes] = {}
+    verdict, model, conflict = None, None, False
+    if repairs:
+        rmask = repairs[0][1]
+        conflict = _iou(rmask, rmask & confuser_mask) >= REPAIR_CONFUSER_IOU
+        check["resolved_evidence_coverage"] = round(float(rmask.mean()), 3)
+        check["after_box_xyxy"] = _crop_box(rmask)
+    if not persists and repairs and not conflict and router is not None:
+        before_jpeg = _outlined(brgb, mask, box)
+        after_jpeg = _outlined(argb, repairs[0][1], check["after_box_xyxy"])
+        figures["r1_before"], figures["r1_after"] = before_jpeg, after_jpeg
+        check["classifier"], verdict, model = _ask_pair(router, spec, before_jpeg, after_jpeg, aligned=False)
+    check["status"] = decide_location(verdict, bool(persists), bool(repairs), conflict)
+    out["region_checks"].append(check)
+    out["ai_status"] = check["status"]
+    out["models"]["classifier"] = model
+    return PairResult(out, figures, model)
+
+
 def _regions(found: dict[str, list[Detection]], prompts: list[str], w: int, h: int) -> list[tuple[Detection, np.ndarray]]:
     """Problem regions in BEFORE, best first, the same place once, not the whole photo."""
     out: list[tuple[Detection, np.ndarray]] = []
@@ -251,11 +346,13 @@ def _regions(found: dict[str, list[Detection]], prompts: list[str], w: int, h: i
     return out[:MAX_REGIONS]
 
 
-def _ask_pair(router: LLMRouter, spec: dict, before_jpeg: bytes, after_jpeg: bytes) -> tuple[dict, dict | None, str | None]:
+def _ask_pair(router: LLMRouter, spec: dict, before_jpeg: bytes, after_jpeg: bytes,
+              aligned: bool = True) -> tuple[dict, dict | None, str | None]:
+    second = "Image 2, AFTER (aligned to the same place):" if aligned else "Image 2, AFTER (same place by GPS, another angle):"
     user = [{"type": "text", "text": "Image 1, BEFORE:"}, image_part(before_jpeg),
-            {"type": "text", "text": "Image 2, AFTER (aligned to the same place):"}, image_part(after_jpeg)]
+            {"type": "text", "text": second}, image_part(after_jpeg)]
     try:
-        res = router.structured(pair_check_prompt(spec), user, PairVerdict, vision=True, max_tokens=250)
+        res = router.structured(pair_check_prompt(spec, aligned), user, PairVerdict, vision=True, max_tokens=250)
     except AllProvidersFailed as exc:
         return {"model": None, "before": {"label": "uncertain", "confidence": 0.0},
                 "after": {"label": "uncertain", "confidence": 0.0}, "reason": None, "error": str(exc)[:300]}, None, None
@@ -314,7 +411,9 @@ class ClosureStage:
         self.db.update("photos", {"public_path": f"{base}/after.jpg", "width": after.width, "height": after.height},
                        id=after_photo["id"])
 
-        result = verify_pair(before, after, spec, self.sam, self.router, self.sam_model)
+        geo = self.db.rpc("closure_location", {"p_resolution_id": res["id"], "p_before_report_id": before_report["id"]}) or {}
+        location = location_check(geo.get("distance_m"), geo.get("after_accuracy_m"), geo.get("before_accuracy_m"))
+        result = verify_pair(before, after, spec, self.sam, self.router, self.sam_model, location=location)
         v = result.verification
         paths = {}
         for name, jpeg in result.figures.items():

@@ -63,11 +63,16 @@ def whole_image_check_prompt(spec: dict) -> str:
             + 'Answer ONLY with JSON: {"label": "...", "confidence": 0.0, "reason": "short phrase, say where"}')
 
 
-def pair_check_prompt(spec: dict) -> str:
+def pair_check_prompt(spec: dict, aligned: bool = True) -> str:
+    where = ("Image 1 is BEFORE, image 2 is AFTER, aligned to the same place; judge only the magenta outline. "
+             if aligned else
+             "Image 1 is BEFORE with the reported problem outlined in magenta. Image 2 is AFTER, taken at the same "
+             "place according to GPS but from another angle; its magenta outline is what looks like the repair. "
+             "Judge whether image 2 shows the same problem fixed; if you cannot tell it is the same spot, say uncertain. ")
     return ("You are a municipal field inspector checking whether a reported problem was fixed. "
             + problem_text(spec)
             + f" Fixed means: {spec.get('resolved_description') or 'the problem is gone'}. "
-            + "Image 1 is BEFORE, image 2 is AFTER, aligned to the same place; judge only the magenta outline. "
+            + where
             + "Labels: " + LABEL_GLOSSARY + " "
             + 'Answer ONLY with JSON: {"before": {"label": "...", "confidence": 0.0}, '
             + '"after": {"label": "...", "confidence": 0.0}, "reason": "short phrase"}')

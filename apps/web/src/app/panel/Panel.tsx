@@ -50,7 +50,11 @@ type Resolution = {
   created_at: string;
   decided_at: string | null;
   after_public_path: string | null;
-  verification: { region_checks: RegionCheck[] } | null;
+  verification: {
+    region_checks: RegionCheck[];
+    evidence?: "aligned" | "location" | "none";
+    location?: { ok: boolean; distance_m: number | null } | null;
+  } | null;
   can_review: boolean;
   review_note: string | null;
 };
@@ -158,6 +162,18 @@ function Login({ lang }: { lang: Lang }) {
 
 const CANDIDATE = "RESOLVED_CANDIDATE_REQUIRES_HUMAN_REVIEW";
 
+// Optional: the fix lets the AI compare photos taken from another angle (location path).
+function tryFix(): Promise<{ lat: number; lon: number; accuracy: number } | null> {
+  if (!("geolocation" in navigator)) return Promise.resolve(null);
+  return new Promise((resolve) =>
+    navigator.geolocation.getCurrentPosition(
+      (p) => resolve({ lat: p.coords.latitude, lon: p.coords.longitude, accuracy: p.coords.accuracy }),
+      () => resolve(null),
+      { enableHighAccuracy: true, timeout: 15000 },
+    ),
+  );
+}
+
 // Stakeholder closure (plan §5.4): upload the AFTER photo, see what the AI found, and let a member
 // with resolutions.approve decide. The AI never closes a case on its own.
 function ResolutionBox({ lang, row, beforeUrl, onChanged }: {
@@ -195,7 +211,7 @@ function ResolutionBox({ lang, row, beforeUrl, onChanged }: {
     setError("");
     try {
       const supabase = browserClient();
-      const { blob, width, height } = await resizeToJpeg(photo);
+      const [{ blob, width, height }, fix] = await Promise.all([resizeToJpeg(photo), tryFix()]);
       const { data: n, error: e1 } = await supabase.rpc("issue_resolution_nonce", {
         p_cluster_id: row.cluster_id, p_stakeholder_id: row.stakeholder_id,
       });
@@ -205,6 +221,7 @@ function ResolutionBox({ lang, row, beforeUrl, onChanged }: {
       const { error: e3 } = await supabase.rpc("submit_stakeholder_resolution", {
         p_cluster_id: row.cluster_id, p_stakeholder_id: row.stakeholder_id, p_nonce: n.nonce,
         p_photo_path: n.upload_path, p_width: width, p_height: height, p_captured_at: new Date(photo.lastModified).toISOString(),
+        p_gps_location: fix ? { lat: fix.lat, lon: fix.lon } : null, p_gps_accuracy_m: fix ? Math.max(1, fix.accuracy) : null,
       });
       if (e3) throw e3;
       setPhoto(null);
@@ -243,6 +260,11 @@ function ResolutionBox({ lang, row, beforeUrl, onChanged }: {
             <b>{t(lang, "resAi")}:</b> {t(lang, `ai_${res.ai_status}` as Key)}
           </p>
           {pending ? <p className="muted" role="status">{t(lang, "resChecking")}</p> : null}
+          {res.verification?.evidence === "location" ? (
+            <p className="muted small">
+              {t(lang, "resByLocation")} ({Math.round(res.verification.location?.distance_m ?? 0)} m)
+            </p>
+          ) : null}
           <div className="figures">
             {checks.flatMap((c) => [
               c.figure_paths?.before ? (
@@ -286,6 +308,7 @@ function ResolutionBox({ lang, row, beforeUrl, onChanged }: {
       {canSend ? (
         <>
           <p className="muted">{t(lang, "resIntro")}</p>
+          <p className="muted small">{t(lang, "resGpsHint")}</p>
           {/* Alignment needs the same framing: most failures in the eval were a different angle. */}
           {beforeUrl ? (
             <figure className="guide"><img src={beforeUrl} alt="" /><figcaption>{t(lang, "resFrameLikeThis")}</figcaption></figure>

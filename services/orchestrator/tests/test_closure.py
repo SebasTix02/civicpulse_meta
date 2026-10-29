@@ -11,7 +11,7 @@ from civicpulse.catalog import Catalog
 from civicpulse.config import REPO_ROOT, ProviderConfig
 from civicpulse.llm.router import LLMRouter
 from civicpulse.models import SpecLLMOutput
-from civicpulse.pipeline.closure import ClosureStage, decide_closure, decide_region, verify_pair
+from civicpulse.pipeline.closure import ClosureStage, decide_closure, decide_region, location_check, verify_pair
 from civicpulse.registration import register
 from civicpulse.sam.service import Detection, SegmentResult
 
@@ -185,6 +185,10 @@ class FakeDb:
         assert table == "reports" and params["cluster_id"] == "eq.c1"
         return [{"id": "rep1", "spec": SPEC, "current_photo_version": 1, "intake_status": "REPORT_CONFIRMED_BY_PHOTO"}]
 
+    def rpc(self, fn, args):
+        assert fn == "closure_location" and args == {"p_resolution_id": "res1", "p_before_report_id": "rep1"}
+        return {"distance_m": None, "after_accuracy_m": None, "before_accuracy_m": None}
+
     def download(self, path):
         return self.files[path]
 
@@ -221,3 +225,52 @@ def test_stage_stores_the_verification_and_the_figures(monkeypatch):
 def anon_passthrough(photo: bytes) -> Anonymized:
     rgb = cv2.imdecode(np.frombuffer(photo, np.uint8), cv2.IMREAD_COLOR)
     return Anonymized(photo, rgb.shape[1], rgb.shape[0], faces=0, people=0, vehicles=0, blurred_share=0.0)
+
+
+NEAR = location_check(6.0, 8.0, 10.0)
+PATCH_ELSEWHERE = [420, 260, 540, 350]  # where the repair shows up in a photo from another angle
+
+
+def test_location_check():
+    assert NEAR["ok"] and NEAR["radius_m"] == 28.0 and 0.7 < NEAR["score"] < 0.8
+    assert location_check(30.0, 8.0, 10.0)["reason"] == "too_far"
+    assert location_check(5.0, 60.0, 10.0)["reason"] == "after_gps_too_coarse"
+    assert location_check(None, None, None)["reason"] == "no_after_gps"
+    assert location_check(39.0, 25.0, 30.0)["radius_m"] == 40.0  # capped
+
+
+def test_unaligned_but_near_by_gps_can_be_a_candidate(monkeypatch):
+    before, after = anon(scene()), anon(scene(seed=7))  # does not register
+    sam = FakeSAM({before.jpeg: {"pothole": [(0.8, HOLE)]},
+                   after.jpeg: {"asphalt patch": [(0.7, PATCH_ELSEWHERE)]}})
+    r, seen = router([pair("issue_present", 0.9, "no_issue", 0.9)], monkeypatch)
+    res = verify_pair(before, after, SPEC, sam, r, location=NEAR)
+    v = res.verification
+    assert v["evidence"] == "location" and not v["registration"]["ok"]
+    assert v["ai_status"] == "RESOLVED_CANDIDATE_REQUIRES_HUMAN_REVIEW"
+    assert "another angle" in seen[0]["messages"][0]["content"]
+    assert {"r1_before", "r1_after"} <= set(res.figures)
+    jsonschema.validate(v | {"before_report_id": "00000000-0000-4000-8000-000000000001",
+                             "before_photo_id": "00000000-0000-4000-8000-000000000002",
+                             "after_photo_id": "00000000-0000-4000-8000-000000000003"}, SCHEMA)
+
+
+@pytest.mark.parametrize(("after_hits", "verdict", "location", "expected"), [
+    ({"asphalt patch": [(0.7, PATCH_ELSEWHERE)]}, pair("issue_present", 0.9, "no_issue", 0.9),
+     location_check(35.0, 8.0, 10.0), "NOT_VERIFIABLE_REGION_NOT_VISIBLE"),           # too far: no location path
+    ({"pothole": [(0.6, PATCH_ELSEWHERE)], "asphalt patch": [(0.7, HOLE)]}, None, NEAR,
+     "PERSISTENT_ISSUE"),                                                              # a pothole anywhere persists
+    ({}, None, NEAR, "NOT_VERIFIABLE_INSUFFICIENT_EVIDENCE"),                          # no repair seen
+    ({"asphalt patch": [(0.7, PATCH_ELSEWHERE)]}, pair("issue_present", 0.9, "no_issue", 0.82), NEAR,
+     "NOT_VERIFIABLE_INSUFFICIENT_EVIDENCE"),                                          # stricter than aligned
+    ({"asphalt patch": [(0.7, PATCH_ELSEWHERE)]}, pair("issue_present", 0.9, "uncertain", 0.9), NEAR,
+     "NOT_VERIFIABLE_INSUFFICIENT_EVIDENCE"),                                          # "not the same spot"
+])
+def test_location_path_never_closes_on_doubt(monkeypatch, after_hits, verdict, location, expected):
+    before, after = anon(scene()), anon(scene(seed=7))
+    sam = FakeSAM({before.jpeg: {"pothole": [(0.8, HOLE)]}, after.jpeg: after_hits})
+    r, seen = router([verdict] if verdict else [], monkeypatch)
+    v = verify_pair(before, after, SPEC, sam, r, location=location).verification
+    assert v["ai_status"] == expected
+    if verdict is None:
+        assert not seen

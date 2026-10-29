@@ -78,6 +78,15 @@ def pair_check_prompt(spec: dict, aligned: bool = True) -> str:
             + '"after": {"label": "...", "confidence": 0.0}, "reason": "short phrase"}')
 
 
+def same_place_prompt() -> str:
+    return ("You check photos for a city repair crew. Image 1 was taken when a citizen reported a problem; image 2 "
+            "was taken later by the crew, from another angle. Do they show the same spot of the same street? Compare "
+            "fixed things: curbs, walls, poles, trees, buildings, road markings, manholes, the shape of the road. "
+            "Ignore the repaired area itself, light, weather, cars and people. If the fixed things do not clearly "
+            "match, answer uncertain or no. "
+            'Answer ONLY with JSON: {"same_place": "yes|no|uncertain", "confidence": 0.0, "reason": "short phrase"}')
+
+
 BRIEF_PROFILES = {
     "operational": "a field operations team: what, where, how much and what to do first. Short and concrete.",
     "technical": "engineers: include the measured numbers and how sure the evidence is.",

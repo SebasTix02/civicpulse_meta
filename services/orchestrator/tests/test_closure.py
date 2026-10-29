@@ -228,6 +228,10 @@ def anon_passthrough(photo: bytes) -> Anonymized:
 
 
 NEAR = location_check(6.0, 8.0, 10.0)
+
+
+def same_place(answer, conf):
+    return 200, json.dumps({"same_place": answer, "confidence": conf, "reason": "x"})
 PATCH_ELSEWHERE = [420, 260, 540, 350]  # where the repair shows up in a photo from another angle
 
 
@@ -243,12 +247,13 @@ def test_unaligned_but_near_by_gps_can_be_a_candidate(monkeypatch):
     before, after = anon(scene()), anon(scene(seed=7))  # does not register
     sam = FakeSAM({before.jpeg: {"pothole": [(0.8, HOLE)]},
                    after.jpeg: {"asphalt patch": [(0.7, PATCH_ELSEWHERE)]}})
-    r, seen = router([pair("issue_present", 0.9, "no_issue", 0.9)], monkeypatch)
+    r, seen = router([pair("issue_present", 0.9, "no_issue", 0.9), same_place("yes", 0.85)], monkeypatch)
     res = verify_pair(before, after, SPEC, sam, r, location=NEAR)
     v = res.verification
     assert v["evidence"] == "location" and not v["registration"]["ok"]
     assert v["ai_status"] == "RESOLVED_CANDIDATE_REQUIRES_HUMAN_REVIEW"
     assert "another angle" in seen[0]["messages"][0]["content"]
+    assert "same spot" in seen[1]["messages"][0]["content"] and v["region_checks"][0]["same_place"]["same_place"] == "yes"
     assert {"r1_before", "r1_after"} <= set(res.figures)
     jsonschema.validate(v | {"before_report_id": "00000000-0000-4000-8000-000000000001",
                              "before_photo_id": "00000000-0000-4000-8000-000000000002",
@@ -274,3 +279,20 @@ def test_location_path_never_closes_on_doubt(monkeypatch, after_hits, verdict, l
     assert v["ai_status"] == expected
     if verdict is None:
         assert not seen
+
+
+@pytest.mark.parametrize(("answer", "expected"), [
+    (same_place("no", 0.9), "NOT_VERIFIABLE_INSUFFICIENT_EVIDENCE"),         # another street with a repair
+    (same_place("uncertain", 0.9), "NOT_VERIFIABLE_INSUFFICIENT_EVIDENCE"),
+    (same_place("yes", 0.6), "NOT_VERIFIABLE_INSUFFICIENT_EVIDENCE"),        # not sure enough
+    ((500, ""), "NOT_VERIFIABLE_CLASSIFIER_UNAVAILABLE"),
+])
+def test_location_candidate_needs_a_sure_same_place(monkeypatch, answer, expected):
+    before, after = anon(scene()), anon(scene(seed=7))
+    sam = FakeSAM({before.jpeg: {"pothole": [(0.8, HOLE)]}, after.jpeg: {"asphalt patch": [(0.7, PATCH_ELSEWHERE)]}})
+    r, _ = router([pair("issue_present", 0.9, "no_issue", 0.9), answer], monkeypatch)
+    v = verify_pair(before, after, SPEC, sam, r, location=NEAR).verification
+    assert v["ai_status"] == expected
+    jsonschema.validate(v | {"before_report_id": "00000000-0000-4000-8000-000000000001",
+                             "before_photo_id": "00000000-0000-4000-8000-000000000002",
+                             "after_photo_id": "00000000-0000-4000-8000-000000000003"}, SCHEMA)

@@ -201,6 +201,49 @@
             "minItems": 4,
             "maxItems": 4,
             "description": "Location path only: the repair SAM found in the AFTER photo (AFTER pixels)."
+          },
+          "same_place": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "same_place",
+              "confidence"
+            ],
+            "description": "Location path only, asked when it would be a candidate: are the two whole photos the same spot? Anything but yes >= 0.7 keeps it NOT_VERIFIABLE.",
+            "properties": {
+              "same_place": {
+                "enum": [
+                  "yes",
+                  "no",
+                  "uncertain"
+                ]
+              },
+              "confidence": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "model": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "reason": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "maxLength": 300
+              },
+              "error": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "maxLength": 300
+              }
+            }
           }
         }
       }

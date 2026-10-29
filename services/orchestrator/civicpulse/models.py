@@ -107,6 +107,14 @@ class PairVerdict(BaseModel):
     error: str | None = None
 
 
+class SamePlaceVerdict(BaseModel):
+    """Location path only: do the two whole photos show the same spot of the same street?"""
+
+    same_place: Literal["yes", "no", "uncertain"]
+    confidence: float = Field(ge=0, le=1)
+    reason: str = ""
+
+
 class RegionMetrics(BaseModel):
     """Geometry of one before-region after the after-photo is warped onto it (all 0..1)."""
 

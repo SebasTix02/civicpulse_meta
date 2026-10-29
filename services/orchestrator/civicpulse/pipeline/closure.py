@@ -17,7 +17,9 @@ Location path (sebas, 2026-10-29): real AFTER photos are often taken from anothe
 register. When the AFTER photo's GPS is close to the BEFORE report's (location_check), the case is
 compared without alignment: SAM must not see the problem anywhere in the AFTER photo, must see a
 repair, and the classifier must confirm it on the two outlined crops with a stricter threshold. The
-result says evidence = "location" so the reviewer knows the photos were not aligned.
+result says evidence = "location" so the reviewer knows the photos were not aligned. A candidate on
+this path is asked once more, on the two whole photos, whether it is the same spot (GPS can be off,
+or a repaired pothole a few metres away is not this one); anything but a sure "yes" is not enough.
 """
 
 from __future__ import annotations
@@ -30,9 +32,9 @@ import cv2
 import numpy as np
 
 from civicpulse.anonymize import Anonymized, load, to_jpeg
-from civicpulse.llm.prompts import pair_check_prompt
+from civicpulse.llm.prompts import pair_check_prompt, same_place_prompt
 from civicpulse.llm.router import AllProvidersFailed, LLMRouter, image_part
-from civicpulse.models import PairVerdict
+from civicpulse.models import PairVerdict, SamePlaceVerdict
 from civicpulse.registration import Registration, register, warp_to_before
 from civicpulse.sam.service import Detection, SAMService
 
@@ -50,6 +52,7 @@ NO_CLASSIFIER_REMAINING = 0.10
 NO_CLASSIFIER_REPAIR = 0.30
 LOCATION_AFTER_FIXED_MIN = 0.85  # stricter: the two crops are not the same pixels
 LOCATION_PERSISTS_SCORE = 0.5    # a target this sure anywhere in the AFTER photo -> persists
+SAME_PLACE_MIN = 0.70            # a location-path candidate also needs "same place: yes" this sure
 MAX_AFTER_ACCURACY_M = 25.0
 MAX_LOCATION_RADIUS_M = 40.0
 CONFUSER_LABELS = {"shadow", "water_or_wet_surface", "occlusion"}
@@ -328,6 +331,11 @@ def _verify_by_location(out: dict, brgb: np.ndarray, argb: np.ndarray, before: A
         figures["r1_before"], figures["r1_after"] = before_jpeg, after_jpeg
         check["classifier"], verdict, model = _ask_pair(router, spec, before_jpeg, after_jpeg, aligned=False)
     check["status"] = decide_location(verdict, bool(persists), bool(repairs), conflict)
+    if check["status"] == RESOLVED:  # router is not None here: a candidate needs the classifier
+        check["same_place"] = _ask_same_place(router, brgb, argb)
+        if not (check["same_place"]["same_place"] == "yes" and check["same_place"]["confidence"] >= SAME_PLACE_MIN):
+            check["status"] = ("NOT_VERIFIABLE_CLASSIFIER_UNAVAILABLE" if check["same_place"]["error"]
+                               else "NOT_VERIFIABLE_INSUFFICIENT_EVIDENCE")
     out["region_checks"].append(check)
     out["ai_status"] = check["status"]
     out["models"]["classifier"] = model
@@ -362,6 +370,24 @@ def _ask_pair(router: LLMRouter, spec: dict, before_jpeg: bytes, after_jpeg: byt
               "after": v.after.model_dump(include={"label", "confidence"}),
               "reason": (v.reason or v.before.reason or v.after.reason)[:300] or None, "error": None}
     return answer, {"before": answer["before"], "after": answer["after"]}, model
+
+
+def _whole(rgb: np.ndarray, max_side: int = 768) -> bytes:
+    scale = min(1.0, max_side / max(rgb.shape[:2]))
+    small = cv2.resize(rgb, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA) if scale < 1 else rgb
+    return to_jpeg(small, 85)
+
+
+def _ask_same_place(router: LLMRouter, brgb: np.ndarray, argb: np.ndarray) -> dict:
+    user = [{"type": "text", "text": "Image 1, at the report:"}, image_part(_whole(brgb)),
+            {"type": "text", "text": "Image 2, by the crew later:"}, image_part(_whole(argb))]
+    try:
+        res = router.structured(same_place_prompt(), user, SamePlaceVerdict, vision=True, max_tokens=150)
+    except AllProvidersFailed as exc:
+        return {"same_place": "uncertain", "confidence": 0.0, "model": None, "reason": None, "error": str(exc)[:300]}
+    v: SamePlaceVerdict = res.data  # type: ignore[assignment]
+    return {"same_place": v.same_place, "confidence": v.confidence, "model": f"{res.provider}:{res.model}",
+            "reason": v.reason[:300] or None, "error": None}
 
 
 def _as_anonymized(jpeg: bytes) -> Anonymized:

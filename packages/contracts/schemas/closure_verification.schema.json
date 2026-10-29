@@ -101,7 +101,7 @@
       ]
     },
     "ai_status": {
-      "description": "resolutions.ai_status. Rule: any region PERSISTENT_ISSUE → PERSISTENT_ISSUE; else all regions RESOLVED_CANDIDATE → RESOLVED_CANDIDATE_REQUIRES_HUMAN_REVIEW; else the first NOT_VERIFIABLE_* in decision order. No regions or failed registration → NOT_VERIFIABLE_REGION_NOT_VISIBLE.",
+      "description": "resolutions.ai_status. Rule: any region PERSISTENT_ISSUE → PERSISTENT_ISSUE; else all regions RESOLVED_CANDIDATE → RESOLVED_CANDIDATE_REQUIRES_HUMAN_REVIEW; else the first NOT_VERIFIABLE_* in decision order. Failed registration → NOT_VERIFIABLE_REGION_NOT_VISIBLE; no problem region found in BEFORE → NOT_VERIFIABLE_INITIAL_ISSUE_NOT_CONFIRMED.",
       "enum": [
         "pending",
         "PERSISTENT_ISSUE",

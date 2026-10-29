@@ -47,3 +47,25 @@ def sweep(db: Db, spawn: Callable[[str, str], None], now: datetime, max_attempts
         spawn("intake", r["id"])
         out["spawned"].append(r["id"])
     return out
+
+
+def sweep_resolutions(db: Db, spawn: Callable[[str, str], None], now: datetime,
+                      max_attempts: int = 5) -> dict[str, list[str]]:
+    """Open resolutions whose closure check never finished. After `max_attempts` errors the row
+    stays `pending` and is left alone: the panel lets an approver decide with a note."""
+    since = now - timedelta(seconds=STALE_S)
+    stuck = db.select("resolutions", {
+        "select": "id", "ai_status": "eq.pending", "outcome": "eq.open",
+        "created_at": f"lt.{since.isoformat()}", "order": "created_at.asc", "limit": str(BATCH),
+    })
+    out: dict[str, list[str]] = {"spawned": [], "running": [], "gave_up": []}
+    for r in stuck:
+        runs = db.select("stage_runs", {"select": "status,started_at", "resolution_id": f"eq.{r['id']}"})
+        if any(datetime.fromisoformat(run["started_at"]) >= since for run in runs):
+            out["running"].append(r["id"])
+        elif sum(run["status"] == "error" for run in runs) >= max_attempts:
+            out["gave_up"].append(r["id"])
+        else:
+            spawn("closure", r["id"])
+            out["spawned"].append(r["id"])
+    return out

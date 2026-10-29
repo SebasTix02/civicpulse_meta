@@ -102,6 +102,7 @@ class PairVerdict(BaseModel):
 
     before: ClassifierVerdict
     after: ClassifierVerdict
+    reason: str = ""
     valid: bool = True
     error: str | None = None
 

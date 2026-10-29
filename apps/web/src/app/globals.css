@@ -45,3 +45,8 @@ a.cite { color: var(--accent); }
 .card.report p { margin: 0 0 6px; }
 .card.report:target { border-color: var(--accent); }
 @media (max-width: 480px) { .card.report { flex-direction: column; } .card.report img { width: 100%; height: auto; } }
+.notice.ok { border-left-color: #2e9d5b; }
+.figures { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; margin-top: 10px; }
+.figures figure { margin: 0; }
+.figures img { width: 100%; border-radius: 8px; display: block; }
+.figures figcaption { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }

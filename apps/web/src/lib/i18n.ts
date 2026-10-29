@@ -101,6 +101,67 @@ const dict = {
   panelStatus_accepted: { es: "Aceptado", en: "Accepted" },
   panelStatus_declined: { es: "Rechazado", en: "Declined" },
   panelStatus_closed: { es: "Cerrado", en: "Closed" },
+  resTitle: { es: "Cierre con foto", en: "Closing with a photo" },
+  resIntro: {
+    es: "Cuando el arreglo esté hecho, sube una foto desde el mismo punto y ángulo que los reportes. La IA compara ambas fotos; la decisión final es de una persona.",
+    en: "Once the fix is done, upload a photo from the same spot and angle as the reports. The AI compares both photos; a person makes the final call.",
+  },
+  resPhoto: { es: "Foto después del arreglo", en: "Photo after the fix" },
+  resSend: { es: "Enviar para verificación", en: "Send for verification" },
+  resSending: { es: "Enviando…", en: "Sending…" },
+  resChecking: { es: "La IA está comparando las fotos…", en: "The AI is comparing the photos…" },
+  resAi: { es: "Resultado de la IA", en: "AI result" },
+  resBefore: { es: "Antes", en: "Before" },
+  resAfter: { es: "Después (alineada)", en: "After (aligned)" },
+  resAfterRaw: { es: "Foto enviada", en: "Photo sent" },
+  resApprove: { es: "Aprobar el cierre", en: "Approve the closure" },
+  resReject: { es: "Rechazar la foto", en: "Reject the photo" },
+  resNoteOverride: {
+    es: "La IA no lo dio por resuelto: explica por qué apruebas igual (obligatorio)",
+    en: "The AI did not mark it resolved: explain why you approve anyway (required)",
+  },
+  resNoteReject: { es: "Motivo (opcional)", en: "Reason (optional)" },
+  resWaitReviewer: {
+    es: "Un administrador de tu entidad revisará la foto.",
+    en: "An administrator of your organization will review the photo.",
+  },
+  resOutcome_resolved: { es: "✓ Cierre aprobado", en: "✓ Closure approved" },
+  resOutcome_rejected: { es: "Foto rechazada: puedes enviar otra.", en: "Photo rejected: you can send another." },
+  resOverridden: { es: "aprobado en contra de la IA", en: "approved against the AI" },
+  resDisclaimer: {
+    es: "Apoyo visual para la inspección, no garantiza la reparación.",
+    en: "Visual support for inspection, not a guarantee of repair.",
+  },
+  ai_pending: { es: "Verificando…", en: "Checking…" },
+  ai_PERSISTENT_ISSUE: { es: "El problema sigue visible en la foto.", en: "The problem is still visible in the photo." },
+  ai_RESOLVED_CANDIDATE_REQUIRES_HUMAN_REVIEW: {
+    es: "Parece arreglado. Revisa las fotos antes de aprobar.",
+    en: "Looks fixed. Check the photos before approving.",
+  },
+  ai_NOT_VERIFIABLE_REGION_NOT_VISIBLE: {
+    es: "No se pudo ubicar el mismo lugar: toma la foto desde el punto y ángulo de los reportes.",
+    en: "Could not find the same spot: take the photo from the reports' spot and angle.",
+  },
+  ai_NOT_VERIFIABLE_CONFUSER_OR_OCCLUSION: {
+    es: "Algo tapa la zona (sombra, agua, un vehículo).",
+    en: "Something covers the area (shadow, water, a vehicle).",
+  },
+  ai_NOT_VERIFIABLE_REPAIR_VS_CONFUSER_CONFLICT: {
+    es: "No se distingue si es un parche o una mancha.",
+    en: "Cannot tell a patch from a stain.",
+  },
+  ai_NOT_VERIFIABLE_CLASSIFIER_UNAVAILABLE: {
+    es: "El modelo no respondió; decide con las fotos.",
+    en: "The model did not answer; decide from the photos.",
+  },
+  ai_NOT_VERIFIABLE_INITIAL_ISSUE_NOT_CONFIRMED: {
+    es: "La IA no encontró el problema en la foto de antes.",
+    en: "The AI did not find the problem in the before photo.",
+  },
+  ai_NOT_VERIFIABLE_INSUFFICIENT_EVIDENCE: {
+    es: "No hay evidencia suficiente para decir que está arreglado.",
+    en: "Not enough evidence to say it is fixed.",
+  },
 } satisfies Record<string, Record<Lang, string>>;
 
 export type Key = keyof typeof dict;

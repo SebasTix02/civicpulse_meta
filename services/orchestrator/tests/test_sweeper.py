@@ -38,3 +38,22 @@ def test_spawns_stuck_skips_running_and_fails_after_max_attempts():
     assert db.moved == [("broken", "spec_ready", {"status": "failed"})]
     params = db.queries[0][1]
     assert params["status"] == "in.(received,spec_ready,vision_done)" and params["updated_at"] == f"lt.{ago(120)}"
+
+
+def test_resolutions_respawn_closure_until_max_attempts():
+    from civicpulse.pipeline.sweeper import sweep_resolutions
+
+    class ResDb:
+        def select(self, table, params):
+            if table == "resolutions":
+                assert params["ai_status"] == "eq.pending" and params["created_at"] == f"lt.{ago(120)}"
+                return [{"id": "lost"}, {"id": "busy"}, {"id": "broken"}]
+            key = params["resolution_id"].removeprefix("eq.")
+            return {"lost": [],
+                    "busy": [{"status": "ok", "started_at": ago(10)}],
+                    "broken": [{"status": "error", "started_at": ago(400 + i)} for i in range(5)]}[key]
+
+    spawned = []
+    out = sweep_resolutions(ResDb(), lambda kind, key: spawned.append((kind, key)), NOW)
+    assert out == {"spawned": ["lost"], "running": ["busy"], "gave_up": ["broken"]}
+    assert spawned == [("closure", "lost")]

@@ -283,7 +283,7 @@ paths:
         |---|---|---|
         | device | `raw` | `{device_id}/{nonce}.jpg` |
         | sandbox device | `sandbox` | `{sandbox_session_id}/{device_id}/{nonce}.jpg` |
-        | actor (closure) | `raw` | `actors/{user_id}/{upload_id}.jpg`, `upload_id` a client UUID |
+        | actor (closure) | `raw`, or `sandbox` for the sandbox stakeholder | `resolutions/{user_id}/{nonce}.jpg` (nonce from `issueResolutionNonce`) |
 
         `raw` and `sandbox` are private. Only the orchestrator writes `public`
         (anonymized copies, `{photo_id}.jpg`, and figures, `figures/{resolution_id}/…`).
@@ -571,19 +571,56 @@ paths:
         '422': {$ref: '#/components/responses/Unprocessable'}
         '429': {$ref: '#/components/responses/RateLimited'}
 
+  /rest/v1/rpc/issue_resolution_nonce:
+    post:
+      tags: [closure, panel]
+      operationId: issueResolutionNonce
+      summary: Upload slot for an actor's AFTER photo
+      description: |
+        Actor with `resolutions.submit` on `p_stakeholder_id` and that dispatch `accepted`
+        (`dispatch_not_accepted`, 409), no open resolution on the cluster
+        (`resolution_already_open`, 409). Stores `capture_nonces (user_id, purpose =
+        'stakeholder_resolution', expires_at = now() + 10 min)`; at most 5 unused and 30 per
+        hour (`rate_limited`, 429). Returns the bucket (`sandbox` for a sandbox dispatch) and the
+        exact path `resolutions/{user_id}/{nonce}.jpg`; Storage RLS only allows that path.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [p_cluster_id, p_stakeholder_id]
+              properties:
+                p_cluster_id: {type: string, format: uuid}
+                p_stakeholder_id: {type: string, format: uuid}
+      responses:
+        '200':
+          description: Nonce issued
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/CaptureNonce'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {description: '`dispatch_not_found`'}
+        '409': {$ref: '#/components/responses/Conflict'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+
   /rest/v1/rpc/submit_stakeholder_resolution:
     post:
       tags: [closure, panel]
       operationId: submitStakeholderResolution
       summary: An actor uploads the AFTER photo (stakeholder path)
       description: |
-        Actor with `resolutions.submit` on `p_stakeholder_id`, and a dispatch for
-        (`p_cluster_id`, `p_stakeholder_id`) must exist. The AFTER photo is required. No nonce
-        (actors are identified); the photo must be at `raw/actors/{auth.uid()}/…`.
-        Inserts `photos` and `resolutions (closure_path = 'stakeholder', ai_status = 'pending',
-        outcome = 'open', submitted_by_user, stakeholder_id)`; cluster → `resolution_pending`;
-        dispatch status is left as is. Webhook → closure check. Approval is a separate step
-        (`reviewResolution`) by someone with `resolutions.approve`.
+        Actor with `resolutions.submit` on `p_stakeholder_id`, that dispatch `accepted` and the
+        cluster `acknowledged` (`cluster_not_awaiting_fix`, 409). The photo must be at the path of
+        an unused nonce from `issueResolutionNonce` (`invalid_nonce`, `nonce_used`,
+        `nonce_expired`, `photo_path_mismatch`). Inserts `photos` and `resolutions (closure_path =
+        'stakeholder', ai_status = 'pending', outcome = 'open', submitted_by_user,
+        stakeholder_id)`; cluster → `resolution_pending`; dispatch status is left as is; audited.
+        One open resolution per cluster. Webhook → closure check (the sweeper re-spawns it if
+        lost). The closure stage picks the BEFORE report (latest photo-confirmed report of the
+        cluster). Approval is a separate step (`reviewResolution`) by someone with
+        `resolutions.approve`.
       requestBody:
         required: true
         content:
@@ -612,9 +649,11 @@ paths:
         - Allowed once `ai_status` is no longer `pending` (`ai_pending`, 409), so the approver
           always sees the AI result.
         - `approve` → `outcome = 'resolved'`, cluster `resolved`. If `ai_status` is not
-          `RESOLVED_CANDIDATE_REQUIRES_HUMAN_REVIEW`, also `ai_overridden = true` and an
-          `audit_log` row `resolution.override`; then `p_note` is required (`note_required`, 422).
-        - `reject` → `outcome = 'rejected'`, cluster back to its previous status.
+          `RESOLVED_CANDIDATE_REQUIRES_HUMAN_REVIEW`, also `ai_overridden = true` (in the
+          `audit_log` row `resolution.approve`); then `p_note` is required (`note_required`, 422).
+        - `reject` → `outcome = 'rejected'`, cluster back to `acknowledged`. Allowed while
+          `pending` too, so a check that never finishes does not block the case.
+        - Approve also closes the stakeholder's `accepted` dispatches.
 
         **Community path** (caller is a device):
         - Only counts when `ai_status = 'RESOLVED_CANDIDATE_REQUIRES_HUMAN_REVIEW'`
@@ -1154,13 +1193,12 @@ components:
     SubmitStakeholderResolutionRequest:
       type: object
       additionalProperties: false
-      required: [p_resolution_id, p_cluster_id, p_stakeholder_id, p_photo_path]
+      required: [p_cluster_id, p_stakeholder_id, p_nonce, p_photo_path]
       properties:
-        p_resolution_id: {type: string, format: uuid}
         p_cluster_id: {type: string, format: uuid}
         p_stakeholder_id: {type: string, format: uuid}
-        p_photo_path: {type: string, pattern: '^actors/[0-9a-f-]{36}/[0-9a-f-]{36}\.(jpg|webp)$'}
-        p_location: {$ref: '#/components/schemas/GeoPoint'}
+        p_nonce: {type: string}
+        p_photo_path: {type: string, pattern: '^resolutions/[0-9a-f-]{36}/[A-Za-z0-9_-]+\.jpg$'}
         p_width: {type: integer}
         p_height: {type: integer}
         p_captured_at: {type: string, format: date-time}

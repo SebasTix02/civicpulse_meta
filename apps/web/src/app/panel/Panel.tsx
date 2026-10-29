@@ -2,6 +2,7 @@
 
 import { Fragment, useCallback, useEffect, useState } from "react";
 import { t, type Key, type Lang } from "@/lib/i18n";
+import { photoIssue, resizeToJpeg, type PhotoIssue } from "@/lib/photoQuality";
 import { browserClient, signInLinkClient } from "@/lib/supabase";
 
 type Citation = { id: string; kind: "report" | "geo_feature" | "cluster" | "metric"; ref: string };
@@ -25,6 +26,8 @@ type InboxRow = {
   note: string | null;
   brief: Brief;
   priority_score: number;
+  latest_resolution: Resolution | null;
+  can_submit_resolution: boolean;
   cluster: {
     category_name: Record<Lang, string>;
     lat: number;
@@ -33,6 +36,23 @@ type InboxRow = {
     distinct_devices: number;
     status: string;
   };
+};
+type RegionCheck = {
+  region_id: number;
+  status: string;
+  figure_paths?: { before: string | null; after_aligned: string | null };
+};
+type Resolution = {
+  id: string;
+  ai_status: string;
+  outcome: "open" | "resolved" | "rejected";
+  ai_overridden: boolean;
+  created_at: string;
+  decided_at: string | null;
+  after_public_path: string | null;
+  verification: { region_checks: RegionCheck[] } | null;
+  can_review: boolean;
+  review_note: string | null;
 };
 type ReportRow = {
   report_id: string;
@@ -136,6 +156,158 @@ function Login({ lang }: { lang: Lang }) {
   );
 }
 
+const CANDIDATE = "RESOLVED_CANDIDATE_REQUIRES_HUMAN_REVIEW";
+
+// Stakeholder closure (plan §5.4): upload the AFTER photo, see what the AI found, and let a member
+// with resolutions.approve decide. The AI never closes a case on its own.
+function ResolutionBox({ lang, row, onChanged }: { lang: Lang; row: InboxRow; onChanged: () => void }) {
+  const res = row.latest_resolution;
+  const [photo, setPhoto] = useState<File | null>(null);
+  const [issue, setIssue] = useState<PhotoIssue | null>(null);
+  const [inputKey, setInputKey] = useState(0);
+  const [note, setNote] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const pending = res?.outcome === "open" && res.ai_status === "pending";
+
+  // While the closure stage runs (about a minute), refresh the case every 5 s.
+  useEffect(() => {
+    if (!pending) return;
+    const id = setInterval(onChanged, 5000);
+    return () => clearInterval(id);
+  }, [pending, onChanged]);
+
+  const canSend = row.dispatch_status === "accepted" && row.can_submit_resolution
+    && row.cluster.status === "acknowledged" && res?.outcome !== "open";
+  if (!res && !canSend) return null;
+
+  async function choose(file: File | null) {
+    setPhoto(file);
+    setIssue(null);
+    if (file) setIssue(await photoIssue(file).catch(() => null));
+  }
+
+  async function send() {
+    if (!photo) return;
+    setBusy(true);
+    setError("");
+    try {
+      const supabase = browserClient();
+      const { blob, width, height } = await resizeToJpeg(photo);
+      const { data: n, error: e1 } = await supabase.rpc("issue_resolution_nonce", {
+        p_cluster_id: row.cluster_id, p_stakeholder_id: row.stakeholder_id,
+      });
+      if (e1) throw e1;
+      const { error: e2 } = await supabase.storage.from(n.bucket).upload(n.upload_path, blob, { contentType: "image/jpeg" });
+      if (e2) throw e2;
+      const { error: e3 } = await supabase.rpc("submit_stakeholder_resolution", {
+        p_cluster_id: row.cluster_id, p_stakeholder_id: row.stakeholder_id, p_nonce: n.nonce,
+        p_photo_path: n.upload_path, p_width: width, p_height: height, p_captured_at: new Date(photo.lastModified).toISOString(),
+      });
+      if (e3) throw e3;
+      setPhoto(null);
+      setIssue(null);
+      setInputKey((k) => k + 1);
+      onChanged();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String((e as { message?: string }).message ?? e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function review(verdict: "approve" | "reject") {
+    if (!res) return;
+    setBusy(true);
+    setError("");
+    const { error: e } = await browserClient().rpc("review_resolution", {
+      p_resolution_id: res.id, p_verdict: verdict, p_note: note.trim() || null,
+    });
+    setBusy(false);
+    if (e) return setError(e.message);
+    setNote("");
+    onChanged();
+  }
+
+  const override = res ? res.ai_status !== CANDIDATE : false;
+  const checks = res?.verification?.region_checks ?? [];
+  return (
+    <div className="card">
+      <h3>{t(lang, "resTitle")}</h3>
+      {res ? (
+        <>
+          <p className="muted small">{fmtDate(lang, res.created_at)}</p>
+          <p className={res.ai_status === CANDIDATE ? "notice ok" : "notice"}>
+            <b>{t(lang, "resAi")}:</b> {t(lang, `ai_${res.ai_status}` as Key)}
+          </p>
+          {pending ? <p className="muted" role="status">{t(lang, "resChecking")}</p> : null}
+          <div className="figures">
+            {checks.flatMap((c) => [
+              c.figure_paths?.before ? (
+                <figure key={`${c.region_id}b`}><img src={photoUrl(c.figure_paths.before)!} alt="" />
+                  <figcaption>{t(lang, "resBefore")} #{c.region_id}</figcaption></figure>
+              ) : null,
+              c.figure_paths?.after_aligned ? (
+                <figure key={`${c.region_id}a`}><img src={photoUrl(c.figure_paths.after_aligned)!} alt="" />
+                  <figcaption>{t(lang, "resAfter")} #{c.region_id}</figcaption></figure>
+              ) : null,
+            ])}
+            {!checks.some((c) => c.figure_paths?.after_aligned) && res.after_public_path ? (
+              <figure><img src={photoUrl(res.after_public_path)!} alt="" /><figcaption>{t(lang, "resAfterRaw")}</figcaption></figure>
+            ) : null}
+          </div>
+          <p className="muted small">{t(lang, "resDisclaimer")}</p>
+          {res.outcome !== "open" ? (
+            <p className="notice">
+              {t(lang, `resOutcome_${res.outcome}` as Key)}
+              {res.ai_overridden ? ` (${t(lang, "resOverridden")})` : ""}
+              {res.review_note ? ` · ${res.review_note}` : ""}
+            </p>
+          ) : res.can_review ? (
+            <div className="notice">
+              <label>
+                {t(lang, override ? "resNoteOverride" : "resNoteReject")}
+                <textarea rows={2} maxLength={1000} value={note} onChange={(e) => setNote(e.target.value)} />
+              </label>
+              <div className="row">
+                <button className="primary" disabled={busy || pending || (override && !note.trim())} onClick={() => review("approve")}>
+                  {t(lang, "resApprove")}
+                </button>
+                <button className="secondary" disabled={busy} onClick={() => review("reject")}>{t(lang, "resReject")}</button>
+              </div>
+            </div>
+          ) : (
+            <p className="muted">{t(lang, "resWaitReviewer")}</p>
+          )}
+        </>
+      ) : null}
+      {canSend ? (
+        <>
+          <p className="muted">{t(lang, "resIntro")}</p>
+          <label>
+            {t(lang, "resPhoto")}{" "}
+            <input key={inputKey} type="file" accept="image/*" capture="environment"
+              onChange={(e) => choose(e.target.files?.[0] ?? null)} />
+          </label>
+          {photo ? <img className="preview" src={URL.createObjectURL(photo)} alt="" /> : null}
+          {issue ? (
+            <p className="notice" role="status">
+              <b>{t(lang, issue === "dark" ? "photoDark" : issue === "bright" ? "photoBright" : "photoBlurry")}</b>{" "}
+              {t(lang, "photoRetakeHint")}
+            </p>
+          ) : null}
+          <p>
+            <button className="primary" disabled={!photo || busy} onClick={send}>
+              {busy ? t(lang, "resSending") : issue ? t(lang, "photoSendAnyway") : t(lang, "resSend")}
+            </button>
+          </p>
+        </>
+      ) : null}
+      {error ? <p role="alert">{error}</p> : null}
+    </div>
+  );
+}
+
 function Case({ lang, row, onBack, onChanged }: { lang: Lang; row: InboxRow; onBack: () => void; onChanged: () => void }) {
   const [reports, setReports] = useState<ReportRow[]>([]);
   const [original, setOriginal] = useState<Record<string, boolean>>({});
@@ -223,6 +395,8 @@ function Case({ lang, row, onBack, onChanged }: { lang: Lang; row: InboxRow; onB
         ) : null}
         {error ? <p role="alert">{error}</p> : null}
       </div>
+
+      <ResolutionBox lang={lang} row={row} onChanged={onChanged} />
 
       <h3>{t(lang, "panelEvidence")}</h3>
       {reports.map((r) => {

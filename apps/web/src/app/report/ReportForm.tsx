@@ -2,28 +2,12 @@
 
 import { useState } from "react";
 import { t, type Lang } from "@/lib/i18n";
-import { photoIssue, type PhotoIssue } from "@/lib/photoQuality";
+import { photoIssue, resizeToJpeg, type PhotoIssue } from "@/lib/photoQuality";
 import { browserClient } from "@/lib/supabase";
 import { ReportStatus } from "./ReportStatus";
 
 type Fix = { lat: number; lon: number; accuracy: number };
 type Phase = "idle" | "sending" | "done" | "error";
-
-// Longest side 1600 px, re-encoded through a canvas: this also drops EXIF (GPS, device).
-async function resizeToJpeg(file: File): Promise<{ blob: Blob; width: number; height: number }> {
-  const bitmap = await createImageBitmap(file);
-  const scale = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height));
-  const width = Math.round(bitmap.width * scale);
-  const height = Math.round(bitmap.height * scale);
-  const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
-  canvas.getContext("2d")!.drawImage(bitmap, 0, 0, width, height);
-  const blob = await new Promise<Blob>((resolve, reject) =>
-    canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("encode_failed"))), "image/jpeg", 0.85),
-  );
-  return { blob, width, height };
-}
 
 function getFix(): Promise<Fix> {
   return new Promise((resolve, reject) =>

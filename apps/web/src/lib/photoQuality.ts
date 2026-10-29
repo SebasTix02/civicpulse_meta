@@ -50,3 +50,19 @@ export async function photoIssue(file: File): Promise<PhotoIssue | null> {
   }
   return m2 / n < BLUR_VARIANCE ? "blurry" : null;
 }
+
+// Longest side 1600 px, re-encoded through a canvas: this also drops EXIF (GPS, device).
+export async function resizeToJpeg(file: File): Promise<{ blob: Blob; width: number; height: number }> {
+  const bitmap = await createImageBitmap(file);
+  const scale = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height));
+  const width = Math.round(bitmap.width * scale);
+  const height = Math.round(bitmap.height * scale);
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  canvas.getContext("2d")!.drawImage(bitmap, 0, 0, width, height);
+  const blob = await new Promise<Blob>((resolve, reject) =>
+    canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("encode_failed"))), "image/jpeg", 0.85),
+  );
+  return { blob, width, height };
+}

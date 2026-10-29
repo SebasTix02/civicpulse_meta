@@ -93,8 +93,14 @@ def run_job(kind: str, key: str) -> str:
         s = get_settings()
         return BriefStage(Db(s.supabase_url, s.supabase_service_key), LLMRouter(s.llm_providers)).run(key)
     if kind == "closure":
-        print(f"job closure {key}: the closure stage comes with day 8, skipped")
-        return "skipped"
+        from civicpulse.config import get_settings
+        from civicpulse.db import Db
+        from civicpulse.llm.router import LLMRouter
+        from civicpulse.pipeline.closure import ClosureStage
+
+        s = get_settings()
+        return ClosureStage(Db(s.supabase_url, s.supabase_service_key), LLMRouter(s.llm_providers), s.sam(),
+                            _anonymizer()).run(key)
     raise ValueError(f"unknown job {kind}")
 
 
@@ -109,16 +115,18 @@ def api():
 
 @app.function(secrets=secrets, schedule=modal.Cron("* * * * *"), timeout=55)
 def sweeper() -> dict:
-    """Re-spawns reports stuck before clustered for more than 2 minutes (pipeline/sweeper.py)."""
+    """Re-spawns reports stuck before clustered, and closure checks never finished, after 2 minutes (pipeline/sweeper.py)."""
     from datetime import UTC, datetime
 
     from civicpulse.config import get_settings
     from civicpulse.db import Db
-    from civicpulse.pipeline.sweeper import sweep
+    from civicpulse.pipeline.sweeper import sweep, sweep_resolutions
 
     s = get_settings()
-    out = sweep(Db(s.supabase_url, s.supabase_service_key), lambda kind, key: run_job.spawn(kind, key),
-                datetime.now(UTC), s.max_stage_attempts)
+    db, now = Db(s.supabase_url, s.supabase_service_key), datetime.now(UTC)
+    out = sweep(db, lambda kind, key: run_job.spawn(kind, key), now, s.max_stage_attempts)
+    out |= {f"closure_{k}": v for k, v in
+            sweep_resolutions(db, lambda kind, key: run_job.spawn(kind, key), now, s.max_stage_attempts).items()}
     if any(out.values()):
         print(out)
     return out

@@ -27,6 +27,7 @@ from civicpulse.llm.router import AllProvidersFailed, LLMRouter
 from civicpulse.models import BriefLLMOutput
 
 CITATION = re.compile(r"\[([^\[\]]+)\]")
+SPACE_AFTER_CITATION = re.compile(r"\](?=\w)")  # models sometimes glue the next word: "[m_x]y"
 CITATION_ID = re.compile(r"^(r_[0-9a-f]{8}|c_[0-9a-f]{8}|osm_[0-9]+|naufest_[A-Za-z0-9_]+|m_[a-z_]+)$")
 
 
@@ -121,6 +122,7 @@ class BriefStage:
             except (AllProvidersFailed, ValidationError):
                 break
             out, provider, model = res.data, res.provider, res.model  # type: ignore[assignment]
+            out.body_markdown = SPACE_AFTER_CITATION.sub("] ", out.body_markdown)  # type: ignore[union-attr]
             check = validate(out, ctx)  # type: ignore[arg-type]
             if check["ok"]:
                 break

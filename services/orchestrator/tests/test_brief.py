@@ -71,7 +71,7 @@ def answer(body, actions=None):
                                  "citations": ["m_photo_confirmed"]}]})
 
 
-GOOD = ("Cuatro reportes de un bache desde tres dispositivos [m_report_count] [m_distinct_devices]. "
+GOOD = ("Cuatro reportes de un bache desde tres dispositivos [m_report_count] [m_distinct_devices]y más. "
         "Dos fotos lo confirman [m_photo_confirmed] [r_1a2b3c4d]. Hay una escuela a 80 m [osm_4412].")
 
 
@@ -86,6 +86,7 @@ def test_brief_cites_only_known_ids_and_keeps_the_contract(monkeypatch):
                                                      "r_1a2b3c4d", "osm_4412"}
     assert next(c for c in brief["citations"] if c["id"] == "r_1a2b3c4d")["ref"].startswith("1a2b3c4d-")
     assert brief["model"] == {"provider": "a", "model": "m"} and brief["lang"] == "es"
+    assert "[m_distinct_devices] y más" in brief["body_markdown"]  # glued word separated
     prompt = seen[0]["messages"]
     assert "Spanish" in prompt[0]["content"] and "pothole_patching" in prompt[0]["content"]
     assert CLUSTER not in prompt[1]["content"]  # the model sees citation ids, not internal uuids

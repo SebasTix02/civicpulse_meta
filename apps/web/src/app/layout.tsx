@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import { t } from "@/lib/i18n";
 import { currentLang } from "@/lib/lang-server";
+import { AuthForward } from "./AuthForward";
 import { LangSwitch } from "./LangSwitch";
 import "./globals.css";
 
@@ -19,6 +20,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang={lang}>
       <body>
+        <AuthForward />
         <header className="top">
           <Link href="/" className="brand">CivicPulse</Link>
           <nav>

@@ -100,7 +100,8 @@ function Login({ lang }: { lang: Lang }) {
     await browserClient().auth.signOut(); // a citizen's anonymous session must not carry over
     const { error: e } = await signInLinkClient().auth.signInWithOtp({
       email: email.trim(),
-      options: { shouldCreateUser: false, emailRedirectTo: `${window.location.origin}/auth/callback?next=/panel` },
+      // No query string: Supabase only honours a redirect that matches its allow list exactly.
+      options: { shouldCreateUser: false, emailRedirectTo: `${window.location.origin}/auth/callback` },
     });
     if (e) {
       setError(/signups not allowed|not found|otp_disabled/i.test(e.message) ? t(lang, "panelNotInvited") : e.message);

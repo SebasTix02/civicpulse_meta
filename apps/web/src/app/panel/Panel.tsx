@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { t, type Key, type Lang } from "@/lib/i18n";
 import { photoIssue, resizeToJpeg, type PhotoIssue } from "@/lib/photoQuality";
 import { browserClient, signInLinkClient } from "@/lib/supabase";
+import { errorMessage } from "@/lib/errors";
 import { BriefText, inLang, type Brief } from "../BriefText";
 
 type InboxRow = {
@@ -89,7 +90,7 @@ function Login({ lang }: { lang: Lang }) {
       options: { shouldCreateUser: false, emailRedirectTo: `${window.location.origin}/auth/callback` },
     });
     if (e) {
-      setError(/signups not allowed|not found|otp_disabled/i.test(e.message) ? t(lang, "panelNotInvited") : e.message);
+      setError(/signups not allowed|not found|otp_disabled/i.test(e.message) ? t(lang, "panelNotInvited") : errorMessage(lang, e));
       setState("error");
     } else setState("sent");
   }
@@ -181,7 +182,7 @@ function ResolutionBox({ lang, row, beforeUrl, onChanged }: {
       setInputKey((k) => k + 1);
       onChanged();
     } catch (e) {
-      setError(e instanceof Error ? e.message : String((e as { message?: string }).message ?? e));
+      setError(errorMessage(lang, e));
     } finally {
       setBusy(false);
     }
@@ -195,7 +196,7 @@ function ResolutionBox({ lang, row, beforeUrl, onChanged }: {
       p_resolution_id: res.id, p_verdict: verdict, p_note: note.trim() || null,
     });
     setBusy(false);
-    if (e) return setError(e.message);
+    if (e) return setError(errorMessage(lang, e));
     setNote("");
     onChanged();
   }
@@ -316,7 +317,7 @@ function Case({ lang, row, onBack, onChanged }: { lang: Lang; row: InboxRow; onB
       p_cluster_id: row.cluster_id, p_stakeholder_id: row.stakeholder_id, p_status: status, p_note: note || null,
     });
     setBusy(false);
-    if (e) return setError(e.message);
+    if (e) return setError(errorMessage(lang, e));
     setAsking(null);
     setNote("");
     onChanged();

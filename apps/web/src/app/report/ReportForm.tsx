@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { errorCode, errorMessage } from "@/lib/errors";
 import { t, type Lang } from "@/lib/i18n";
 import { photoIssue, resizeToJpeg, type PhotoIssue } from "@/lib/photoQuality";
 import { browserClient } from "@/lib/supabase";
@@ -27,6 +28,20 @@ export function ReportForm({ lang }: { lang: Lang }) {
   const [reportId, setReportId] = useState("");
   const [issue, setIssue] = useState<PhotoIssue | null>(null);
   const [inputKey, setInputKey] = useState(0);
+  const [actor, setActor] = useState(false);
+
+  // An entity account signed in on this browser would be reused for the report and refused
+  // (actors_cannot_capture), so say it before the citizen fills anything in.
+  useEffect(() => {
+    browserClient().auth.getUser().then(({ data }) => setActor(!!data.user && !data.user.is_anonymous));
+  }, []);
+
+  async function signOutActor() {
+    await browserClient().auth.signOut();
+    setActor(false);
+    setError("");
+    setPhase("idle");
+  }
 
   async function choose(file: File | null) {
     setPhoto(file);
@@ -83,7 +98,8 @@ export function ReportForm({ lang }: { lang: Lang }) {
       setReportId(id);
       setPhase("done");
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      if (errorCode(e) === "actors_cannot_capture") setActor(true);
+      else setError(errorMessage(lang, e));
       setPhase("error");
     }
   }
@@ -92,6 +108,12 @@ export function ReportForm({ lang }: { lang: Lang }) {
 
   return (
     <div className="card">
+      {actor ? (
+        <div className="notice" role="alert">
+          <p><b>{t(lang, "reportActorSession")}</b> {t(lang, "reportActorHint")}</p>
+          <button className="primary" onClick={signOutActor}>{t(lang, "reportActorSignOut")}</button>
+        </div>
+      ) : null}
       <label>
         {t(lang, "reportText")}
         <textarea rows={4} maxLength={2000} value={text} onChange={(e) => setText(e.target.value)} />
@@ -115,7 +137,7 @@ export function ReportForm({ lang }: { lang: Lang }) {
         </div>
       ) : null}
       <p>
-        <button className="primary" disabled={!photo || phase === "sending"} onClick={submit}>
+        <button className="primary" disabled={!photo || actor || phase === "sending"} onClick={submit}>
           {phase === "sending" ? t(lang, "reportSending") : issue ? t(lang, "photoSendAnyway") : t(lang, "reportSend")}
         </button>
       </p>

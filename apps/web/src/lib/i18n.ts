@@ -100,6 +100,15 @@ const dict = {
   },
   photoRetake: { es: "Repetir foto", en: "Take it again" },
   photoSendAnyway: { es: "Enviar igual", en: "Send anyway" },
+  reportActorSession: {
+    es: "Tienes abierta una cuenta de entidad en este navegador.",
+    en: "An entity account is signed in on this browser.",
+  },
+  reportActorHint: {
+    es: "Las entidades no envían reportes ciudadanos. Cierra sesión para reportar como ciudadano (anónimo).",
+    en: "Entities do not send citizen reports. Sign out to report as a citizen (anonymous).",
+  },
+  reportActorSignOut: { es: "Cerrar sesión y reportar", en: "Sign out and report" },
   reportNeedsGps: { es: "Necesitamos tu ubicación para ubicar el problema.", en: "We need your location to place the problem." },
   sandboxTitle: { es: "Modo sandbox", en: "Sandbox mode" },
   sandboxBody: {

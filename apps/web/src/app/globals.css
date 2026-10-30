@@ -69,3 +69,4 @@ select { border: 1px solid var(--line); background: var(--card); color: var(--fg
 .legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: 0.85rem; color: var(--muted); }
 .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 4px; }
 .maplibregl-popup-content { color: #0f172a; }
+.pill { color: var(--accent); font-weight: 600; font-size: 0.85em; }

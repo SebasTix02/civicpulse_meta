@@ -100,6 +100,18 @@ const dict = {
   },
   photoRetake: { es: "Repetir foto", en: "Take it again" },
   photoSendAnyway: { es: "Enviar igual", en: "Send anyway" },
+  reportWaitingConsensus: {
+    es: "Tu reporte ya está en un caso. El caso se valida y se envía a la entidad responsable cuando otros vecinos reportan lo mismo.",
+    en: "Your report is now part of a case. The case is validated and sent to the responsible entity once other neighbours report the same thing.",
+  },
+  myReportsTitle: { es: "Mis reportes", en: "My reports" },
+  myReportsHint: {
+    es: "Se guardan en este navegador. Si borras sus datos o cambias de teléfono, ya no los verás aquí.",
+    en: "Saved in this browser. If you clear its data or change phones, they will no longer show here.",
+  },
+  myReportsNew: { es: "Hacer otro reporte", en: "Make another report" },
+  myReportsChanged: { es: "Novedad", en: "Updated" },
+  myReportsNoText: { es: "(sin texto)", en: "(no text)" },
   reportActorSession: {
     es: "Tienes abierta una cuenta de entidad en este navegador.",
     en: "An entity account is signed in on this browser.",

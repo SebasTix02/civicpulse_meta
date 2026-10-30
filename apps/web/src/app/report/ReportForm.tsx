@@ -5,6 +5,7 @@ import { errorCode, errorMessage } from "@/lib/errors";
 import { t, type Lang } from "@/lib/i18n";
 import { photoIssue, resizeToJpeg, type PhotoIssue } from "@/lib/photoQuality";
 import { browserClient } from "@/lib/supabase";
+import { MyReports } from "./MyReports";
 import { ReportStatus } from "./ReportStatus";
 
 type Fix = { lat: number; lon: number; accuracy: number };
@@ -104,44 +105,60 @@ export function ReportForm({ lang }: { lang: Lang }) {
     }
   }
 
-  if (phase === "done") return <ReportStatus lang={lang} reportId={reportId} />;
+  function another() {
+    setText("");
+    retake();
+    setPhase("idle");
+  }
+
+  if (phase === "done")
+    return (
+      <>
+        <ReportStatus lang={lang} reportId={reportId} />
+        <p><button className="secondary" onClick={another}>{t(lang, "myReportsNew")}</button></p>
+        <MyReports lang={lang} exclude={reportId} />
+      </>
+    );
 
   return (
-    <div className="card">
-      {actor ? (
-        <div className="notice" role="alert">
-          <p><b>{t(lang, "reportActorSession")}</b> {t(lang, "reportActorHint")}</p>
-          <button className="primary" onClick={signOutActor}>{t(lang, "reportActorSignOut")}</button>
-        </div>
-      ) : null}
-      <label>
-        {t(lang, "reportText")}
-        <textarea rows={4} maxLength={2000} value={text} onChange={(e) => setText(e.target.value)} />
-      </label>
-      <p>
+    <>
+      <div className="card">
+        {actor ? (
+          <div className="notice" role="alert">
+            <p><b>{t(lang, "reportActorSession")}</b> {t(lang, "reportActorHint")}</p>
+            <button className="primary" onClick={signOutActor}>{t(lang, "reportActorSignOut")}</button>
+          </div>
+        ) : null}
         <label>
-          {t(lang, "reportPhoto")}{" "}
-          {/* capture="environment" opens the rear camera on phones: live photos only (UX flows). */}
-          <input key={inputKey} type="file" accept="image/*" capture="environment"
-            onChange={(e) => choose(e.target.files?.[0] ?? null)} />
+          {t(lang, "reportText")}
+          <textarea rows={4} maxLength={2000} value={text} onChange={(e) => setText(e.target.value)} />
         </label>
-      </p>
-      {photo ? <img className="preview" src={URL.createObjectURL(photo)} alt="" /> : null}
-      {issue ? (
-        <div className="notice" role="status">
-          <p>
-            <b>{t(lang, issue === "dark" ? "photoDark" : issue === "bright" ? "photoBright" : "photoBlurry")}</b>{" "}
-            {t(lang, "photoRetakeHint")}
-          </p>
-          <button className="primary" onClick={retake}>{t(lang, "photoRetake")}</button>
-        </div>
-      ) : null}
-      <p>
-        <button className="primary" disabled={!photo || actor || phase === "sending"} onClick={submit}>
-          {phase === "sending" ? t(lang, "reportSending") : issue ? t(lang, "photoSendAnyway") : t(lang, "reportSend")}
-        </button>
-      </p>
-      {error ? <p role="alert">{error}</p> : null}
-    </div>
+        <p>
+          <label>
+            {t(lang, "reportPhoto")}{" "}
+            {/* capture="environment" opens the rear camera on phones: live photos only (UX flows). */}
+            <input key={inputKey} type="file" accept="image/*" capture="environment"
+              onChange={(e) => choose(e.target.files?.[0] ?? null)} />
+          </label>
+        </p>
+        {photo ? <img className="preview" src={URL.createObjectURL(photo)} alt="" /> : null}
+        {issue ? (
+          <div className="notice" role="status">
+            <p>
+              <b>{t(lang, issue === "dark" ? "photoDark" : issue === "bright" ? "photoBright" : "photoBlurry")}</b>{" "}
+              {t(lang, "photoRetakeHint")}
+            </p>
+            <button className="primary" onClick={retake}>{t(lang, "photoRetake")}</button>
+          </div>
+        ) : null}
+        <p>
+          <button className="primary" disabled={!photo || actor || phase === "sending"} onClick={submit}>
+            {phase === "sending" ? t(lang, "reportSending") : issue ? t(lang, "photoSendAnyway") : t(lang, "reportSend")}
+          </button>
+        </p>
+        {error ? <p role="alert">{error}</p> : null}
+      </div>
+      {actor ? null : <MyReports lang={lang} />}
+    </>
   );
 }

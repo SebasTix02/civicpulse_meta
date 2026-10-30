@@ -186,9 +186,7 @@ export function ReportForm({ lang }: { lang: Lang }) {
         </div>
         {actorNotice}
         {/* capture="environment" opens the rear camera on phones: live photos only (UX flows).
-            The card is a real button that clicks the input from the tap itself; the plain input
-            below is the same control as before the redesign, kept as a fallback for any browser
-            that still refuses. */}
+            The card is a real button that clicks the input from the tap itself. */}
         <button type="button" className="capture" disabled={actor} onClick={() => fileInput.current?.click()}>
           <span className="shutter" aria-hidden="true"><span /></span>
           <b>{t(lang, "reportPhoto")}</b>
@@ -197,11 +195,6 @@ export function ReportForm({ lang }: { lang: Lang }) {
         </button>
         <input ref={fileInput} key={inputKey} type="file" accept="image/*" capture="environment" disabled={actor}
           className="file-hidden" tabIndex={-1} aria-hidden="true" onChange={(e) => choose(e.target.files?.[0] ?? null)} />
-        <label className="native-file">
-          {t(lang, "reportPhotoFallback")}
-          <input key={`n${inputKey}`} type="file" accept="image/*" capture="environment" disabled={actor}
-            onChange={(e) => choose(e.target.files?.[0] ?? null)} />
-        </label>
         {error ? <p className="notice warn" role="alert">{error}</p> : null}
         {actor ? null : <MyReports lang={lang} />}
       </>

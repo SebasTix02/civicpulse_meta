@@ -373,7 +373,6 @@ const dict = {
   photoNext: { es: "Foto siguiente", en: "Next photo" },
   photoAll: { es: "Fotos de los reportes", en: "Report photos" },
   casePhotosCount: { es: "{n} fotos de vecinos", en: "{n} photos from neighbours" },
-  reportPhotoFallback: { es: "¿No se abre la cámara? Usa este botón:", en: "Camera does not open? Use this button:" },
 } satisfies Record<string, Record<Lang, string>>;
 
 export type Key = keyof typeof dict;

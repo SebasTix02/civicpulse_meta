@@ -209,8 +209,6 @@ a.cite { color: var(--accent); }
 /* The file input covers the whole card and takes the tap itself: a hidden 1 px input behind a
    label does not open the camera on some phone browsers. */
 .file-hidden { position: fixed; left: -9999px; top: 0; width: 1px; height: 1px; opacity: 0; }
-.native-file { margin: 12px 0 0; font-size: 13px; font-weight: 400; color: var(--muted); }
-.native-file input { display: block; margin-top: 6px; font-size: 14px; max-width: 100%; }
 .file-btn input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; font-size: 100px; z-index: 1; }
 .file-btn { position: relative; overflow: hidden; }
 .capture:focus-within { outline: 3px solid var(--accent); outline-offset: 2px; }

@@ -62,6 +62,10 @@ begin
   perform set_config('request.jwt.claims',
                      '{"sub": "e0000000-0000-4000-8000-000000000001", "is_anonymous": true}', true);
   assert (select count(*) from panel_inbox) = 0, 'anonymous sessions never see the panel';
+
+  -- The public map row of the same case (migration 18): category name, no photo without a confirmed one.
+  assert (select category_name ->> 'es' from public_clusters where id = 'b1000000-0000-4000-8000-000000000001') is not null;
+  assert (select photo_public_path from public_clusters where id = 'b1000000-0000-4000-8000-000000000001') is null;
 end $$;
 rollback;
 \echo 'smoke_panel: ok'

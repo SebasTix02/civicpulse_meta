@@ -65,3 +65,7 @@ a.cite { color: var(--accent); }
 .replay-log { padding-left: 20px; font-size: 0.9rem; }
 .replay-log li { margin: 2px 0; }
 select { border: 1px solid var(--line); background: var(--card); color: var(--fg); border-radius: 8px; padding: 6px 10px; }
+.map { height: 60vh; min-height: 320px; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); }
+.legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: 0.85rem; color: var(--muted); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 4px; }
+.maplibregl-popup-content { color: #0f172a; }

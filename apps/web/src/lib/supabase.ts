@@ -54,4 +54,9 @@ export type PublicCluster = {
   validated_at: string | null;
   last_report_at: string | null;
   resolved_at: string | null;
+  category_name?: { en?: string; es?: string } | null;
+  photo_public_path?: string | null;
 };
+
+// Public bucket URL prefix for anonymized photos, or null when Supabase is not configured.
+export const publicStorageBase = url ? `${url}/storage/v1/object/public/public` : null;

@@ -130,3 +130,16 @@ def sweeper() -> dict:
     if any(out.values()):
         print(out)
     return out
+
+
+@app.function(secrets=secrets, schedule=modal.Period(minutes=10), timeout=60)
+def healthcheck() -> dict:
+    """Writes app_config.provider_health for get_demo_status() (civicpulse/health.py). Free checks only."""
+    from datetime import UTC, datetime
+
+    from civicpulse.config import get_settings
+    from civicpulse.db import Db
+    from civicpulse.health import check
+
+    s = get_settings()
+    return check(Db(s.supabase_url, s.supabase_service_key), s, datetime.now(UTC))

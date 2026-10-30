@@ -43,6 +43,7 @@ export function ReportForm({ lang }: { lang: Lang }) {
   const [gps, setGps] = useState<Gps>({ state: "waiting" });
   const [pin, setPin] = useState<LatLon | null>(null);
   const pinMoved = useRef(false);
+  const fileInput = useRef<HTMLInputElement>(null);
 
   // An entity account signed in on this browser would be reused for the report and refused
   // (actors_cannot_capture), so say it before the citizen fills anything in.
@@ -184,13 +185,21 @@ export function ReportForm({ lang }: { lang: Lang }) {
           <h1>{t(lang, "reportTitle")} <span className="step">· {t(lang, "stepOf").replace("{n}", "1")}</span></h1>
         </div>
         {actorNotice}
-        {/* capture="environment" opens the rear camera on phones: live photos only (UX flows). */}
-        <label className="capture">
+        {/* capture="environment" opens the rear camera on phones: live photos only (UX flows).
+            The card is a real button that clicks the input from the tap itself; the plain input
+            below is the same control as before the redesign, kept as a fallback for any browser
+            that still refuses. */}
+        <button type="button" className="capture" disabled={actor} onClick={() => fileInput.current?.click()}>
           <span className="shutter" aria-hidden="true"><span /></span>
           <b>{t(lang, "reportPhoto")}</b>
           <span>{t(lang, "reportPhotoHint")}</span>
           <small>{t(lang, "reportLiveOnly")}</small>
-          <input key={inputKey} type="file" accept="image/*" capture="environment" disabled={actor}
+        </button>
+        <input ref={fileInput} key={inputKey} type="file" accept="image/*" capture="environment" disabled={actor}
+          className="file-hidden" tabIndex={-1} aria-hidden="true" onChange={(e) => choose(e.target.files?.[0] ?? null)} />
+        <label className="native-file">
+          {t(lang, "reportPhotoFallback")}
+          <input key={`n${inputKey}`} type="file" accept="image/*" capture="environment" disabled={actor}
             onChange={(e) => choose(e.target.files?.[0] ?? null)} />
         </label>
         {error ? <p className="notice warn" role="alert">{error}</p> : null}

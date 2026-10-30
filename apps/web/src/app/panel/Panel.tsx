@@ -304,9 +304,9 @@ function ResolutionBox({ lang, row, beforeUrl, onChanged }: {
           {beforeUrl ? (
             <figure className="guide"><img src={beforeUrl} alt="" /><figcaption>{t(lang, "resFrameLikeThis")}</figcaption></figure>
           ) : null}
-          <label className="secondary btn" style={{ display: "inline-flex", position: "relative" }}>
+          <label className="secondary btn file-btn">
             {t(lang, photo ? "photoRetake" : "resPhoto")}
-            <input key={inputKey} type="file" accept="image/*" capture="environment" className="sr-only"
+            <input key={inputKey} type="file" accept="image/*" capture="environment"
               onChange={(e) => choose(e.target.files?.[0] ?? null)} />
           </label>
           <p className="hint">{t(lang, "resGpsHint")}</p>

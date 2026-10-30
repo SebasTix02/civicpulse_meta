@@ -7,6 +7,7 @@ import { browserClient, signInLinkClient } from "@/lib/supabase";
 import { errorMessage } from "@/lib/errors";
 import { BriefText, inLang, type Brief } from "../BriefText";
 import { StatusPill } from "../HomeMap";
+import { Lightbox, PhotoFrame, type Shot } from "../Lightbox";
 
 type InboxRow = {
   cluster_id: string;
@@ -145,6 +146,7 @@ function ResolutionBox({ lang, row, beforeUrl, onChanged }: {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [overriding, setOverriding] = useState(false);
+  const [viewing, setViewing] = useState<number | null>(null);
   const pending = res?.outcome === "open" && res.ai_status === "pending";
 
   // While the closure stage runs (about a minute), refresh the case every 5 s.
@@ -229,9 +231,9 @@ function ResolutionBox({ lang, row, beforeUrl, onChanged }: {
           {beforeUrl || afterUrl ? (
             <div className="pair">
               <figure><figcaption>{t(lang, "resBefore")}</figcaption>
-                {beforeUrl ? <img src={beforeUrl} alt="" /> : <span />}</figure>
+                {beforeUrl ? <PhotoFrame lang={lang} src={beforeUrl} alt="" onOpen={() => setViewing(0)} /> : <span />}</figure>
               <figure><figcaption>{t(lang, "resAfterRaw")}</figcaption>
-                {afterUrl ? <img src={afterUrl} alt="" /> : <span />}</figure>
+                {afterUrl ? <PhotoFrame lang={lang} src={afterUrl} alt="" onOpen={() => setViewing(beforeUrl ? 1 : 0)} /> : <span />}</figure>
             </div>
           ) : null}
           {checks.some((c) => c.figure_paths?.before || c.figure_paths?.after_aligned) ? (
@@ -323,6 +325,12 @@ function ResolutionBox({ lang, row, beforeUrl, onChanged }: {
         </div>
       ) : null}
       {error ? <p className="notice warn" role="alert">{error}</p> : null}
+      {viewing !== null ? (
+        <Lightbox lang={lang} start={viewing} onClose={() => setViewing(null)} shots={[
+          ...(beforeUrl ? [{ src: beforeUrl, caption: t(lang, "resBefore") }] : []),
+          ...(afterUrl ? [{ src: afterUrl, caption: t(lang, "resAfterRaw") }] : []),
+        ]} />
+      ) : null}
     </div>
   );
 }
@@ -330,6 +338,7 @@ function ResolutionBox({ lang, row, beforeUrl, onChanged }: {
 function Case({ lang, row, onBack, onChanged }: { lang: Lang; row: InboxRow; onBack: () => void; onChanged: () => void }) {
   const [reports, setReports] = useState<ReportRow[]>([]);
   const [original, setOriginal] = useState<Record<string, boolean>>({});
+  const [viewing, setViewing] = useState<number | null>(null);
   const [asking, setAsking] = useState<"declined" | "closed" | null>(null);
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
@@ -368,6 +377,10 @@ function Case({ lang, row, onBack, onChanged }: { lang: Lang; row: InboxRow; onB
   const best = reports.find((r) => r.intake_status === "REPORT_CONFIRMED_BY_PHOTO" && r.photo_public_path)
     ?? reports.find((r) => r.photo_public_path);
   const beforeUrl = photoUrl(best?.photo_public_path ?? null);
+  // Every report photo, the best one first, for the viewer.
+  const withPhoto = [...(best ? [best] : []), ...reports.filter((r) => r.photo_public_path && r !== best)];
+  const shots: Shot[] = withPhoto.map((r) => ({ src: photoUrl(r.photo_public_path)!, caption: `${r.short_ref} · ${fmtDate(lang, r.created_at)}` }));
+  const shotIndex = (r: ReportRow) => withPhoto.indexOf(r);
   const osm = `https://www.openstreetmap.org/?mlat=${row.cluster.lat}&mlon=${row.cluster.lon}#map=18/${row.cluster.lat}/${row.cluster.lon}`;
   return (
     <>
@@ -436,7 +449,11 @@ function Case({ lang, row, onBack, onChanged }: { lang: Lang; row: InboxRow; onB
               const url = photoUrl(r.photo_public_path);
               return (
                 <div className="report-item" id={r.short_ref} key={r.report_id}>
-                  {url ? <a href={url} target="_blank" rel="noreferrer"><img src={url} alt="" loading="lazy" /></a> : <span className="thumb" />}
+                  {url ? (
+                    <button className="thumb-btn" onClick={() => setViewing(shotIndex(r))} aria-label={t(lang, "photoExpand")}>
+                      <img src={url} alt="" loading="lazy" />
+                    </button>
+                  ) : <span className="thumb" />}
                   <div>
                     <p>{original[r.report_id] ? r.raw_text_redacted : r.summary_en}</p>
                     <p className="muted small"><span className="cite">{r.short_ref}</span> {fmtDate(lang, r.created_at)}
@@ -461,7 +478,12 @@ function Case({ lang, row, onBack, onChanged }: { lang: Lang; row: InboxRow; onB
         </section>
 
         <aside>
-          {beforeUrl ? <img className="photo" src={beforeUrl} alt={t(lang, "reportPublicPhoto")} /> : null}
+          {beforeUrl ? (
+            <PhotoFrame lang={lang} className="tall" src={beforeUrl} alt={t(lang, "reportPublicPhoto")} onOpen={() => setViewing(0)} />
+          ) : null}
+          {shots.length > 1 ? (
+            <button className="link small" onClick={() => setViewing(0)}>{t(lang, "casePhotosCount").replace("{n}", String(shots.length))}</button>
+          ) : null}
           <div className="card">
             <div className="stats" style={{ margin: 0 }}>
               <div><b>{row.priority_score.toFixed(2)}</b><span>{t(lang, "panelPriority")}</span></div>
@@ -475,6 +497,7 @@ function Case({ lang, row, onBack, onChanged }: { lang: Lang; row: InboxRow; onB
           </div>
         </aside>
       </div>
+      {viewing !== null && shots.length ? <Lightbox lang={lang} shots={shots} start={viewing} onClose={() => setViewing(null)} /> : null}
     </>
   );
 }

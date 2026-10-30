@@ -367,6 +367,12 @@ const dict = {
     es: "Mientras tanto, puedes ver corridas reales grabadas:",
     en: "Meanwhile, you can watch recorded real runs:",
   },
+  photoViewer: { es: "Visor de fotos", en: "Photo viewer" },
+  photoExpand: { es: "Ver foto completa", en: "See full photo" },
+  photoPrev: { es: "Foto anterior", en: "Previous photo" },
+  photoNext: { es: "Foto siguiente", en: "Next photo" },
+  photoAll: { es: "Fotos de los reportes", en: "Report photos" },
+  casePhotosCount: { es: "{n} fotos de vecinos", en: "{n} photos from neighbours" },
 } satisfies Record<string, Record<Lang, string>>;
 
 export type Key = keyof typeof dict;

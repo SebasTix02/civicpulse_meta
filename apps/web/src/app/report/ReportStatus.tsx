@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { TIMELINE, intakeMessage, t, type Key, type Lang } from "@/lib/i18n";
 import { browserClient } from "@/lib/supabase";
 import { CheckIcon } from "../icons";
+import { Lightbox } from "../Lightbox";
 
 type Row = {
   status: string;
@@ -41,6 +42,7 @@ export function ReportStatus({ lang, reportId }: { lang: Lang; reportId: string 
   const [row, setRow] = useState<Row>({ status: "received", intake_status: null, cluster_status: null });
   const [category, setCategory] = useState<string | null>(null);
   const [slow, setSlow] = useState(false);
+  const [viewing, setViewing] = useState(false);
 
   useEffect(() => {
     const supabase = browserClient();
@@ -104,9 +106,9 @@ export function ReportStatus({ lang, reportId }: { lang: Lang; reportId: string 
     <div aria-live="polite">
       <div className="card status-head">
         {photoUrl ? (
-          <a href={photoUrl} target="_blank" rel="noreferrer" title={t(lang, "reportPublicPhoto")}>
+          <button className="thumb-btn" onClick={() => setViewing(true)} aria-label={t(lang, "photoExpand")}>
             <img className="thumb" src={photoUrl} alt={t(lang, "reportPublicPhoto")} />
-          </a>
+          </button>
         ) : <span className="thumb" aria-hidden="true" />}
         <div>
           <b>{category ?? t(lang, "statusYourReport")}</b>
@@ -147,6 +149,10 @@ export function ReportStatus({ lang, reportId }: { lang: Lang; reportId: string 
         })}
       </ol>
       {!checked && slow ? <p className="muted small">{t(lang, "reportStillChecking")}</p> : null}
+      {viewing && photoUrl ? (
+        <Lightbox lang={lang} start={0} onClose={() => setViewing(false)}
+          shots={[{ src: photoUrl, caption: t(lang, "reportPublicPhoto") }]} />
+      ) : null}
       {PUBLIC_CASE.has(step) ? <p><Link href="/">{t(lang, "statusSeeOnMap")}</Link></p> : null}
     </div>
   );

@@ -330,3 +330,27 @@ button.card.inbox:hover { border-color: var(--line-strong); }
 .timeline li.now { border-color: var(--accent); color: var(--accent); font-weight: 600; }
 .maplibregl-popup-content { color: var(--fg); font-family: var(--font); }
 .label { display: block; font-size: 14px; font-weight: 500; }
+
+/* ---------- Photos: whole, never cropped, with a full-screen viewer ---------- */
+.photo-frame { position: relative; background: #161615; border-radius: 10px; overflow: hidden; margin: 12px 0; }
+.photo-frame .photo-hit { display: block; width: 100%; padding: 0; border: 0; background: none; cursor: zoom-in; }
+.photo-frame img { display: block; width: 100%; height: 240px; object-fit: contain; }
+.photo-frame .expand { position: absolute; right: 8px; bottom: 8px; width: 40px; height: 40px; border-radius: 20px; border: 0; background: rgba(255, 255, 255, 0.92); color: var(--fg); display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3); }
+.photo-frame.tall img { height: 300px; }
+.thumbs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin: -4px 0 12px; scrollbar-width: thin; }
+.thumbs button { flex: none; width: 64px; height: 64px; padding: 0; border: 2px solid transparent; border-radius: 8px; overflow: hidden; background: var(--placeholder); cursor: zoom-in; }
+.thumbs button:hover, .thumbs button:focus-visible { border-color: var(--accent); }
+.thumbs img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.lightbox { position: fixed; inset: 0; z-index: 100; background: rgba(12, 12, 11, 0.97); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 56px 12px 24px; }
+.lightbox img { max-width: 100%; max-height: calc(100svh - 120px); object-fit: contain; border-radius: 6px; }
+.lightbox-bar { position: absolute; top: 0; left: 0; right: 0; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px 0 16px; color: #fff; font-size: 14px; }
+.lightbox-bar .icon-btn { background: rgba(255, 255, 255, 0.15); color: #fff; }
+.lightbox-caption { color: #e6e6e1; font-size: 14px; margin: 10px 0 0; text-align: center; }
+.lightbox-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 48px; height: 48px; border-radius: 24px; border: 0; background: rgba(255, 255, 255, 0.15); color: #fff; font-size: 30px; line-height: 1; cursor: pointer; }
+.lightbox-nav.prev { left: 12px; }
+.lightbox-nav.next { right: 12px; }
+@media (max-width: 719px) { .lightbox-nav { top: auto; bottom: 16px; transform: none; } .photo-frame img { height: 220px; } }
+.thumb-btn { padding: 0; border: 0; background: none; cursor: zoom-in; flex: none; border-radius: 6px; }
+.pair .photo-frame { margin: 0; }
+.pair .photo-frame img { height: 220px; }
+.case-grid aside .photo-frame { margin-top: 12px; }

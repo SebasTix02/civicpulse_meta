@@ -66,6 +66,9 @@ begin
   -- The public map row of the same case (migration 18): category name, no photo without a confirmed one.
   assert (select category_name ->> 'es' from public_clusters where id = 'b1000000-0000-4000-8000-000000000001') is not null;
   assert (select photo_public_path from public_clusters where id = 'b1000000-0000-4000-8000-000000000001') is null;
+  -- Its gallery (migration 19) only ever lists public copies.
+  assert not exists (select 1 from public_case_photos('b1000000-0000-4000-8000-000000000001')
+                      where photo_public_path not like 'public/%'), 'only anonymized public copies';
 end $$;
 rollback;
 \echo 'smoke_panel: ok'

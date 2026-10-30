@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { browserClient } from "@/lib/supabase";
+import { Lightbox, PhotoFrame, Thumbs, type Shot } from "./Lightbox";
 import { TIMELINE, t, type Lang } from "@/lib/i18n";
 import type { PublicCluster } from "@/lib/supabase";
 import { ClusterMap, STATUS_COLOR } from "./ClusterMap";
@@ -28,12 +30,28 @@ function CaseSheet({ lang, c, photoBase, onClose }: { lang: Lang; c: PublicClust
   const since = c.validated_at ?? c.last_report_at;
   const days = since ? Math.max(0, Math.floor(((c.resolved_at ? Date.parse(c.resolved_at) : Date.now()) - Date.parse(since)) / DAY)) : null;
   const fmt = (iso: string) => new Date(iso).toLocaleDateString(lang === "es" ? "es-EC" : "en-US", { day: "numeric", month: "short" });
+  const [shots, setShots] = useState<Shot[]>(photo ? [{ src: photo }] : []);
+  const [viewing, setViewing] = useState<number | null>(null);
+
+  // Every anonymized photo of the case (migration 19); the map row only carries the best one.
+  useEffect(() => {
+    setShots(photo ? [{ src: photo }] : []);
+    if (!photoBase) return;
+    void browserClient().rpc("public_case_photos", { p_cluster_id: c.id }).then(({ data }) => {
+      const rows = (data as { photo_public_path: string; created_at: string }[] | null) ?? [];
+      if (!rows.length) return;
+      setShots(rows.map((r) => ({
+        src: `${photoBase}/${r.photo_public_path.replace(/^public\//, "")}`,
+        caption: new Date(r.created_at).toLocaleString(lang === "es" ? "es-EC" : "en-US", { dateStyle: "medium", timeStyle: "short" }),
+      })));
+    });
+  }, [c.id, photo, photoBase, lang]);
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && viewing === null && onClose();
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
+  }, [onClose, viewing]);
 
   return (
     <>
@@ -51,7 +69,13 @@ function CaseSheet({ lang, c, photoBase, onClose }: { lang: Lang; c: PublicClust
           <StatusPill lang={lang} status={c.status} />
           {photo ? <span className="pill soft">{t(lang, "caseConfirmedByPhoto")}</span> : null}
         </div>
-        {photo ? <img className="photo" src={photo} alt={t(lang, "reportPublicPhoto")} /> : null}
+        {shots.length ? (
+          <>
+            <PhotoFrame lang={lang} src={shots[0].src} alt={t(lang, "reportPublicPhoto")} onOpen={() => setViewing(0)} />
+            {shots.length > 1 ? <p className="muted small" style={{ margin: "-4px 0 6px" }}>{t(lang, "casePhotosCount").replace("{n}", String(shots.length))}</p> : null}
+            <Thumbs lang={lang} shots={shots} onOpen={setViewing} />
+          </>
+        ) : null}
         {c.public_summary?.[lang] ?? c.public_summary?.en ? <p>{c.public_summary?.[lang] ?? c.public_summary?.en}</p> : null}
         <div className="stats">
           <div><b>{c.report_count}</b><span>{t(lang, "panelReports")}</span></div>
@@ -62,6 +86,7 @@ function CaseSheet({ lang, c, photoBase, onClose }: { lang: Lang; c: PublicClust
           <Link href="/report" className="secondary block">{t(lang, "caseMeToo")}</Link>
         ) : null}
       </section>
+      {viewing !== null ? <Lightbox lang={lang} shots={shots} start={viewing} onClose={() => setViewing(null)} /> : null}
     </>
   );
 }

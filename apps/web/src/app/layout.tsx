@@ -5,6 +5,7 @@ import { currentLang } from "@/lib/lang-server";
 import { AuthForward } from "./AuthForward";
 import { DemoBanner } from "./DemoBanner";
 import { LangSwitch } from "./LangSwitch";
+import { NavLinks } from "./NavLinks";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -14,23 +15,31 @@ export const metadata: Metadata = {
   icons: { icon: "/icon.svg" },
 };
 
-export const viewport: Viewport = { themeColor: "#0f172a", width: "device-width", initialScale: 1 };
+export const viewport: Viewport = { themeColor: "#ffffff", width: "device-width", initialScale: 1 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const lang = await currentLang();
   return (
     <html lang={lang}>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+      </head>
       <body>
         <AuthForward />
         <header className="top">
-          <Link href="/" className="brand">CivicPulse</Link>
-          <nav>
-            <Link href="/report">{t(lang, "navReport")}</Link>
-            <Link href="/sandbox">{t(lang, "navSandbox")}</Link>
-            <Link href="/demo">{t(lang, "navDemo")}</Link>
-            <Link href="/panel">{t(lang, "navPanel")}</Link>
-          </nav>
-          <LangSwitch lang={lang} />
+          <div className="top-inner">
+            <Link href="/" className="brand">CivicPulse <small>· Ambato</small></Link>
+            <NavLinks links={[
+              { href: "/", label: t(lang, "navMap") },
+              { href: "/report", label: t(lang, "navReport") },
+              { href: "/sandbox", label: t(lang, "navSandbox") },
+              { href: "/demo", label: t(lang, "navDemo") },
+              { href: "/panel", label: t(lang, "navPanel") },
+            ]} />
+            <LangSwitch lang={lang} />
+          </div>
         </header>
         <main>
           <DemoBanner lang={lang} />

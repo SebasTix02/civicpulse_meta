@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { TIMELINE, t, type Lang } from "@/lib/i18n";
 import { browserClient } from "@/lib/supabase";
-import { ReportStatus, timelineStep } from "./ReportStatus";
+import { ChevronIcon } from "../icons";
+import { ReportStatus, ago, timelineStep } from "./ReportStatus";
 
 type Mine = {
   id: string;
@@ -73,29 +74,29 @@ export function MyReports({ lang, exclude }: { lang: Lang; exclude?: string }) {
   const shown = rows.filter((r) => r.id !== exclude);
   if (shown.length === 0) return null;
   return (
-    <section>
-      <h2>{t(lang, "myReportsTitle")}</h2>
-      <p className="muted">{t(lang, "myReportsHint")}</p>
+    <section style={{ marginTop: 24 }}>
+      <h2>{t(lang, "myReportsTitle")} ({shown.length})</h2>
       {shown.map((r) => {
         const step = timelineStep(r);
-        const label = r.status === "failed" ? "—" : TIMELINE.find((s) => s.id === step)?.[lang] ?? step;
+        const label = r.status === "failed" ? t(lang, "statusFailedShort") : TIMELINE.find((s) => s.id === step)?.[lang] ?? step;
         const changed = seen[r.id] !== undefined && seen[r.id] !== step;
         return (
           <div key={r.id}>
-            <button className="card inbox" aria-expanded={open === r.id} onClick={() => toggle(r)}>
+            <button className="my-report" aria-expanded={open === r.id} onClick={() => toggle(r)}>
               <span>
-                <b>{label}</b>
-                {changed ? <span className="pill"> {t(lang, "myReportsChanged")}</span> : null}
+                <span>
+                  <b>{label}</b> {changed ? <span className="pill new">{t(lang, "myReportsChanged")}</span> : null}
+                </span>
+                <span className="text">{r.raw_text?.trim() ? r.raw_text : t(lang, "myReportsNoText")}</span>
+                <span className="muted small">{ago(lang, r.created_at)}</span>
               </span>
-              <span>{r.raw_text?.trim() ? r.raw_text.slice(0, 90) : t(lang, "myReportsNoText")}</span>
-              <span className="muted">
-                {new Date(r.created_at).toLocaleString(lang === "es" ? "es-EC" : "en-US", { dateStyle: "medium", timeStyle: "short" })}
-              </span>
+              <ChevronIcon />
             </button>
             {open === r.id ? <ReportStatus lang={lang} reportId={r.id} /> : null}
           </div>
         );
       })}
+      <p className="muted small">{t(lang, "myReportsHint")}</p>
     </section>
   );
 }

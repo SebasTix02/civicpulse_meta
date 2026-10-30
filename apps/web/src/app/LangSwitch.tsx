@@ -1,21 +1,27 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import type { Lang } from "@/lib/i18n";
+import { LANGS, type Lang } from "@/lib/i18n";
 
+// ES / EN, always visible (UX flows: conventions). The choice lives in a cookie the server reads.
 export function LangSwitch({ lang }: { lang: Lang }) {
   const router = useRouter();
-  const other: Lang = lang === "es" ? "en" : "es";
   return (
-    <button
-      className="lang"
-      onClick={() => {
-        document.cookie = `lang=${other}; path=/; max-age=31536000; samesite=lax`;
-        router.refresh();
-      }}
-      aria-label={other === "en" ? "Switch to English" : "Cambiar a español"}
-    >
-      {other.toUpperCase()}
-    </button>
+    <div className="segmented" role="group" aria-label="Idioma / Language">
+      {LANGS.map((l) => (
+        <button
+          key={l}
+          aria-pressed={l === lang}
+          lang={l}
+          onClick={() => {
+            if (l === lang) return;
+            document.cookie = `lang=${l}; path=/; max-age=31536000; samesite=lax`;
+            router.refresh();
+          }}
+        >
+          {l.toUpperCase()}
+        </button>
+      ))}
+    </div>
   );
 }

@@ -6,6 +6,7 @@ import { photoIssue, resizeToJpeg, type PhotoIssue } from "@/lib/photoQuality";
 import { browserClient, signInLinkClient } from "@/lib/supabase";
 import { errorMessage } from "@/lib/errors";
 import { BriefText, inLang, type Brief } from "../BriefText";
+import { StatusPill } from "../HomeMap";
 
 type InboxRow = {
   cluster_id: string;
@@ -60,10 +61,13 @@ type ReportRow = {
   created_at: string;
 };
 
-const TABS: { key: Key; statuses: InboxRow["dispatch_status"][] }[] = [
-  { key: "panelTabNew", statuses: ["sent", "seen"] },
-  { key: "panelTabAccepted", statuses: ["accepted"] },
-  { key: "panelTabDone", statuses: ["declined", "closed"] },
+// A2: tabs by dispatch status, plus the closures waiting for a decision.
+const TABS: { key: Key; match: (r: InboxRow) => boolean }[] = [
+  { key: "panelTabNew", match: (r) => r.dispatch_status === "sent" || r.dispatch_status === "seen" },
+  { key: "panelTabAccepted", match: (r) => r.dispatch_status === "accepted" },
+  { key: "panelTabReview", match: (r) => r.latest_resolution?.outcome === "open" },
+  { key: "panelTabDone", match: (r) => r.dispatch_status === "closed" },
+  { key: "panelTabDeclined", match: (r) => r.dispatch_status === "declined" },
 ];
 
 function fmtDate(lang: Lang, iso: string) {
@@ -96,19 +100,20 @@ function Login({ lang }: { lang: Lang }) {
   }
 
   return (
-    <div className="card">
-      <p className="muted">{t(lang, "panelBody")}</p>
-      <label>
-        {t(lang, "panelEmail")}
-        <input type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-      </label>
-      <p>
-        <button className="primary" disabled={!email.includes("@") || state === "sending"} onClick={send}>
-          {t(lang, "panelSendLink")}
-        </button>
-      </p>
-      {state === "sent" ? <p role="status">{t(lang, "panelLinkSent")}</p> : null}
-      {state === "error" ? <p role="alert">{error}</p> : null}
+    <div className="card login">
+      <h1>{t(lang, "panelLoginTitle")}</h1>
+      <p className="muted small">{t(lang, "panelLoginFor")}</p>
+      <div className="field">
+        <label htmlFor="panel-email">{t(lang, "panelEmail")}</label>
+        <input id="panel-email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && email.includes("@") && send()} />
+      </div>
+      <button className="primary block" disabled={!email.includes("@") || state === "sending"} onClick={send}>
+        {t(lang, "panelSendLink")}
+      </button>
+      {state === "sent" ? <p className="notice ok" role="status">{t(lang, "panelLinkSent")}</p> : null}
+      {state === "error" ? <p className="notice warn" role="alert">{error}</p> : null}
+      <p className="muted small" style={{ marginTop: 16 }}>{t(lang, "panelBody")}</p>
     </div>
   );
 }
@@ -139,6 +144,7 @@ function ResolutionBox({ lang, row, beforeUrl, onChanged }: {
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [overriding, setOverriding] = useState(false);
   const pending = res?.outcome === "open" && res.ai_status === "pending";
 
   // While the closure stage runs (about a minute), refresh the case every 5 s.
@@ -203,89 +209,120 @@ function ResolutionBox({ lang, row, beforeUrl, onChanged }: {
 
   const override = res ? res.ai_status !== CANDIDATE : false;
   const checks = res?.verification?.region_checks ?? [];
+  const afterUrl = res?.after_public_path ? photoUrl(res.after_public_path) : null;
+  const verdict = !res ? null : pending ? "wait" : res.ai_status === CANDIDATE ? "ok" : "warn";
   return (
-    <div className="card">
-      <h3>{t(lang, "resTitle")}</h3>
+    <div className={canSend && !res ? "card dashed" : "card"}>
+      <h2>{t(lang, res ? "resReviewTitle" : "resTitle")}</h2>
       {res ? (
         <>
           <p className="muted small">{fmtDate(lang, res.created_at)}</p>
-          <p className={res.ai_status === CANDIDATE ? "notice ok" : "notice"}>
-            <b>{t(lang, "resAi")}:</b> {t(lang, `ai_${res.ai_status}` as Key)}
-          </p>
-          {pending ? <p className="muted" role="status">{t(lang, "resChecking")}</p> : null}
+          <div className={`verdict ${verdict}`} role="status">
+            <b>{pending ? t(lang, "resChecking") : t(lang, res.ai_status === CANDIDATE ? "resAiSeesFixed" : "resAiNotConfirmed")}</b>
+            {pending ? null : <span className="small">{t(lang, `ai_${res.ai_status}` as Key)}</span>}
+          </div>
           {res.verification?.evidence === "location" ? (
             <p className="muted small">
               {t(lang, "resByLocation")} ({Math.round(res.verification.location?.distance_m ?? 0)} m)
             </p>
           ) : null}
-          <div className="figures">
-            {checks.flatMap((c) => [
-              c.figure_paths?.before ? (
-                <figure key={`${c.region_id}b`}><img src={photoUrl(c.figure_paths.before)!} alt="" />
-                  <figcaption>{t(lang, "resBefore")} #{c.region_id}</figcaption></figure>
-              ) : null,
-              c.figure_paths?.after_aligned ? (
-                <figure key={`${c.region_id}a`}><img src={photoUrl(c.figure_paths.after_aligned)!} alt="" />
-                  <figcaption>{t(lang, "resAfter")} #{c.region_id}</figcaption></figure>
-              ) : null,
-            ])}
-            {!checks.some((c) => c.figure_paths?.after_aligned) && res.after_public_path ? (
-              <figure><img src={photoUrl(res.after_public_path)!} alt="" /><figcaption>{t(lang, "resAfterRaw")}</figcaption></figure>
-            ) : null}
-          </div>
+          {beforeUrl || afterUrl ? (
+            <div className="pair">
+              <figure><figcaption>{t(lang, "resBefore")}</figcaption>
+                {beforeUrl ? <img src={beforeUrl} alt="" /> : <span />}</figure>
+              <figure><figcaption>{t(lang, "resAfterRaw")}</figcaption>
+                {afterUrl ? <img src={afterUrl} alt="" /> : <span />}</figure>
+            </div>
+          ) : null}
+          {checks.some((c) => c.figure_paths?.before || c.figure_paths?.after_aligned) ? (
+            <>
+              <h3>{t(lang, "resRegions")}</h3>
+              <div className="figures">
+                {checks.flatMap((c) => [
+                  c.figure_paths?.before ? (
+                    <figure key={`${c.region_id}b`}><img src={photoUrl(c.figure_paths.before)!} alt="" />
+                      <figcaption>{t(lang, "resBefore")} #{c.region_id}</figcaption></figure>
+                  ) : null,
+                  c.figure_paths?.after_aligned ? (
+                    <figure key={`${c.region_id}a`}><img src={photoUrl(c.figure_paths.after_aligned)!} alt="" />
+                      <figcaption>{t(lang, "resAfter")} #{c.region_id}</figcaption></figure>
+                  ) : null,
+                ])}
+              </div>
+            </>
+          ) : null}
           <p className="muted small">{t(lang, "resDisclaimer")}</p>
           {res.outcome !== "open" ? (
-            <p className="notice">
+            <p className={res.outcome === "resolved" ? "notice ok" : "notice"}>
               {t(lang, `resOutcome_${res.outcome}` as Key)}
               {res.ai_overridden ? ` (${t(lang, "resOverridden")})` : ""}
               {res.review_note ? ` · ${res.review_note}` : ""}
             </p>
           ) : res.can_review ? (
-            <div className="notice">
-              <label>
-                {t(lang, override ? "resNoteOverride" : "resNoteReject")}
-                <textarea rows={2} maxLength={1000} value={note} onChange={(e) => setNote(e.target.value)} />
-              </label>
-              <div className="row">
-                <button className="primary" disabled={busy || pending || (override && !note.trim())} onClick={() => review("approve")}>
-                  {t(lang, "resApprove")}
-                </button>
-                <button className="secondary" disabled={busy} onClick={() => review("reject")}>{t(lang, "resReject")}</button>
-              </div>
-            </div>
+            override ? (
+              // UX §4.2: approving against the AI is a secondary link with a required note, not a twin button.
+              <>
+                <div className="row">
+                  <button className="primary" disabled={busy} onClick={() => review("reject")}>{t(lang, "resReject")}</button>
+                  {!pending && !overriding ? (
+                    <button className="link" onClick={() => setOverriding(true)}>{t(lang, "resApproveAnyway")}</button>
+                  ) : null}
+                </div>
+                {overriding ? (
+                  <div className="notice warn override">
+                    <label htmlFor="override-note">{t(lang, "resNoteOverride")}</label>
+                    <textarea id="override-note" rows={3} maxLength={1000} value={note} onChange={(e) => setNote(e.target.value)} />
+                    <p className="small" style={{ marginTop: 8 }}>{t(lang, "resOverrideLogged")}</p>
+                    <div className="row">
+                      <button className="primary" disabled={busy || !note.trim()} onClick={() => review("approve")}>{t(lang, "resApprove")}</button>
+                      <button className="secondary" onClick={() => setOverriding(false)}>{t(lang, "cancel")}</button>
+                    </div>
+                  </div>
+                ) : null}
+              </>
+            ) : (
+              <>
+                <label htmlFor="review-note">{t(lang, "resNoteReject")}</label>
+                <textarea id="review-note" rows={2} maxLength={1000} value={note} onChange={(e) => setNote(e.target.value)} />
+                <div className="row">
+                  <button className="primary" disabled={busy || pending} onClick={() => review("approve")}>{t(lang, "resApprove")}</button>
+                  <button className="secondary" disabled={busy} onClick={() => review("reject")}>{t(lang, "resReject")}</button>
+                </div>
+              </>
+            )
           ) : (
             <p className="muted">{t(lang, "resWaitReviewer")}</p>
           )}
         </>
       ) : null}
       {canSend ? (
-        <>
+        <div className={res ? "override" : undefined}>
           <p className="muted">{t(lang, "resIntro")}</p>
-          <p className="muted small">{t(lang, "resGpsHint")}</p>
           {/* Alignment needs the same framing: most failures in the eval were a different angle. */}
           {beforeUrl ? (
             <figure className="guide"><img src={beforeUrl} alt="" /><figcaption>{t(lang, "resFrameLikeThis")}</figcaption></figure>
           ) : null}
-          <label>
-            {t(lang, "resPhoto")}{" "}
-            <input key={inputKey} type="file" accept="image/*" capture="environment"
+          <label className="secondary btn" style={{ display: "inline-flex", position: "relative" }}>
+            {t(lang, photo ? "photoRetake" : "resPhoto")}
+            <input key={inputKey} type="file" accept="image/*" capture="environment" className="sr-only"
               onChange={(e) => choose(e.target.files?.[0] ?? null)} />
           </label>
-          {photo ? <img className="preview" src={URL.createObjectURL(photo)} alt="" /> : null}
+          <p className="hint">{t(lang, "resGpsHint")}</p>
+          {photo ? <img className="preview" src={URL.createObjectURL(photo)} alt="" style={{ maxHeight: 280 }} /> : null}
           {issue ? (
-            <p className="notice" role="status">
-              <b>{t(lang, issue === "dark" ? "photoDark" : issue === "bright" ? "photoBright" : "photoBlurry")}</b>{" "}
+            <p className="notice warn" role="status">
+              <b>{t(lang, issue === "dark" ? "photoDark" : issue === "bright" ? "photoBright" : "photoBlurry")}</b>
               {t(lang, "photoRetakeHint")}
             </p>
           ) : null}
-          <p>
-            <button className="primary" disabled={!photo || busy} onClick={send}>
+          <p style={{ marginTop: 12 }}>
+            <button className="dark btn" disabled={!photo || busy} onClick={send}>
               {busy ? t(lang, "resSending") : issue ? t(lang, "photoSendAnyway") : t(lang, "resSend")}
             </button>
           </p>
-        </>
+        </div>
       ) : null}
-      {error ? <p role="alert">{error}</p> : null}
+      {error ? <p className="notice warn" role="alert">{error}</p> : null}
     </div>
   );
 }
@@ -310,6 +347,10 @@ function Case({ lang, row, onBack, onChanged }: { lang: Lang; row: InboxRow; onB
     }
   }, [row.cluster_id, row.stakeholder_id, row.dispatch_status, onChanged]);
 
+  useEffect(() => {
+    window.scrollTo({ top: 0 });
+  }, [row.cluster_id]);
+
   async function setStatus(status: "accepted" | "declined" | "closed") {
     setBusy(true);
     setError("");
@@ -324,83 +365,171 @@ function Case({ lang, row, onBack, onChanged }: { lang: Lang; row: InboxRow; onB
   }
 
   const open = row.dispatch_status === "sent" || row.dispatch_status === "seen";
+  const best = reports.find((r) => r.intake_status === "REPORT_CONFIRMED_BY_PHOTO" && r.photo_public_path)
+    ?? reports.find((r) => r.photo_public_path);
+  const beforeUrl = photoUrl(best?.photo_public_path ?? null);
+  const osm = `https://www.openstreetmap.org/?mlat=${row.cluster.lat}&mlon=${row.cluster.lon}#map=18/${row.cluster.lat}/${row.cluster.lon}`;
   return (
     <>
       <p><button className="link" onClick={onBack}>{t(lang, "panelBack")}</button></p>
-      <div className="card">
-        <p className="muted">
-          {row.cluster.category_name[lang]} · {row.cluster.report_count} {t(lang, "panelReports")} ·{" "}
-          {row.cluster.distinct_devices} {t(lang, "panelDevices")} · {t(lang, `panelStatus_${row.dispatch_status}` as Key)}
-          {row.is_sandbox ? <span className="badge">{t(lang, "panelSandbox")}</span> : null}
-        </p>
-        <h2>{text.title}</h2>
-        <BriefText text={text.body_markdown} cites={cites} />
-        {text.actions.length ? (
-          <>
-            <h3>{t(lang, "panelActions")}</h3>
-            <ul>
-              {text.actions.map((a) => (
-                <li key={a.action_id}>
-                  <b>{a.action_id.replace(/_/g, " ")}</b>: <BriefText inline text={`${a.rationale} [${a.citations.join("] [")}]`} cites={cites} />
-                </li>
-              ))}
-            </ul>
-          </>
-        ) : null}
-        <p className="muted small">
-          {row.brief.model.model ? `${t(lang, "panelBriefBy")} ${row.brief.model.model}` : t(lang, "panelBriefTemplate")} ·{" "}
-          <a href={`https://www.openstreetmap.org/?mlat=${row.cluster.lat}&mlon=${row.cluster.lon}#map=18/${row.cluster.lat}/${row.cluster.lon}`}
-            target="_blank" rel="noreferrer">{t(lang, "panelOnMap")}</a>
-        </p>
-        {row.note ? <p className="notice">{row.note}</p> : null}
-        <div className="row">
+      <div className="case-top">
+        <div className="title">
+          {text.title}
+          <div className="muted small" style={{ fontWeight: 400 }}>
+            {row.cluster.category_name[lang]} · {t(lang, `panelStatus_${row.dispatch_status}` as Key)}
+            {row.is_sandbox ? <span className="badge sandbox">{t(lang, "panelSandbox")}</span> : null}
+          </div>
+        </div>
+        <StatusPill lang={lang} status={row.cluster.status} />
+        <div className="actions">
           {open ? (
             <>
-              <button className="primary" disabled={busy} onClick={() => setStatus("accepted")}>{t(lang, "panelAccept")}</button>
               <button className="secondary" disabled={busy} onClick={() => setAsking("declined")}>{t(lang, "panelDecline")}</button>
+              <button className="primary" disabled={busy} onClick={() => setStatus("accepted")}>{t(lang, "panelAccept")}</button>
             </>
           ) : null}
           {row.dispatch_status === "accepted" ? (
             <button className="secondary" disabled={busy} onClick={() => setAsking("closed")}>{t(lang, "panelClose")}</button>
           ) : null}
         </div>
-        {asking ? (
-          <div className="notice">
-            <label>
-              {t(lang, "panelNote")}
-              <textarea rows={2} maxLength={1000} value={note} onChange={(e) => setNote(e.target.value)} />
-            </label>
-            <button className="primary" disabled={busy || !note.trim()} onClick={() => setStatus(asking)}>
-              {t(lang, "panelConfirm")}
-            </button>
-          </div>
-        ) : null}
-        {error ? <p role="alert">{error}</p> : null}
       </div>
-
-      <ResolutionBox lang={lang} row={row} onChanged={onChanged}
-        beforeUrl={photoUrl((reports.find((r) => r.intake_status === "REPORT_CONFIRMED_BY_PHOTO" && r.photo_public_path)
-          ?? reports.find((r) => r.photo_public_path))?.photo_public_path ?? null)} />
-
-      <h3>{t(lang, "panelEvidence")}</h3>
-      {reports.map((r) => {
-        const url = photoUrl(r.photo_public_path);
-        return (
-          <div className="card report" id={r.short_ref} key={r.report_id}>
-            {url ? <img src={url} alt="" loading="lazy" /> : null}
-            <div>
-              <p className="muted small"><span className="cite">{r.short_ref}</span> {fmtDate(lang, r.created_at)}
-                {r.severity ? ` · ${r.severity}/5` : ""}{r.intake_status === "REPORT_CONFIRMED_BY_PHOTO" ? ` · ${t(lang, "panelPhotoOk")}` : ""}</p>
-              <p>{original[r.report_id] ? r.raw_text_redacted : r.summary_en}</p>
-              {r.raw_text_redacted ? (
-                <button className="link small" onClick={() => setOriginal((o) => ({ ...o, [r.report_id]: !o[r.report_id] }))}>
-                  {original[r.report_id] ? t(lang, "panelSummary") : t(lang, "panelOriginal")}
-                </button>
-              ) : null}
-            </div>
+      {asking ? (
+        <div className="notice warn">
+          <label htmlFor="dispatch-note">{t(lang, asking === "declined" ? "panelNoteDecline" : "panelNote")}</label>
+          <textarea id="dispatch-note" rows={2} maxLength={1000} value={note} onChange={(e) => setNote(e.target.value)} />
+          <div className="row">
+            <button className="primary" disabled={busy || !note.trim()} onClick={() => setStatus(asking)}>{t(lang, "panelConfirm")}</button>
+            <button className="secondary" onClick={() => setAsking(null)}>{t(lang, "cancel")}</button>
           </div>
-        );
-      })}
+        </div>
+      ) : null}
+      {error ? <p className="notice warn" role="alert">{error}</p> : null}
+
+      <div className="case-grid">
+        <section>
+          <div className="card">
+            <div className="row" style={{ justifyContent: "space-between", marginTop: 0 }}>
+              <h2 style={{ margin: 0 }}>{t(lang, "panelBrief")}</h2>
+              <span className="muted small">
+                {row.brief.model.model ? `${t(lang, "panelBriefBy")} ${row.brief.model.model}` : t(lang, "panelBriefTemplate")}
+              </span>
+            </div>
+            <BriefText text={text.body_markdown} cites={cites} />
+            {text.actions.length ? (
+              <>
+                <h3>{t(lang, "panelActions")}</h3>
+                <ul>
+                  {text.actions.map((a) => (
+                    <li key={a.action_id}>
+                      <b>{a.action_id.replace(/_/g, " ")}</b>: <BriefText inline text={`${a.rationale} [${a.citations.join("] [")}]`} cites={cites} />
+                    </li>
+                  ))}
+                </ul>
+              </>
+            ) : null}
+            {row.note ? <p className="notice">{row.note}</p> : null}
+          </div>
+
+          <div className="card">
+            <h2>{t(lang, "panelEvidence")} ({reports.length})</h2>
+            {reports.map((r) => {
+              const url = photoUrl(r.photo_public_path);
+              return (
+                <div className="report-item" id={r.short_ref} key={r.report_id}>
+                  {url ? <a href={url} target="_blank" rel="noreferrer"><img src={url} alt="" loading="lazy" /></a> : <span className="thumb" />}
+                  <div>
+                    <p>{original[r.report_id] ? r.raw_text_redacted : r.summary_en}</p>
+                    <p className="muted small"><span className="cite">{r.short_ref}</span> {fmtDate(lang, r.created_at)}
+                      {r.severity ? ` · ${r.severity}/5` : ""}{r.intake_status === "REPORT_CONFIRMED_BY_PHOTO" ? ` · ${t(lang, "panelPhotoOk")}` : ""}</p>
+                  </div>
+                  {r.raw_text_redacted ? (
+                    <button className="secondary" onClick={() => setOriginal((o) => ({ ...o, [r.report_id]: !o[r.report_id] }))}>
+                      {original[r.report_id] ? t(lang, "panelSummary") : t(lang, "panelOriginal")}
+                    </button>
+                  ) : null}
+                </div>
+              );
+            })}
+          </div>
+
+          <ResolutionBox lang={lang} row={row} onChanged={onChanged} beforeUrl={beforeUrl} />
+          {!row.latest_resolution && !(row.dispatch_status === "accepted" && row.cluster.status === "acknowledged") && open ? (
+            <div className="card dashed">
+              <h2>{t(lang, "resTitle")} <span className="muted small" style={{ fontWeight: 400 }}>· {t(lang, "resAfterAccept")}</span></h2>
+            </div>
+          ) : null}
+        </section>
+
+        <aside>
+          {beforeUrl ? <img className="photo" src={beforeUrl} alt={t(lang, "reportPublicPhoto")} /> : null}
+          <div className="card">
+            <div className="stats" style={{ margin: 0 }}>
+              <div><b>{row.priority_score.toFixed(2)}</b><span>{t(lang, "panelPriority")}</span></div>
+              <div><b>{row.cluster.distinct_devices}</b><span>{t(lang, "caseNeighbours")}</span></div>
+              <div><b>{row.cluster.report_count}</b><span>{t(lang, "panelReports")}</span></div>
+            </div>
+            <p className="small" style={{ marginTop: 12 }}>
+              {t(lang, "panelReceived")} {fmtDate(lang, row.dispatched_at)}<br />
+              <a href={osm} target="_blank" rel="noreferrer">{t(lang, "panelOnMap")} ↗</a>
+            </p>
+          </div>
+        </aside>
+      </div>
+    </>
+  );
+}
+
+function InboxTable({ lang, rows, onOpen }: { lang: Lang; rows: InboxRow[]; onOpen: (r: InboxRow) => void }) {
+  return (
+    <>
+      <div className="card table-card">
+        <table className="inbox">
+          <thead>
+            <tr>
+              <th>{t(lang, "panelPriority")}</th><th>{t(lang, "panelCase")}</th><th>{t(lang, "panelEvidenceCol")}</th>
+              <th>{t(lang, "caseNeighbours")}</th><th>{t(lang, "panelReceived")}</th><th>{t(lang, "panelState")}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr key={`${r.cluster_id}:${r.stakeholder_id}`} onClick={() => onOpen(r)}>
+                <td className="prio">{r.priority_score.toFixed(2)}</td>
+                <td>
+                  <button className="link title" onClick={(e) => { e.stopPropagation(); onOpen(r); }}>{inLang(r.brief, lang).title}</button>
+                  <div className="muted small">
+                    {r.cluster.category_name[lang]}
+                    {r.is_sandbox ? <span className="badge sandbox">{t(lang, "panelSandbox")}</span> : null}
+                  </div>
+                </td>
+                <td>{r.cluster.report_count} {t(lang, "panelReports")}</td>
+                <td>{r.cluster.distinct_devices}</td>
+                <td className="muted">{fmtDate(lang, r.dispatched_at)}</td>
+                <td>
+                  <span className={r.dispatch_status === "sent" ? "pill new" : "pill outline"}>
+                    {t(lang, `panelStatus_${r.dispatch_status}` as Key)}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className="inbox-cards">
+        {rows.map((r) => (
+          <button key={`${r.cluster_id}:${r.stakeholder_id}`} className="card inbox" onClick={() => onOpen(r)}>
+            <span className="row" style={{ margin: 0, justifyContent: "space-between" }}>
+              <span className="muted small">{r.cluster.category_name[lang]}</span>
+              <span className={r.dispatch_status === "sent" ? "pill new" : "pill outline"}>{t(lang, `panelStatus_${r.dispatch_status}` as Key)}</span>
+            </span>
+            <b>{inLang(r.brief, lang).title}</b>
+            <span className="muted small">
+              {t(lang, "panelPriority")} {r.priority_score.toFixed(2)} · {r.cluster.report_count} {t(lang, "panelReports")} ·{" "}
+              {r.cluster.distinct_devices} {t(lang, "caseNeighbours")} · {fmtDate(lang, r.dispatched_at)}
+              {r.is_sandbox ? <span className="badge sandbox">{t(lang, "panelSandbox")}</span> : null}
+            </span>
+          </button>
+        ))}
+      </div>
     </>
   );
 }
@@ -410,12 +539,14 @@ export function Panel({ lang }: { lang: Lang }) {
   const [rows, setRows] = useState<InboxRow[]>([]);
   const [tab, setTab] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
+  const [email, setEmail] = useState("");
 
   const load = useCallback(async () => {
     const supabase = browserClient();
     const { data: session } = await supabase.auth.getSession();
     const user = session.session?.user;
     if (!user || user.is_anonymous) return setPhase("login");
+    setEmail(user.email ?? "");
     const { data: mine } = await supabase.from("my_stakeholders").select("id");
     if (!mine?.length) return setPhase("norole");
     const { data } = await supabase.from("panel_inbox").select("*").order("priority_score", { ascending: false });
@@ -437,8 +568,8 @@ export function Panel({ lang }: { lang: Lang }) {
   if (phase === "login") return <Login lang={lang} />;
   if (phase === "norole") {
     return (
-      <div className="card">
-        <p>{t(lang, "panelNoRole")}</p>
+      <div className="card login">
+        <p className="notice warn">{t(lang, "panelNoRole")}</p>
         <button className="secondary" onClick={signOut}>{t(lang, "panelSignOut")}</button>
       </div>
     );
@@ -447,32 +578,31 @@ export function Panel({ lang }: { lang: Lang }) {
   const current = rows.find((r) => `${r.cluster_id}:${r.stakeholder_id}` === selected);
   if (current) return <Case lang={lang} row={current} onBack={() => setSelected(null)} onChanged={load} />;
 
-  const shown = rows.filter((r) => TABS[tab].statuses.includes(r.dispatch_status));
+  const shown = rows.filter(TABS[tab].match);
+  const actors = [...new Set(rows.map((r) => r.stakeholder_name))];
   return (
     <>
-      <div className="row">
-        {TABS.map((tb, i) => (
-          <button key={tb.key} className={i === tab ? "tab on" : "tab"} onClick={() => setTab(i)}>
-            {t(lang, tb.key)} ({rows.filter((r) => tb.statuses.includes(r.dispatch_status)).length})
-          </button>
-        ))}
-        <span style={{ flex: 1 }} />
+      <div className="panel-bar">
+        <h1>{t(lang, "panelInbox")}</h1>
+        <span className="muted small">{t(lang, "panelSorted")}</span>
+        <span className="spacer" />
+        <span className="who">{actors.join(", ")}{email ? ` · ${email}` : ""}</span>
         <button className="link" onClick={() => void load()}>{t(lang, "panelRefresh")}</button>
         <button className="link" onClick={signOut}>{t(lang, "panelSignOut")}</button>
       </div>
-      {shown.length === 0 ? <p className="muted">{t(lang, "panelEmpty")}</p> : null}
-      {shown.map((r) => (
-        <button key={`${r.cluster_id}:${r.stakeholder_id}`} className="card inbox"
-          onClick={() => setSelected(`${r.cluster_id}:${r.stakeholder_id}`)}>
-          <span className="muted small">
-            {r.cluster.category_name[lang]} · {r.cluster.report_count} {t(lang, "panelReports")} · {fmtDate(lang, r.dispatched_at)}
-            {r.dispatch_status === "sent" ? <span className="badge new">{t(lang, "panelStatus_sent")}</span> : null}
-            {r.is_sandbox ? <span className="badge">{t(lang, "panelSandbox")}</span> : null}
-          </span>
-          <b>{inLang(r.brief, lang).title}</b>
-          <span className="muted small">{r.stakeholder_name}</span>
-        </button>
-      ))}
+      <div className="tabs" role="tablist" aria-label={t(lang, "panelState")}>
+        {TABS.map((tb, i) => {
+          const n = rows.filter(tb.match).length;
+          return (
+            <button key={tb.key} role="tab" aria-selected={i === tab} className="tab" onClick={() => setTab(i)}>
+              {t(lang, tb.key)}{n ? ` · ${n}` : ""}
+            </button>
+          );
+        })}
+      </div>
+      {shown.length === 0 ? <p className="card muted">{t(lang, "panelEmpty")}</p> : (
+        <InboxTable lang={lang} rows={shown} onOpen={(r) => setSelected(`${r.cluster_id}:${r.stakeholder_id}`)} />
+      )}
     </>
   );
 }

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { t } from "@/lib/i18n";
 import { currentLang } from "@/lib/lang-server";
 import { AuthForward } from "./AuthForward";
+import { DemoBanner } from "./DemoBanner";
 import { LangSwitch } from "./LangSwitch";
 import "./globals.css";
 
@@ -26,11 +27,15 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <nav>
             <Link href="/report">{t(lang, "navReport")}</Link>
             <Link href="/sandbox">{t(lang, "navSandbox")}</Link>
+            <Link href="/demo">{t(lang, "navDemo")}</Link>
             <Link href="/panel">{t(lang, "navPanel")}</Link>
           </nav>
           <LangSwitch lang={lang} />
         </header>
-        <main>{children}</main>
+        <main>
+          <DemoBanner lang={lang} />
+          {children}
+        </main>
       </body>
     </html>
   );

@@ -19,7 +19,7 @@ insert into reports (id, device_id, city_id, geom, gps_geom, gps_accuracy_m, ip_
                      catalog_version, severity, cluster_id, raw_text)
 values ('d2000000-0000-4000-8000-000000000001', 'a2000000-0000-4000-8000-000000000001', 'ambato',
         st_setsrid(st_makepoint(-78.62, -1.24), 4326)::geography, st_setsrid(st_makepoint(-78.62, -1.24), 4326)::geography,
-        8, '190.1.1.0/24', 'clustered', 'roads', 'pothole', 1, 3, 'b2000000-0000-4000-8000-000000000001', 'Bache');
+        8, '190.1.1.0/24', 'clustered', 'roads', 'pothole', 1, 3, 'b2000000-0000-4000-8000-000000000001', 'texto crudo privado');
 insert into dispatches (cluster_id, stakeholder_id, brief) values
   ('b2000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-000000000001', '{"title": "Bache"}');
 
@@ -104,6 +104,18 @@ begin
     assert false, 'decided once';
   exception when sqlstate 'PT409' then null;
   end;
+
+  -- The replay package of this run (migration 17): no device ids, raw text or raw photo paths.
+  x := replay_export(cl);
+  assert x -> 'cluster' ->> 'status' = 'resolved', x::text;
+  assert jsonb_array_length(x -> 'reports') = 1 and (x -> 'reports' -> 0 ->> 'device_no')::int = 1;
+  assert x -> 'reports' -> 0 ->> 'ref' = 'r_d2000000';
+  assert jsonb_array_length(x -> 'resolutions') = 2 and x -> 'resolutions' -> 1 ->> 'outcome' = 'resolved';
+  assert jsonb_array_length(x -> 'dispatches') = 1;
+  assert (select count(*) from jsonb_array_elements(x -> 'events')) >= 4, 'accepted, pending, back, pending, resolved';
+  assert x::text not like '%a2000000-0000%' and x::text not like '%texto crudo%' and x::text not like '%raw/%',
+         'no device id, raw text or raw path';
+  assert replay_export(gen_random_uuid()) is null;
 end $$;
 rollback;
 \echo 'smoke_resolutions: ok'

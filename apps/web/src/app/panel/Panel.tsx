@@ -1,21 +1,11 @@
 "use client";
 
-import { Fragment, useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { t, type Key, type Lang } from "@/lib/i18n";
 import { photoIssue, resizeToJpeg, type PhotoIssue } from "@/lib/photoQuality";
 import { browserClient, signInLinkClient } from "@/lib/supabase";
+import { BriefText, inLang, type Brief } from "../BriefText";
 
-type Citation = { id: string; kind: "report" | "geo_feature" | "cluster" | "metric"; ref: string };
-type BriefVersion = { title: string; body_markdown: string; actions: Brief["actions"] };
-type Brief = {
-  lang: Lang;
-  translations?: Partial<Record<Lang, BriefVersion>>;
-  title: string;
-  body_markdown: string;
-  actions: { action_id: string; rationale: string; citations: string[] }[];
-  citations: Citation[];
-  model: { provider: string | null; model: string | null };
-};
 type InboxRow = {
   cluster_id: string;
   stakeholder_id: string;
@@ -75,12 +65,6 @@ const TABS: { key: Key; statuses: InboxRow["dispatch_status"][] }[] = [
   { key: "panelTabDone", statuses: ["declined", "closed"] },
 ];
 
-// The brief in the reader's language when its translation exists (same citations, checked by
-// the orchestrator), otherwise as written.
-function inLang(brief: Brief, lang: Lang): BriefVersion {
-  return (brief.lang !== lang && brief.translations?.[lang]) || brief;
-}
-
 function fmtDate(lang: Lang, iso: string) {
   return new Date(iso).toLocaleString(lang === "es" ? "es-EC" : "en-US", { dateStyle: "medium", timeStyle: "short" });
 }
@@ -89,38 +73,6 @@ function photoUrl(path: string | null) {
   if (!path) return null;
   const [bucket, ...rest] = path.split("/");
   return browserClient().storage.from(bucket).getPublicUrl(rest.join("/")).data.publicUrl;
-}
-
-// The brief's markdown is plain text plus citations: paragraphs, "- " lists and **bold**. It is
-// rendered as React text (never as HTML), with every [id] turned into a chip.
-function BriefText({ text, cites, inline: oneLine = false }: { text: string; cites: Map<string, Citation>; inline?: boolean }) {
-  const inline = (line: string) =>
-    line.split(/(\[[^\]]+\]|\*\*[^*]+\*\*)/g).map((part, i) => {
-      if (part.startsWith("**") && part.endsWith("**")) return <b key={i}>{part.slice(2, -2)}</b>;
-      if (!part.startsWith("[")) return <Fragment key={i}>{part}</Fragment>;
-      const ids = part.slice(1, -1).split(/[,;\s]+/).filter(Boolean);
-      return ids.map((id) => {
-        const c = cites.get(id);
-        return c?.kind === "report" ? (
-          <a key={`${i}-${id}`} className="cite" href={`#${id}`}>{id}</a>
-        ) : (
-          <span key={`${i}-${id}`} className="cite" title={c?.ref}>{id}</span>
-        );
-      });
-    });
-  if (oneLine) return <>{inline(text.replace(/\s+/g, " "))}</>;
-  const blocks = text.split(/\n\s*\n/);
-  return (
-    <>
-      {blocks.map((block, b) => {
-        const lines = block.split("\n").filter((l) => l.trim());
-        if (lines.length && lines.every((l) => /^\s*[-*] /.test(l))) {
-          return <ul key={b}>{lines.map((l, i) => <li key={i}>{inline(l.replace(/^\s*[-*] /, ""))}</li>)}</ul>;
-        }
-        return <p key={b}>{inline(lines.join(" "))}</p>;
-      })}
-    </>
-  );
 }
 
 function Login({ lang }: { lang: Lang }) {

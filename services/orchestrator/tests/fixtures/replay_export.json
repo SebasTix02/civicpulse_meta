@@ -1,0 +1,149 @@
+{
+ "events": [
+  {
+   "at": "2026-10-30T17:00:46.135268+00:00",
+   "to": "acknowledged",
+   "from": "validated"
+  },
+  {
+   "at": "2026-10-30T17:00:46.135268+00:00",
+   "to": "resolution_pending",
+   "from": "acknowledged"
+  },
+  {
+   "at": "2026-10-30T17:00:46.135268+00:00",
+   "to": "acknowledged",
+   "from": "resolution_pending"
+  },
+  {
+   "at": "2026-10-30T17:00:46.135268+00:00",
+   "to": "resolution_pending",
+   "from": "acknowledged"
+  },
+  {
+   "at": "2026-10-30T17:00:46.135268+00:00",
+   "to": "resolved",
+   "from": "resolution_pending"
+  }
+ ],
+ "cluster": {
+  "id": "b2000000-0000-4000-8000-000000000001",
+  "lat": -1.24,
+  "lon": -78.62,
+  "status": "resolved",
+  "city_id": "ambato",
+  "domain_id": "roads",
+  "opened_at": "2026-10-30T17:00:46.135268+00:00",
+  "is_sandbox": false,
+  "category_id": "pothole",
+  "resolved_at": "2026-10-30T17:00:46.135268+00:00",
+  "report_count": 1,
+  "validated_at": null,
+  "category_name": {
+   "en": "Pothole",
+   "es": "Bache"
+  },
+  "distinct_devices": 1,
+  "weighted_support": 0
+ },
+ "reports": [
+  {
+   "ref": "r_d2000000",
+   "lang": null,
+   "text": null,
+   "intake": {
+    "photo_id": "d2000000-0000-4000-8000-000000000009",
+    "candidates": [
+     {
+      "candidate_id": 1,
+      "prompt": "pothole",
+      "sam_score": 0.8,
+      "box_xyxy": [
+       1,
+       2,
+       3,
+       4
+      ],
+      "crop_public_path": "public/reports/d2000000-0000-4000-8000-000000000001/c1.jpg"
+     }
+    ],
+    "anonymization": {
+     "public_path": "public/reports/x/v1.jpg"
+    }
+   },
+   "stages": [],
+   "status": "clustered",
+   "severity": 3,
+   "device_no": 1,
+   "simulated": false,
+   "created_at": "2026-10-30T17:00:46.135268+00:00",
+   "summary_en": null,
+   "category_id": "pothole",
+   "intake_status": null,
+   "consistency_score": null,
+   "moderation_reason": null,
+   "moderation_status": "visible",
+   "photo_public_path": "public/reports/d2000000-0000-4000-8000-000000000001/v1.jpg"
+  }
+ ],
+ "dispatches": [
+  {
+   "note": "resolved",
+   "brief": {
+    "title": "t",
+    "citations": [
+     {
+      "id": "r_d2000000",
+      "ref": "d2000000-0000-4000-8000-000000000001",
+      "kind": "report"
+     }
+    ]
+   },
+   "status": "closed",
+   "seen_at": "2026-10-30T17:00:46.135268+00:00",
+   "created_at": "2026-10-30T17:00:46.135268+00:00",
+   "brief_stage": null,
+   "stakeholder_name": "RRT - Road Repair Test Co."
+  }
+ ],
+ "resolutions": [
+  {
+   "id": "6c543dbb-78eb-4ed0-aba7-18e5069a8a6a",
+   "stages": [],
+   "outcome": "rejected",
+   "reviews": [
+    {
+     "at": "2026-10-30T17:00:46.135268+00:00",
+     "note": "the photo shows another street",
+     "verdict": "reject"
+    }
+   ],
+   "ai_status": "PERSISTENT_ISSUE",
+   "created_at": "2026-10-30T17:00:46.135268+00:00",
+   "decided_at": "2026-10-30T17:00:46.135268+00:00",
+   "closure_path": "stakeholder",
+   "verification": null,
+   "ai_overridden": false,
+   "after_public_path": "public/reports/x/v1.jpg"
+  },
+  {
+   "id": "ac740dc0-fdb2-4155-b02a-16172cd84ee7",
+   "stages": [],
+   "outcome": "resolved",
+   "reviews": [
+    {
+     "at": "2026-10-30T17:00:46.135268+00:00",
+     "note": null,
+     "verdict": "approve"
+    }
+   ],
+   "ai_status": "RESOLVED_CANDIDATE_REQUIRES_HUMAN_REVIEW",
+   "created_at": "2026-10-30T17:00:46.135268+00:00",
+   "decided_at": "2026-10-30T17:00:46.135268+00:00",
+   "closure_path": "stakeholder",
+   "verification": null,
+   "ai_overridden": false,
+   "after_public_path": "public/reports/x/v1.jpg"
+  }
+ ]
+}

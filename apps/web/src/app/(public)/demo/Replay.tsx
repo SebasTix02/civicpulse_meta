@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { TIMELINE, intakeMessage, t, type Key, type Lang } from "@/lib/i18n";
-import { BriefText, inLang, type Brief } from "../BriefText";
+import { BriefText, inLang, type Brief } from "@/app/BriefText";
 
 // Plays back a real run recorded by scripts/record_replay.py (riesgos §4.3). Everything comes
 // from /replay/*.json and the anonymized photos next to it, so it works with Supabase down

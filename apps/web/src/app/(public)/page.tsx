@@ -2,8 +2,8 @@ import Link from "next/link";
 import { t } from "@/lib/i18n";
 import { currentLang } from "@/lib/lang-server";
 import { publicServerClient, publicStorageBase, type PublicCluster } from "@/lib/supabase";
-import { HomeMap } from "./HomeMap";
-import { CameraIcon } from "./icons";
+import { HomeMap } from "@/app/HomeMap";
+import { CameraIcon } from "@/app/icons";
 
 export const revalidate = 60;
 

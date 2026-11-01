@@ -4,8 +4,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { TIMELINE, intakeMessage, t, type Key, type Lang } from "@/lib/i18n";
 import { browserClient } from "@/lib/supabase";
-import { CheckIcon } from "../icons";
-import { Lightbox } from "../Lightbox";
+import { CheckIcon } from "@/app/icons";
+import { Lightbox } from "@/app/Lightbox";
 
 type Row = {
   status: string;

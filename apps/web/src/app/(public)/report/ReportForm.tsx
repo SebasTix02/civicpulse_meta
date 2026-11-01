@@ -6,7 +6,7 @@ import { errorCode, errorMessage } from "@/lib/errors";
 import { t, type Lang } from "@/lib/i18n";
 import { photoIssue, resizeToJpeg, type PhotoIssue } from "@/lib/photoQuality";
 import { browserClient } from "@/lib/supabase";
-import { BackIcon } from "../icons";
+import { BackIcon } from "@/app/icons";
 import { LocationPicker, distanceM, PIN_MAX_M, type LatLon } from "./LocationPicker";
 import { MyReports } from "./MyReports";
 import { ReportStatus } from "./ReportStatus";

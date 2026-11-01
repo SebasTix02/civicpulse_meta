@@ -154,7 +154,6 @@ const dict = {
   navMap: { es: "Mapa", en: "Map" },
   navReport: { es: "Reportar", en: "Report" },
   navSandbox: { es: "Probar (sandbox)", en: "Try it (sandbox)" },
-  navPanel: { es: "Panel de actores", en: "Stakeholder panel" },
   mapTitle: { es: "Problemas validados en Ambato", en: "Validated problems in Ambato" },
   mapEmpty: { es: "Todavía no hay problemas validados.", en: "No validated problems yet." },
   mapUnavailable: { es: "El mapa no está disponible ahora.", en: "The map is not available right now." },
@@ -208,7 +207,6 @@ const dict = {
     es: "Recorre el ciclo completo sin tocar el mapa real: reporte, verificación, consenso, brief al responsable y cierre con antes y después.",
     en: "Walk through the whole cycle without touching the real map: report, verification, consensus, brief to whoever is responsible, and a before/after closure.",
   },
-  panelTitle: { es: "Panel de actores", en: "Stakeholder panel" },
   panelBody: {
     es: "El acceso es solo por invitación. Te enviamos un enlace a tu correo; no hace falta contraseña.",
     en: "Access is by invitation only. We email you a link; no password needed.",
@@ -373,6 +371,13 @@ const dict = {
   photoNext: { es: "Foto siguiente", en: "Next photo" },
   photoAll: { es: "Fotos de los reportes", en: "Report photos" },
   casePhotosCount: { es: "{n} fotos de vecinos", en: "{n} photos from neighbours" },
+  footActors: {
+    es: "¿Tu equipo atiende casos (municipio, transporte, servicios)?",
+    en: "Does your team handle cases (city, transport, utilities)?",
+  },
+  footActorsLink: { es: "Panel de responsables", en: "Panel for responsible teams" },
+  panelArea: { es: "Responsables", en: "Responsible teams" },
+  panelPublicSite: { es: "Sitio público", en: "Public site" },
 } satisfies Record<string, Record<Lang, string>>;
 
 export type Key = keyof typeof dict;

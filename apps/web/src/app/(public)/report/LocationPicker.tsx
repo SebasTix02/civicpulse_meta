@@ -2,7 +2,7 @@
 
 import * as maplibregl from "maplibre-gl";
 import { useEffect, useRef } from "react";
-import { STYLE, initMaplibre } from "../ClusterMap";
+import { STYLE, initMaplibre } from "@/app/ClusterMap";
 
 export type LatLon = { lat: number; lon: number };
 export const PIN_MAX_M = 15; // submit_report refuses a pin farther than this from the GPS fix (pin_too_far)

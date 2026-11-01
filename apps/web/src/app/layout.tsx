@@ -1,11 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import Link from "next/link";
-import { t } from "@/lib/i18n";
 import { currentLang } from "@/lib/lang-server";
 import { AuthForward } from "./AuthForward";
-import { DemoBanner } from "./DemoBanner";
-import { LangSwitch } from "./LangSwitch";
-import { NavLinks } from "./NavLinks";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -28,23 +23,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       </head>
       <body>
         <AuthForward />
-        <header className="top">
-          <div className="top-inner">
-            <Link href="/" className="brand">CivicPulse <small>· Ambato</small></Link>
-            <NavLinks links={[
-              { href: "/", label: t(lang, "navMap") },
-              { href: "/report", label: t(lang, "navReport") },
-              { href: "/sandbox", label: t(lang, "navSandbox") },
-              { href: "/demo", label: t(lang, "navDemo") },
-              { href: "/panel", label: t(lang, "navPanel") },
-            ]} />
-            <LangSwitch lang={lang} />
-          </div>
-        </header>
-        <main>
-          <DemoBanner lang={lang} />
-          {children}
-        </main>
+        {children}
       </body>
     </html>
   );

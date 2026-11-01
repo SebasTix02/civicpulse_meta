@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { TIMELINE, t, type Lang } from "@/lib/i18n";
 import { browserClient } from "@/lib/supabase";
-import { ChevronIcon } from "../icons";
+import { ChevronIcon } from "@/app/icons";
 import { ReportStatus, ago, timelineStep } from "./ReportStatus";
 
 type Mine = {

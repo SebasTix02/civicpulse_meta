@@ -358,3 +358,15 @@ button.card.inbox:hover { border-color: var(--line-strong); }
 .pair .photo-frame { margin: 0; }
 .pair .photo-frame img { height: 220px; }
 .case-grid aside .photo-frame { margin-top: 12px; }
+
+/* ---------- Two areas: public site and actors' panel ---------- */
+.site-foot { max-width: 1120px; margin: 0 auto; padding: 16px 16px 32px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); }
+.top-panel { border-bottom: 3px solid var(--fg); }
+.top-panel .top-inner { max-width: 1280px; }
+.top-panel nav { justify-content: flex-end; }
+.area-tag { display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 6px; background: var(--fg); color: #fff; font-size: 13px; font-weight: 500; vertical-align: 2px; }
+.panel-area main { max-width: 1280px; }
+@media (max-width: 719px) {
+  main:has(.home) + .site-foot { padding-bottom: 96px; }
+  .top-panel nav { justify-content: flex-start; }
+}

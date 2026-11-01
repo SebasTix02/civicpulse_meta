@@ -35,7 +35,7 @@ from civicpulse.anonymize import Anonymized, load, to_jpeg
 from civicpulse.llm.prompts import pair_check_prompt, same_place_prompt
 from civicpulse.llm.router import AllProvidersFailed, LLMRouter, image_part
 from civicpulse.models import PairVerdict, SamePlaceVerdict
-from civicpulse.registration import Registration, register, warp_to_before
+from civicpulse.registration import Registration, refine_local, register, warp_to_before
 from civicpulse.sam.service import Detection, SAMService
 
 REGION_MIN_SCORE = 0.35
@@ -258,17 +258,22 @@ def verify_pair(before: Anonymized, after: Anonymized, spec: dict, sam: SAMServi
 
     found_a = _segment(sam, after.jpeg, aw, ah, list(dict.fromkeys(targets + resolved + confusers)))
 
-    def warp(m: np.ndarray) -> np.ndarray:
-        return warp_to_before(m, reg.H, (bh, bw), nearest=True)
+    issue_a, repair_a, confuser_a = (_union(found_a, p, aw, ah) for p in (targets, resolved, confusers))
 
-    visible = warp(np.ones((ah, aw), np.uint8))
-    issue_after = warp(_union(found_a, targets, aw, ah))
-    repair_after = warp(_union(found_a, resolved, aw, ah))
-    confuser_after = warp(_union(found_a, confusers, aw, ah))
-    aligned = warp_to_before(argb, reg.H, (bh, bw))
+    def frames(H: np.ndarray) -> tuple[np.ndarray, ...]:
+        def warp(m: np.ndarray) -> np.ndarray:
+            return warp_to_before(m, H, (bh, bw), nearest=True)
+        return (warp(np.ones((ah, aw), np.uint8)), warp(issue_a), warp(repair_a), warp(confuser_a),
+                warp_to_before(argb, H, (bh, bw)))
+
+    visible_g, issue_g, repair_g, confuser_g, aligned_g = frames(reg.H)
 
     statuses = []
     for i, (d, mask) in enumerate(regions, 1):
+        # The road may sit off the facades' plane: re-align around this region when that works.
+        C, cc = refine_local(brgb, aligned_g, mask, _crop_box(mask, pad=1.0, min_side=480))
+        visible, issue_after, repair_after, confuser_after, aligned = (
+            frames(C @ reg.H) if C is not None else (visible_g, issue_g, repair_g, confuser_g, aligned_g))
         conf_in, rep_in = confuser_after & mask, repair_after & mask
         m = {"region_visible_after": round(_share(mask, visible), 3),
              "remaining_issue_ratio": round(_share(mask, issue_after), 3),
@@ -278,6 +283,7 @@ def verify_pair(before: Anonymized, after: Anonymized, spec: dict, sam: SAMServi
         box = _crop_box(mask)
         check = {"region_id": i, "prompt": d.prompt, "initial_confidence": round(d.score, 3),
                  "initial_area_px": int(mask.sum()), "crop_box_xyxy": box, **m, "classifier": None,
+                 "local_alignment": {"refined": C is not None, "ecc": None if cc is None else round(cc, 3)},
                  "figure_paths": {"before": None, "after_aligned": None}}
         verdict = None
         geometry_decides = decide_region(m, None) in ("NOT_VERIFIABLE_REGION_NOT_VISIBLE", "PERSISTENT_ISSUE")
@@ -293,7 +299,7 @@ def verify_pair(before: Anonymized, after: Anonymized, spec: dict, sam: SAMServi
             break  # one region that persists already decides the closure
     out["ai_status"] = decide_closure(statuses, True)
     out["models"]["classifier"] = classifier_model
-    figures["aligned"] = to_jpeg(np.where(visible[..., None] > 0, aligned, (brgb * 0.35).astype(np.uint8)), 82)
+    figures["aligned"] = to_jpeg(np.where(visible_g[..., None] > 0, aligned_g, (brgb * 0.35).astype(np.uint8)), 82)
     return PairResult(out, figures, classifier_model)
 
 

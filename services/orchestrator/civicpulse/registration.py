@@ -85,3 +85,57 @@ def warp_to_before(after: np.ndarray, H: np.ndarray, before_shape: tuple[int, in
     h, w = before_shape
     return cv2.warpPerspective(after, H, (w, h), flags=cv2.INTER_NEAREST if nearest else cv2.INTER_LINEAR,
                                borderMode=cv2.BORDER_CONSTANT, borderValue=0)
+
+
+# ---------------------------------------------------------------- local refinement
+
+REFINE_SIDE = 480         # the refinement window is resampled to at most this many pixels
+REFINE_MIN_CC = 0.35      # ECC correlation below this: keep the global homography
+REFINE_MAX_SHIFT = 0.35   # a correction moving more than this share of the window is not trusted
+
+
+def refine_local(before_rgb: np.ndarray, aligned_rgb: np.ndarray, region: np.ndarray,
+                 box: list[int]) -> tuple[np.ndarray | None, float | None]:
+    """A street photo has two planes: the facades, which give most SIFT matches, and the road. The
+    global homography follows the facades, so on the road the AFTER can be off by a lane or a curb.
+    This re-aligns the window around one region (ECC, coarse translation then affine, the region
+    itself left out because it is what changed). Returns C, 3x3, aligned-frame pixels -> BEFORE
+    pixels for that window, and the ECC correlation; (None, cc) when it does not converge or the
+    correction is implausible, so the caller keeps the global alignment."""
+    x1, y1, x2, y2 = box
+    tb = cv2.cvtColor(before_rgb[y1:y2, x1:x2], cv2.COLOR_RGB2GRAY)
+    ia = cv2.cvtColor(aligned_rgb[y1:y2, x1:x2], cv2.COLOR_RGB2GRAY)
+    s = min(1.0, REFINE_SIDE / max(tb.shape))
+    if s < 1:
+        tb = cv2.resize(tb, None, fx=s, fy=s, interpolation=cv2.INTER_AREA)
+        ia = cv2.resize(ia, None, fx=s, fy=s, interpolation=cv2.INTER_AREA)
+    keep = cv2.resize(region[y1:y2, x1:x2], (tb.shape[1], tb.shape[0]), interpolation=cv2.INTER_NEAREST)
+    keep = (cv2.dilate(keep, np.ones((9, 9), np.uint8)) == 0).astype(np.uint8)
+    keep &= (ia > 0).astype(np.uint8)  # where the AFTER photo reaches
+    if keep.mean() < 0.3:
+        return None, None
+    tb, ia = (cv2.GaussianBlur(x, (0, 0), 1.5).astype(np.float32) for x in (tb, ia))
+    crit = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 80, 1e-5)
+    warp = np.eye(2, 3, dtype=np.float32)
+    try:
+        # Coarse: translation by phase correlation (the changed region filled with the mean, so the
+        # pothole or the patch does not drive it), large enough for a curb or a lane of offset.
+        fill = [np.where(keep > 0, x, float(x[keep > 0].mean())).astype(np.float32) for x in (tb, ia)]
+        hann = cv2.createHanningWindow((tb.shape[1], tb.shape[0]), cv2.CV_32F)
+        (dx, dy), _ = cv2.phaseCorrelate(fill[0], fill[1], hann)
+        warp[:, 2] = [dx, dy]
+        cc, warp = cv2.findTransformECC(tb, ia, warp, cv2.MOTION_AFFINE, crit, keep, 5)
+    except cv2.error:
+        return None, None
+    lin = warp[:, :2]
+    scale = float(np.sqrt(abs(np.linalg.det(lin))))
+    if (cc < REFINE_MIN_CC or not 0.8 <= scale <= 1.25 or np.abs(lin - np.eye(2) * scale).max() > 0.2
+            or np.abs(warp[:, 2]).max() > REFINE_MAX_SHIFT * max(tb.shape)):
+        return None, float(cc)
+    # ECC: template pixel x matches input pixel W(x). In full-size frame coordinates the window
+    # maps BEFORE q -> aligned p = T S^-1 W S T^-1 q, so C is its inverse.
+    W3 = np.vstack([warp, [0, 0, 1]]).astype(np.float64)
+    S = np.diag([s, s, 1.0])
+    T = np.array([[1, 0, x1], [0, 1, y1], [0, 0, 1]], np.float64)
+    fwd = T @ np.linalg.inv(S) @ W3 @ S @ np.linalg.inv(T)
+    return np.linalg.inv(fwd), float(cc)

@@ -296,3 +296,27 @@ def test_location_candidate_needs_a_sure_same_place(monkeypatch, answer, expecte
     jsonschema.validate(v | {"before_report_id": "00000000-0000-4000-8000-000000000001",
                              "before_photo_id": "00000000-0000-4000-8000-000000000002",
                              "after_photo_id": "00000000-0000-4000-8000-000000000003"}, SCHEMA)
+
+
+def test_local_refinement_follows_the_road_when_the_facades_move_differently():
+    """Top half (facades) moves one way, bottom half (road) another: the global homography follows
+    the facades, the window around a pothole on the road is re-aligned to the road."""
+    from civicpulse.registration import refine_local, warp_to_before
+
+    before = scene()
+    rng = np.random.default_rng(3)
+    road = cv2.GaussianBlur((rng.random((H // 2, W, 3)) * 255).astype(np.uint8), (0, 0), 2.0)
+    before[H // 2:] = road
+    after = shifted(before)                       # facades: SHIFT
+    m = np.float32([[1, 0, SHIFT[0] + 30], [0, 1, SHIFT[1] - 18]])
+    after[H // 2:] = cv2.warpAffine(before, m, (W, H), borderMode=cv2.BORDER_REFLECT)[H // 2:]  # road: other shift
+    reg = register(before, after)
+    assert reg.ok
+    aligned = warp_to_before(after, reg.H, (H, W))
+    region = np.zeros((H, W), np.uint8)
+    region[420:470, 360:440] = 1
+    C, cc = refine_local(before, aligned, region, [240, 330, 560, 600])
+    assert C is not None and cc > 0.8, cc
+    fixed = warp_to_before(after, C @ reg.H, (H, W))
+    err = lambda img: float(np.abs(img[360:560, 280:520].astype(int) - before[360:560, 280:520].astype(int)).mean())
+    assert err(fixed) < 0.3 * err(aligned), (err(fixed), err(aligned))

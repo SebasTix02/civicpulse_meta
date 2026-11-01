@@ -107,6 +107,22 @@
             "minItems": 4,
             "maxItems": 4
           },
+          "local_alignment": {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "Re-alignment of the window around this region (ECC), on top of the global homography",
+            "properties": {
+              "refined": {
+                "type": "boolean"
+              },
+              "ecc": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            }
+          },
           "region_visible_after": {
             "type": "number",
             "minimum": 0,

@@ -46,3 +46,16 @@ def test_list_files_walks_folders():
     names = db.list_files("public", "sandbox/s1")
     assert names == ["sandbox/s1/r1/v1.jpg"]
     db.remove("public", names)
+
+
+def test_download_from_the_public_bucket_uses_the_authenticated_route():
+    seen = []
+
+    def handler(req: httpx.Request):
+        seen.append(req.url.path)
+        return httpx.Response(200, content=b"jpg")
+
+    db = Db("https://x.test", "sb_secret_x", httpx.Client(transport=httpx.MockTransport(handler)))
+    assert db.download("public/samples/p/before.jpg") == b"jpg"
+    db.download("raw/u/n.jpg")
+    assert seen == ["/storage/v1/object/authenticated/public/samples/p/before.jpg", "/storage/v1/object/raw/u/n.jpg"]

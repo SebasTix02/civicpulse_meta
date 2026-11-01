@@ -48,8 +48,12 @@ class Db:
         resp.raise_for_status()
 
     def download(self, path: str) -> bytes:
-        """`path` is bucket/name, as photos.storage_path stores it (raw/... or sandbox/...)."""
-        resp = self.client.get(f"{self.storage}/{path}", headers=self.headers)
+        """`path` is bucket/name, as photos.storage_path stores it (raw/... or sandbox/...).
+
+        The bucket named `public` must go through /object/authenticated/: Storage reads
+        /object/public/<x>/... as the public-URL route of a bucket called <x>."""
+        url = f"{self.storage}/authenticated/{path}" if path.startswith("public/") else f"{self.storage}/{path}"
+        resp = self.client.get(url, headers=self.headers)
         resp.raise_for_status()
         return resp.content
 

@@ -1,5 +1,5 @@
 import { createBrowserClient } from "@supabase/ssr";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 // Values pasted into a hosting dashboard often carry quotes or spaces; anything that is not an
 // http(s) URL counts as "not configured" instead of crashing the build.
@@ -23,6 +23,15 @@ export const supabaseConfigured = Boolean(url && anonKey);
 export function browserClient() {
   if (!url || !anonKey) throw new Error("Supabase env vars are not set");
   return createBrowserClient(url, anonKey);
+}
+
+// Sandbox (/sandbox): a second anonymous session with its own storage key, so the visitor's
+// sandbox device is never their citizen device (migration 20). One instance per page.
+let sandbox: SupabaseClient | null = null;
+export function sandboxClient() {
+  if (!url || !anonKey) throw new Error("Supabase env vars are not set");
+  sandbox ??= createClient(url, anonKey, { auth: { storageKey: "cp-sandbox-auth", persistSession: true, detectSessionInUrl: false } });
+  return sandbox;
 }
 
 // Only to email an actor's sign-in link. The implicit flow puts the session in the link itself,

@@ -1,19 +1,25 @@
-import Link from "next/link";
 import { t } from "@/lib/i18n";
 import { currentLang } from "@/lib/lang-server";
+import { publicServerClient, supabaseConfigured } from "@/lib/supabase";
+import { SandboxApp, type Sample } from "./SandboxApp";
 
-// C9 (sandbox): the welcome screen. Sessions, quota and samples arrive with start_sandbox_session.
+export const dynamic = "force-dynamic";
+
+// C9 (sandbox): the whole cycle on test data, with sample photos or the visitor's camera.
 export default async function Sandbox() {
   const lang = await currentLang();
+  const db = publicServerClient();
+  const { data } = db
+    ? await db.from("sandbox_samples").select("id,category_id,title,suggested_text,before_path,after_path").order("sort")
+    : { data: null };
   return (
-    <div className="narrow">
-      <p className="band" style={{ borderRadius: 8 }}>{t(lang, "sandboxBand")}</p>
-      <h1>{t(lang, "sandboxTitle")}</h1>
-      <p>{t(lang, "sandboxBody")}</p>
-      <div className="notice">
-        <b>{t(lang, "comingSoon")}</b>
-        <p>{t(lang, "sandboxMeanwhile")} <Link href="/demo">{t(lang, "navDemo")}</Link></p>
-      </div>
+    <div className="narrow sandbox">
+      <p className="band sandbox-band">{t(lang, "sandboxBand")}</p>
+      {supabaseConfigured ? (
+        <SandboxApp lang={lang} samples={(data ?? []) as Sample[]} />
+      ) : (
+        <p className="notice warn">{t(lang, "sbNotConfigured")}</p>
+      )}
     </div>
   );
 }

@@ -134,7 +134,8 @@ def sweeper() -> dict:
 
 @app.function(secrets=secrets, schedule=modal.Period(minutes=10), timeout=60)
 def healthcheck() -> dict:
-    """Writes app_config.provider_health for get_demo_status() (civicpulse/health.py). Free checks only."""
+    """Writes app_config.provider_health for get_demo_status() (civicpulse/health.py), free checks only;
+    then deletes expired sandbox sessions."""
     from datetime import UTC, datetime
 
     from civicpulse.config import get_settings
@@ -142,4 +143,12 @@ def healthcheck() -> dict:
     from civicpulse.health import check
 
     s = get_settings()
-    return check(Db(s.supabase_url, s.supabase_service_key), s, datetime.now(UTC))
+    db = Db(s.supabase_url, s.supabase_service_key)
+    health = check(db, s, datetime.now(UTC))
+    try:  # expired sandbox sessions: rows and files (pipeline/sandbox.py)
+        from civicpulse.pipeline.sandbox import cleanup
+
+        health["sandbox_cleanup"] = cleanup(db)
+    except Exception as exc:  # noqa: BLE001 - never fail the health write over it
+        print(f"sandbox cleanup failed: {type(exc).__name__}: {exc}")
+    return health

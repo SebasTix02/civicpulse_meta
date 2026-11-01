@@ -80,6 +80,21 @@ const CODES: Record<string, Msg> = {
     es: "Usaste tu cupo de hoy. Las muestras siguen disponibles.",
     en: "You've used today's quota. Samples are still available.",
   },
+  sandbox_samples_exceeded: {
+    es: "Usaste las muestras de hoy. Vuelve mañana o mira la demo grabada.",
+    en: "You've used today's samples. Come back tomorrow or watch the recorded demo.",
+  },
+  sandbox_daily_cap: {
+    es: "El sandbox llegó a su límite de hoy. Mientras tanto, mira la demo grabada.",
+    en: "The sandbox reached today's limit. Meanwhile, watch the recorded demo.",
+  },
+  report_not_ready: { es: "El reporte todavía no está en el mapa.", en: "The report is not on the map yet." },
+  sample_not_in_case: {
+    es: "Esta muestra no abrió este caso: usa la foto del arreglo de su propio par o tu cámara.",
+    en: "This sample did not open this case: use its own pair's fix photo or your camera.",
+  },
+  unknown_city: { es: "Esa ciudad no está disponible en el sandbox.", en: "That city is not available in the sandbox." },
+  not_a_sandbox_device: { es: "Recarga la página para empezar una sesión de sandbox.", en: "Reload the page to start a sandbox session." },
   sandbox_session_not_found: { es: "Tu sesión de sandbox expiró. Empieza una nueva.", en: "Your sandbox session expired. Start a new one." },
   simulation_too_large: { es: "La simulación es demasiado grande.", en: "The simulation is too large." },
 };

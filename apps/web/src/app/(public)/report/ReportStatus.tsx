@@ -95,7 +95,6 @@ export function ReportStatus({ lang, reportId }: { lang: Lang; reportId: string 
   }, [row.category_id, lang]);
 
   const step = timelineStep(row);
-  const current = row.status === "failed" ? -1 : TIMELINE.findIndex((s) => s.id === step);
   const checked = row.status === "vision_done" || row.status === "clustered";
   const photoUrl = checked
     ? browserClient().storage.from("public").getPublicUrl(`reports/${reportId}/v1.jpg`).data.publicUrl
@@ -131,23 +130,7 @@ export function ReportStatus({ lang, reportId }: { lang: Lang; reportId: string 
       ) : null}
       {row.status === "failed" ? <p className="notice warn">{t(lang, "reportCheckFailed")}</p> : null}
 
-      <ol className="card vtimeline" aria-label={t(lang, "statusTimeline")}>
-        {TIMELINE.map((s, i) => {
-          const state = i < current || (step === "resolved" && i === current) ? "done" : i === current ? "now" : "";
-          return (
-            <li key={s.id} className={state} aria-current={state === "now" ? "step" : undefined}>
-              <span className="rail">
-                <span className="mark">{state === "done" ? <CheckIcon /> : null}</span>
-                <span className="line" />
-              </span>
-              <span className="label">
-                {s[lang]}
-                {state === "now" ? <span className="detail">{t(lang, `stepDetail_${s.id}` as Key)}</span> : null}
-              </span>
-            </li>
-          );
-        })}
-      </ol>
+      <Timeline lang={lang} step={step} failed={row.status === "failed"} />
       {!checked && slow ? <p className="muted small">{t(lang, "reportStillChecking")}</p> : null}
       {viewing && photoUrl ? (
         <Lightbox lang={lang} start={0} onClose={() => setViewing(false)}
@@ -155,5 +138,29 @@ export function ReportStatus({ lang, reportId }: { lang: Lang; reportId: string 
       ) : null}
       {PUBLIC_CASE.has(step) ? <p><Link href="/">{t(lang, "statusSeeOnMap")}</Link></p> : null}
     </div>
+  );
+}
+
+/** The 8-step vertical timeline (C5), shared with the sandbox. */
+export function Timeline({ lang, step, failed }: { lang: Lang; step: string; failed?: boolean }) {
+  const current = failed ? -1 : TIMELINE.findIndex((s) => s.id === step);
+  return (
+    <ol className="card vtimeline" aria-label={t(lang, "statusTimeline")}>
+      {TIMELINE.map((s, i) => {
+        const state = i < current || (step === "resolved" && i === current) ? "done" : i === current ? "now" : "";
+        return (
+          <li key={s.id} className={state} aria-current={state === "now" ? "step" : undefined}>
+            <span className="rail">
+              <span className="mark">{state === "done" ? <CheckIcon /> : null}</span>
+              <span className="line" />
+            </span>
+            <span className="label">
+              {s[lang]}
+              {state === "now" ? <span className="detail">{t(lang, `stepDetail_${s.id}` as Key)}</span> : null}
+            </span>
+          </li>
+        );
+      })}
+    </ol>
   );
 }

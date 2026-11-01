@@ -87,3 +87,23 @@ class Db:
         resp = self.client.get(f"{self.base}/stage_runs", params=params, headers=self.headers)
         resp.raise_for_status()
         return bool(resp.json())
+
+    def list_files(self, bucket: str, prefix: str, depth: int = 3) -> list[str]:
+        """Every file name under bucket/prefix (Storage lists one folder level per call)."""
+        resp = self.client.post(f"{self.storage}/list/{bucket}", headers=self.headers,
+                                json={"prefix": prefix.rstrip("/"), "limit": 1000})
+        resp.raise_for_status()
+        out: list[str] = []
+        for entry in resp.json():
+            name = f"{prefix.rstrip('/')}/{entry['name']}"
+            if entry.get("id"):
+                out.append(name)
+            elif depth > 0:  # a folder
+                out += self.list_files(bucket, name, depth - 1)
+        return out
+
+    def remove(self, bucket: str, names: list[str]) -> None:
+        for i in range(0, len(names), 500):
+            resp = self.client.request("DELETE", f"{self.storage}/{bucket}", headers=self.headers,
+                                       json={"prefixes": names[i:i + 500]})
+            resp.raise_for_status()

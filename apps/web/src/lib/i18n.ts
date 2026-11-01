@@ -360,7 +360,10 @@ const dict = {
     en: "This will be logged and visible on the public map.",
   },
   resAfterAccept: { es: "disponible al aceptar", en: "available once accepted" },
-  sandboxBand: { es: "Sandbox · datos de prueba · se borran esta noche", en: "Sandbox · test data · deleted tonight" },
+  sandboxBand: {
+    es: "Sandbox · datos de prueba · se borran en 24 horas",
+    en: "Sandbox · test data · deleted after 24 hours",
+  },
   sandboxMeanwhile: {
     es: "Mientras tanto, puedes ver corridas reales grabadas:",
     en: "Meanwhile, you can watch recorded real runs:",
@@ -378,6 +381,84 @@ const dict = {
   footActorsLink: { es: "Panel de responsables", en: "Panel for responsible teams" },
   panelArea: { es: "Responsables", en: "Responsible teams" },
   panelPublicSite: { es: "Sitio público", en: "Public site" },
+  sbCity: { es: "Ciudad", en: "City" },
+  sbQuotaReports: { es: "reportes con tu cámara", en: "camera reports left" },
+  sbQuotaClosures: { es: "cierres con tu cámara", en: "camera closures left" },
+  sbQuotaSamples: { es: "usos de muestras", en: "sample uses left" },
+  sbQuotaToday: { es: "Cupo de hoy", en: "Today's quota" },
+  sbSamples: { es: "Fotos de muestra", en: "Sample photos" },
+  sbSamplesHint: { es: "no gastan tu cupo de cámara", en: "don't use your camera quota" },
+  sbPair: { es: "con foto del arreglo", en: "with a fix photo" },
+  sbCamera: { es: "Mi cámara", en: "My camera" },
+  sbCameraHint: { es: "Fotografía cualquier problema cerca de ti.", en: "Photograph any problem near you." },
+  sbHowItWorks: {
+    es: "El pin se pone a mano. El consenso lo completan vecinos simulados y luego haces de responsable: lees el brief, aceptas el caso y lo cierras con una foto.",
+    en: "You place the pin by hand. Simulated neighbours complete the consensus, then you play the responsible party: read the brief, accept the case and close it with a photo.",
+  },
+  sbNoSamples: { es: "Todavía no hay fotos de muestra. Usa tu cámara.", en: "No sample photos yet. Use your camera." },
+  sbOnlyHere: {
+    es: "Nada de esto aparece en el mapa real ni llega a un responsable real.",
+    en: "None of this shows on the real map or reaches a real responsible party.",
+  },
+  sbReportTitle: { es: "Reportar en el sandbox", en: "Report in the sandbox" },
+  sbPinTitle: { es: "Ubicación: pon el pin a mano", en: "Location: place the pin by hand" },
+  sbPinHint: {
+    es: "Toca el mapa o arrastra el pin. En el sandbox no usamos tu GPS.",
+    en: "Tap the map or drag the pin. The sandbox does not use your GPS.",
+  },
+  sbSend: { es: "Enviar reporte de prueba", en: "Send test report" },
+  sbBack: { es: "Volver al sandbox", en: "Back to the sandbox" },
+  sbMyTests: { es: "Tus pruebas", en: "Your tests" },
+  sbExpires: {
+    es: "Esta sesión y todo lo que creaste se borran {when}.",
+    en: "This session and everything you created are deleted {when}.",
+  },
+  sbNeighboursWaiting: {
+    es: "Llamando a 3 vecinos simulados para que confirmen…",
+    en: "Asking 3 simulated neighbours to confirm…",
+  },
+  sbNeighbours: { es: "3 vecinos simulados confirmaron", en: "3 simulated neighbours confirmed" },
+  sbNeighboursDetail: {
+    es: "{d} dispositivos, apoyo {s}. En la ciudad real hacen falta 3 dispositivos y apoyo 1,2.",
+    en: "{d} devices, support {s}. In the real city it takes 3 devices and support 1.2.",
+  },
+  sbWaitingMap: {
+    es: "Cuando la foto esté revisada y el reporte en el mapa, llegan los vecinos simulados.",
+    en: "Once the photo is checked and the report is on the map, the simulated neighbours arrive.",
+  },
+  sbBriefTitle: { es: "Brief que recibió el responsable", en: "Brief the responsible party received" },
+  sbBriefWriting: {
+    es: "La IA está escribiendo el brief para el responsable…",
+    en: "The AI is writing the brief for the responsible party…",
+  },
+  sbActorIntro: { es: "Ahora haces de responsable ({name}).", en: "Now you play the responsible party ({name})." },
+  sbAccept: { es: "Aceptar el caso", en: "Accept the case" },
+  sbAccepted: { es: "Caso aceptado: en atención.", en: "Case accepted: being handled." },
+  sbCloseTitle: { es: "Cerrar el caso con una foto", en: "Close the case with a photo" },
+  sbCloseHint: {
+    es: "La IA compara la foto de antes con la de después; la decisión final es tuya.",
+    en: "The AI compares the before and after photos; the final decision is yours.",
+  },
+  sbClosePair: { es: "Usar la foto «después» de la muestra", en: "Use the sample's \"after\" photo" },
+  sbCloseCamera: { es: "Tomar foto del arreglo", en: "Take a photo of the fix" },
+  sbNoPair: {
+    es: "Esta muestra no trae foto del arreglo. Usa tu cámara o prueba con una muestra que diga «con foto del arreglo».",
+    en: "This sample has no fix photo. Use your camera or try a sample marked \"with a fix photo\".",
+  },
+  sbWaitAi: { es: "Tarda alrededor de un minuto.", en: "It takes about a minute." },
+  sbDone: { es: "Ciclo completo", en: "Full cycle done" },
+  sbDoneBody: {
+    es: "Reporte, verificación de la foto, consenso, brief, atención y cierre verificado: lo mismo que pasa con datos reales.",
+    en: "Report, photo check, consensus, brief, handling and a verified closure: the same as with real data.",
+  },
+  sbAgain: { es: "Probar otra muestra", en: "Try another sample" },
+  sbOpen: { es: "Ver", en: "Open" },
+  sbCapNotice: { es: "El sandbox llegó a su límite de hoy.", en: "The sandbox reached today's limit." },
+  sbNotConfigured: {
+    es: "El sandbox no está conectado en este despliegue.",
+    en: "The sandbox is not connected in this deployment.",
+  },
+  sbReportText: { es: "Qué pasa", en: "What is wrong" },
 } satisfies Record<string, Record<Lang, string>>;
 
 export type Key = keyof typeof dict;

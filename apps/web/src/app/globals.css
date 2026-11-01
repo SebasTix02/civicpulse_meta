@@ -233,6 +233,7 @@ img.preview { max-width: 100%; border-radius: 10px; margin-top: 8px; display: bl
 .intake-ok { color: var(--st-resolved); font-weight: 500; font-size: 14px; }
 .intake-no { color: var(--warn-fg); font-weight: 500; font-size: 14px; }
 .vtimeline { list-style: none; margin: 0; padding: 0; }
+.card.vtimeline { padding: 16px 16px 4px; margin: 12px 0; }
 .vtimeline li { display: flex; gap: 12px; min-height: 44px; }
 .vtimeline .rail { display: flex; flex-direction: column; align-items: center; width: 22px; flex: none; }
 .vtimeline .mark { width: 22px; height: 22px; border-radius: 11px; border: 2px solid #a3a39d; background: var(--surface); flex: none; display: flex; align-items: center; justify-content: center; }
@@ -370,3 +371,23 @@ button.card.inbox:hover { border-color: var(--line-strong); }
   main:has(.home) + .site-foot { padding-bottom: 96px; }
   .top-panel nav { justify-content: flex-start; }
 }
+
+/* ---------------------------------------------------------------- sandbox (C9) */
+.sandbox-band { border-radius: 8px; margin: 12px 0 4px; }
+.sb-quota { margin-bottom: 0; }
+.sb-samples { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin: 10px 0 12px; }
+.sb-sample { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; padding: 8px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); font: inherit; color: var(--fg); text-align: left; cursor: pointer; }
+.sb-sample:hover:not(:disabled) { border-color: var(--sandbox); }
+.sb-sample:disabled { opacity: 0.5; cursor: not-allowed; }
+.sb-sample img, .sb-sample .ph { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 8px; background: var(--placeholder); display: block; }
+.sb-sample b { font-size: 15px; font-weight: 600; }
+.sb-sample .badge { margin-left: 0; }
+.sb-sample.camera { background: #161615; color: #fff; border-color: #161615; align-items: center; justify-content: center; text-align: center; min-height: 160px; }
+.sb-sample.camera .small { color: #c9c9c4; }
+.sb-sample.camera .shutter { width: 48px; height: 48px; border-radius: 24px; border: 3px solid #fff; display: flex; align-items: center; justify-content: center; }
+.sb-sample.camera .shutter span { width: 36px; height: 36px; border-radius: 18px; background: #fff; }
+.sb-step { display: block; color: var(--fg); }
+.case-card .sb-step + .muted { display: block; }
+.sb-actor { border-top: 1px solid var(--line); margin-top: 14px; padding-top: 12px; }
+.pin-map { height: 260px; }
+.figures .thumb-btn img { width: 100%; height: 120px; object-fit: cover; border-radius: 8px; display: block; }

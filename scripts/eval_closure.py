@@ -68,7 +68,7 @@ SETS = ("repaired", "not_repaired", "before_as_after", "bad_unaligned", "other_p
 GPS_SETS = {"bad_unaligned", "other_place"}
 NEGATIVE = {"not_repaired", "before_as_after", "bad_unaligned"}
 NEAR = location_check(5.0, 8.0, 10.0)
-FIELDS = ["pair_id", "set", "ai_status", "evidence", "registration", "regions", "first_region", "ms", "error"]
+FIELDS = ["pair_id", "set", "ai_status", "evidence", "registration", "regions", "local_refined", "first_region", "ms", "error"]
 
 
 def labeled() -> dict[str, list[str]]:
@@ -112,6 +112,7 @@ def run_one(pair_id: str, which: str, spec: dict, router, sam, figures: bool, gp
         first = v["region_checks"][0] if v["region_checks"] else {}
         row |= {"ai_status": v["ai_status"], "evidence": v.get("evidence", ""), "registration": v["registration"]["reason"] or "ok",
                 "regions": len(v["region_checks"]),
+                "local_refined": sum(bool((c.get("local_alignment") or {}).get("refined")) for c in v["region_checks"]),
                 "first_region": (f"{first.get('status')} visible={first.get('region_visible_after')} "
                                  f"remaining={first.get('remaining_issue_ratio')} "
                                  f"classifier={(first.get('classifier') or {}).get('after')}") if first else ""}
@@ -126,9 +127,12 @@ def run_one(pair_id: str, which: str, spec: dict, router, sam, figures: bool, gp
     return row
 
 
-def summary(rows: list[dict]) -> None:
+def summary(rows: list[dict]) -> list[str]:
+    """Prints the table and returns it, for --report."""
+    lines: list[str] = []
+    say = lines.append
     ok = [r for r in rows if not r["error"]]
-    print(f"\n{'set':<16} {'runs':>5} {'resolved':>9} {'persists':>9} {'not verif.':>11}  top reasons")
+    say(f"\n{'set':<16} {'runs':>5} {'resolved':>9} {'persists':>9} {'not verif.':>11}  top reasons")
     for which in SETS:
         rs = [r for r in ok if r["set"] == which]
         if not rs:
@@ -138,24 +142,29 @@ def summary(rows: list[dict]) -> None:
         reasons = Counter(r["ai_status"].removeprefix("NOT_VERIFIABLE_") for r in rs
                           if r["ai_status"].startswith("NOT_VERIFIABLE")).most_common(3)
         by_location = sum(r.get("evidence") == "location" for r in rs)
-        print(f"{which:<16} {len(rs):>5} {resolved:>9} {persists:>9} {len(rs) - resolved - persists:>11}  "
+        say(f"{which:<16} {len(rs):>5} {resolved:>9} {persists:>9} {len(rs) - resolved - persists:>11}  "
               + ", ".join(f"{k.lower()} {n}" for k, n in reasons)
               + (f"  [{by_location} by GPS]" if by_location else ""))
     negatives = [r for r in ok if r["set"] in NEGATIVE]
     false = [r["pair_id"] + "/" + r["set"] for r in negatives if r["ai_status"] == RESOLVED]
-    print(f"\nFALSE RESOLVED: {len(false)}/{len(negatives)} negatives"
+    say(f"\nFALSE RESOLVED: {len(false)}/{len(negatives)} negatives"
           + (f" -> {', '.join(false)}" if false else " (goal 0)"))
     worst = [r for r in ok if r["set"] == "other_place"]
     if worst:
-        print(f"other place said near by GPS (worst case, reviewer must catch): "
+        say(f"other place said near by GPS (worst case, reviewer must catch): "
               f"{sum(r['ai_status'] == RESOLVED for r in worst)}/{len(worst)} RESOLVED_CANDIDATE")
     pos = [r for r in ok if r["set"] == "repaired"]
     if pos:
-        print(f"repaired sent to human review as candidates: "
+        say(f"repaired sent to human review as candidates: "
               f"{sum(r['ai_status'] == RESOLVED for r in pos)}/{len(pos)}")
+    aligned = [r for r in ok if r.get("evidence") == "aligned" and r.get("regions") not in ("", "0", 0)]
+    if aligned:
+        refined = sum(int(r.get("local_refined") or 0) > 0 for r in aligned)
+        say(f"aligned runs where the region window was re-aligned locally: {refined}/{len(aligned)}")
     errors = sum(1 for r in rows if r["error"])
     if errors:
-        print(f"{errors} run(s) failed (see error column); --resume retries them")
+        say(f"{errors} run(s) failed (see error column); --resume retries them")
+    return lines
 
 
 def main() -> int:
@@ -167,6 +176,7 @@ def main() -> int:
     ap.add_argument("--figures", action="store_true")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--gps", action="store_true", help="AFTER photos taken on site: enables the location path")
+    ap.add_argument("--report", type=Path, help="also write the summary as Markdown here (numbers only, no photos)")
     args = ap.parse_args()
     out_path = OUT.with_name("closure_eval_gps.csv") if args.gps else OUT
     sets = [s for s in args.sets.split(",") if s in SETS and (args.gps or s not in GPS_SETS)]
@@ -186,7 +196,7 @@ def main() -> int:
           + f" = {len(jobs)} runs; estimate USD {sam_usd:.2f} of Meta credits (SAM) + USD {llm_usd:.2f} of Baseten (Muse)")
     if args.dry_run or not jobs:
         if done:
-            summary(done)
+            print("\n".join(summary(done)))
         return 0
 
     load_env()
@@ -220,7 +230,20 @@ def main() -> int:
                                                          + u["completion_tokens"] * PRICE_OUT for u in usage)
                     print(f"  {k}/{len(jobs)} runs, {sam.requests} SAM requests, "
                           f"{sum(u['calls'] for u in usage)} Muse calls, about USD {usd:.2f} so far")
-    summary(rows)
+    table = summary(rows)
+    print("\n".join(table))
+    if args.report:
+        usage = list(router.usage.values())
+        usd = sam.requests * PRICE_SAM + sum(u["prompt_tokens"] * PRICE_IN + u["completion_tokens"] * PRICE_OUT for u in usage)
+        args.report.parent.mkdir(parents=True, exist_ok=True)
+        args.report.write_text(
+            f"# Closure eval, {time.strftime('%Y-%m-%d')}\n\n"
+            f"`python scripts/eval_closure.py {' '.join(sys.argv[1:])}`: {len(jobs)} new runs, "
+            f"{sam.requests} SAM 3.1 requests, about USD {usd:.2f}. Anonymized pothole repair pairs from a public "
+            "entity in Ambato, labeled by hand (data/pothole_pairs/closure_labels_v2.csv); synthetic sets are "
+            "marked as such in the script's docstring.\n\n```\n" + "\n".join(table).strip() + "\n```\n",
+            encoding="utf-8")
+        print(f"summary written to {args.report}")
     print(f"\nper-pair results in {out_path.relative_to(ROOT)}" + (f", crops in {FIG.relative_to(ROOT)}/" if args.figures else ""))
     return 0
 

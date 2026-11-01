@@ -42,6 +42,22 @@ citizen (PWA, es/en) ──► Supabase (Postgres + PostGIS + RLS, Storage, Auth
 | **Muse Spark 1.3** | Meta Model API | Second provider for the same prompts (Meta credits are kept for SAM 3.1) |
 | **Muse Glimmer** | Open weights | Cheap last model fallback; after it, catalog keywords and human review |
 
+## Results on real data
+
+Closure check on anonymized before/after pothole repairs from a public entity in Ambato, labeled
+by hand, plus synthetic negatives (`scripts/eval_closure.py --gps`, 84 runs, about USD 1.63 of
+Meta credits, 2026-11-01). Full table and the comparison with the previous run:
+[docs/eval/closure_eval_2026-11-01.md](docs/eval/closure_eval_2026-11-01.md).
+
+| | Result |
+|---|---|
+| False "resolved" on cases that are not fixed (goal 0) | **0 / 44** |
+| Another place's repair, said near by GPS (worst case) | 0 / 20 candidates |
+| Real repairs sent to a human as "looks fixed" | 5 / 20 |
+| The rest of the real repairs | "cannot verify" (other angle, blur): a human decides |
+
+The AI never closes a case: at best it marks a candidate, and a person approves it.
+
 ## Repository
 
 | Path | What |

@@ -58,9 +58,24 @@ def _content(text: str) -> list[dict]:
     return [{"type": "text", "text": text}]
 
 
+# The chat template adds "Reasoning strength: high" to the system turn unless told otherwise; the
+# spec is a short task (production runs Muse Spark Open at low effort), so ask for low. Both names
+# are passed because the template variable is not documented; the unused one is ignored.
+EFFORT = {"reasoning_strength": "low", "reasoning_effort": "low"}
+ANSWER = " to=user<|message|>"  # the assistant channel that speaks to the user (no reasoning)
+
+
 def _render(proc, messages: list[dict], add_generation_prompt: bool) -> str:
     msgs = [{"role": m["role"], "content": _content(m["content"])} for m in messages]
-    return proc.apply_chat_template(msgs, tokenize=False, add_generation_prompt=add_generation_prompt)
+    return proc.apply_chat_template(msgs, tokenize=False, add_generation_prompt=add_generation_prompt, **EFFORT)
+
+
+def _answer(text: str) -> str:
+    """The user-facing message of a decoded generation: after the last <|message|>, before <|eot|>."""
+    text = text.rsplit("<|message|>", 1)[-1]
+    for stop in ("<|eot|>", "<|end_of_text|>", "<|start|>"):
+        text = text.split(stop, 1)[0]
+    return text.strip()
 
 
 @app.function(cpu=4, memory=16384, volumes={VOL: vol}, timeout=3600)
@@ -88,7 +103,9 @@ def probe() -> dict:
     return json.loads(json.dumps({"versions": {"torch": str(torch.__version__), "transformers": transformers.__version__, "peft": peft.__version__},
             "linear_layers": len(names), "lora_targets": len(targets), "first_targets": targets[:6],
             "skipped_examples": [n for n in names if n not in set(targets)][:12],
-            "prompt": _render(proc, row[:2], True), "full": _render(proc, row, False)}, default=str))
+            "prompt": _render(proc, row[:2], True), "full": _render(proc, row, False),
+            "target": _render(proc, row, False)[len(_render(proc, row[:2], True)):],
+            "answer_parse": _answer("<|start|>assistant to=user<|message|>{}<|eot|>")}, default=str))
 
 
 def _load():
@@ -109,24 +126,28 @@ def _encode(proc, tok, messages: list[dict], max_len: int) -> tuple[list[int], l
     full = _render(proc, messages, False)
     if not full.startswith(prompt):
         return None
+    # The target is everything the template adds after the prompt: " to=user<|message|>{json}<|eot|>",
+    # so the model also learns to answer the user directly instead of reasoning first.
     p_ids = tok(prompt, add_special_tokens=False)["input_ids"]
-    f_ids = tok(full, add_special_tokens=False)["input_ids"]
-    if len(f_ids) > max_len or f_ids[: len(p_ids)] != p_ids:
+    t_ids = tok(full[len(prompt):], add_special_tokens=False)["input_ids"]
+    if len(p_ids) + len(t_ids) > max_len:
         return None
-    return f_ids, [-100] * len(p_ids) + f_ids[len(p_ids):]
+    return p_ids + t_ids, [-100] * len(p_ids) + t_ids
 
 
-def _generate(proc, tok, model, rows: list[dict], max_new: int, batch: int = 6) -> list[str]:
+def _generate(proc, tok, model, rows: list[dict], max_new: int, batch: int = 6, prefill: str = "") -> list[str]:
     import torch
 
     tok.padding_side = "left"
+    stops = [i for i in {tok.convert_tokens_to_ids("<|eot|>"), tok.eos_token_id} if isinstance(i, int) and i >= 0]
     out: list[str] = []
     for i in range(0, len(rows), batch):
-        prompts = [_render(proc, r["messages"][:-1], True) for r in rows[i:i + batch]]
+        prompts = [_render(proc, r["messages"][:-1], True) + prefill for r in rows[i:i + batch]]
         enc = tok(prompts, return_tensors="pt", padding=True, add_special_tokens=False).to("cuda")
         with torch.no_grad():
-            gen = model.generate(**enc, max_new_tokens=max_new, do_sample=False, pad_token_id=tok.pad_token_id)
-        out += tok.batch_decode(gen[:, enc["input_ids"].shape[1]:], skip_special_tokens=True)
+            gen = model.generate(**enc, max_new_tokens=max_new, do_sample=False, pad_token_id=tok.pad_token_id,
+                                 eos_token_id=stops)
+        out += [_answer(prefill + t) for t in tok.batch_decode(gen[:, enc["input_ids"].shape[1]:], skip_special_tokens=False)]
         print(f"  generated {len(out)}/{len(rows)}")
     return out
 
@@ -153,6 +174,9 @@ def train(train_rows: list[dict], holdout: list[dict], epochs: int = 2, lr: floa
         print(f"LoRA trainable parameters: {trainable / 1e6:.1f} M")
         data = [e for r in train_rows if (e := _encode(proc, tok, r["messages"], max_len))]
         stats["encoded_rows"] = len(data)
+        if len(data) < 0.9 * len(train_rows):
+            raise RuntimeError(f"only {len(data)} of {len(train_rows)} rows could be encoded; check the chat template")
+        print("system turn ends with:", _render(proc, train_rows[0]["messages"][:1], False)[-120:])
         opt = torch.optim.AdamW([p for p in model.parameters() if p.requires_grad], lr=lr, weight_decay=0.0)
         total = epochs * len(data) // accum
         sched = torch.optim.lr_scheduler.LambdaLR(opt, lambda s: min(1.0, (s + 1) / 10) * max(0.0, 1 - s / max(1, total)))
@@ -187,7 +211,9 @@ def train(train_rows: list[dict], holdout: list[dict], epochs: int = 2, lr: floa
     model.config.use_cache = True
     started = time.time()
     with model.disable_adapter():
-        base = _generate(proc, tok, model, holdout, max_new=1024)  # the base model may think first
+        # The base model gets the answer channel pre-filled, so it answers directly (its best shot
+        # without reasoning); the tuned model gets the plain prompt, as it will when served.
+        base = _generate(proc, tok, model, holdout, max_new=400, prefill=ANSWER)
     tuned = _generate(proc, tok, model, holdout, max_new=400)
     stats["eval_seconds"] = round(time.time() - started)
     return json.loads(json.dumps({"stats": stats, "base": base, "tuned": tuned}, default=str))

@@ -80,4 +80,5 @@ class Catalog:
             "confidence": llm.confidence,
             "contains_personal_data": llm.contains_personal_data,
             "risk_signals": list(llm.risk_signals),
+            "measure": cat.get("measure"),
         }

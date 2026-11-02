@@ -110,8 +110,11 @@ def verdict(label, conf):
 
 
 def test_confirmed_by_crop_and_only_the_anonymized_copy_leaves(monkeypatch):
-    db, sam = FakeDb(spec_for("pothole")), FakeSAM({"pothole": [(0.8, [100, 100, 180, 160])]})
-    r, seen = router([verdict("issue_present", 0.9), verdict("issue_present", 0.8)], monkeypatch)
+    db = FakeDb(spec_for("pothole"))
+    db.rows["reports"]["raw_text"] = "Hay un bache profundo frente a la tienda"
+    sam = FakeSAM({"pothole": [(0.8, [100, 100, 180, 160])], "road": [(0.9, [50, 80, 350, 300])]})
+    depth = 200, json.dumps({"base_layer_visible": True, "steep_edges": True, "confidence": 0.8})
+    r, seen = router([verdict("issue_present", 0.9), verdict("issue_present", 0.8), depth], monkeypatch)
     VisionStage(db, r, sam, anonymizer).run(db.rows["reports"])
 
     rep = db.rows["reports"]
@@ -124,7 +127,14 @@ def test_confirmed_by_crop_and_only_the_anonymized_copy_leaves(monkeypatch):
     cand = rep["intake"]["candidates"][0]
     assert cand["box_xyxy"] == [100, 100, 180, 160] and cand["classifier"]["label"] == "issue_present"
     assert cand["second_view"]["confidence"] == 0.8  # the wider crop agreed
-    assert rep["intake"]["whole_image_check"] is None and len(seen) == 2  # confirmed: no whole-photo call
+    assert rep["intake"]["whole_image_check"] is None and len(seen) == 3  # confirmed: no whole-photo call, one depth call
+    # Confirmed pothole: one SAM prompt for the road; 80 px of a 300 px roadway in the same rows.
+    assert sam.calls[1][1] == ["road"]
+    size = rep["intake"]["measure"]["size"]
+    assert size["status"] == "ok" and size["width_share"] == 0.267 and size["size_class"] == "medium"
+    assert not size["clipped"]
+    depth = rep["intake"]["measure"]["depth"]
+    assert depth["level"] == "high" and depth["cues"] == ["base_layer_visible", "steep_edges"] and depth["text"] == 1
     assert seen[0]["messages"][1]["content"][1]["image_url"]["url"].startswith("data:image/jpeg;base64,")
     assert [row["stage"] for t, row in db.inserted] == ["sam_ground", "classify"]
     schema = json.loads((REPO_ROOT / "packages/contracts/schemas/intake_result.schema.json").read_text())
@@ -154,7 +164,10 @@ def test_second_view_can_be_turned_off(monkeypatch):
     db, sam = FakeDb(spec_for("pothole")), FakeSAM({"pothole": [(0.8, [100, 100, 180, 160])]})
     r, seen = router([verdict("issue_present", 0.9)], monkeypatch)
     VisionStage(db, r, sam, anonymizer, budget=Budget(second_view=False)).run(db.rows["reports"])
-    assert db.rows["reports"]["intake_status"] == "REPORT_CONFIRMED_BY_PHOTO" and len(seen) == 1
+    assert db.rows["reports"]["intake_status"] == "REPORT_CONFIRMED_BY_PHOTO" and len(seen) == 2  # crop + depth
+    # No road found and the depth call failed: the size is unknown and the depth too (no text either).
+    measure = db.rows["reports"]["intake"]["measure"]
+    assert measure["size"]["status"] == "no_road" and measure["depth"]["level"] is None
 
 
 def test_classifier_down_leaves_candidates_for_review(monkeypatch):

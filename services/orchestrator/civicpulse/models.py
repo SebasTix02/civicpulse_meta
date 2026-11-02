@@ -111,6 +111,16 @@ class ClassifierVerdict(BaseModel):
     reason: str = ""
 
 
+class DepthCues(BaseModel):
+    """What the depth check sees in a confirmed pothole crop (measure.estimate_depth)."""
+
+    water_inside: bool = False
+    base_layer_visible: bool = False
+    steep_edges: bool = False
+    surface_only: bool = False
+    confidence: float = Field(default=0.5, ge=0, le=1)
+
+
 class BriefAction(BaseModel):
     action_id: str
     rationale: str = Field(max_length=400)

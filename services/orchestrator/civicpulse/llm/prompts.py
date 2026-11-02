@@ -60,6 +60,18 @@ def crop_check_prompt(spec: dict) -> str:
             + 'Answer ONLY with JSON: {"label": "...", "confidence": 0.0, "reason": "short phrase"}')
 
 
+def depth_cues_prompt() -> str:
+    """Asked once on a confirmed pothole (wide crop, outline in magenta). Cues only, never a number."""
+    return ("You are a road inspector estimating how deep a pothole is from one photo. The pothole is outlined "
+            "in magenta. Do not guess centimeters; only say which of these you clearly see. "
+            "water_inside: water or mud fills the hole. "
+            "base_layer_visible: the asphalt layer is broken through and gravel, stones or soil below it show. "
+            "steep_edges: the rim is a sharp vertical wall that casts a shadow inside the hole. "
+            "surface_only: only the top surface is worn or cracked, with no real depression. "
+            'Answer ONLY with JSON: {"water_inside": false, "base_layer_visible": false, "steep_edges": false, '
+            '"surface_only": false, "confidence": 0.0}')
+
+
 def whole_image_check_prompt(spec: dict) -> str:
     """Asked once when no outlined region was confirmed: is the problem anywhere in the photo?"""
     return ("You are a municipal field inspector checking a citizen report against the photo they sent. "

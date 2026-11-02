@@ -40,7 +40,9 @@ type PriorityContext = {
   centre_m: number | null;
   in_centre: boolean;
   signals: string[];
-  bonus: { road: number; bus_route: number; near: number; centre: number; signals: number };
+  size?: { class: "small" | "medium" | "large"; width_share: number; clipped: boolean } | null;
+  depth?: "low" | "medium" | "high" | null;
+  bonus: { road: number; bus_route: number; near: number; centre: number; signals: number; size?: number; depth?: number };
 };
 
 const ROAD_KEYS = ["trunk", "primary", "secondary", "tertiary"];
@@ -53,6 +55,8 @@ function sig(lang: Lang, s: string): string {
 function priorityTags(lang: Lang, p: PriorityContext | null): { text: string; risk?: boolean }[] {
   if (!p) return [];
   const out: { text: string; risk?: boolean }[] = [];
+  if (p.size && !p.size.clipped && p.size.class !== "small") out.push({ text: t(lang, `prioSize_${p.size.class}` as Key), risk: true });
+  if (p.depth && p.depth !== "low") out.push({ text: t(lang, `prioDepth_${p.depth}` as Key), risk: true });
   if (p.road && ROAD_KEYS.includes(p.road.class)) out.push({ text: t(lang, `prioRoad_${p.road.class}` as Key) });
   if (p.bus_route) out.push({ text: t(lang, "prioBus") });
   for (const n of p.near ?? []) out.push({ text: t(lang, `prioNear_${n.kind}` as Key) });
@@ -79,6 +83,12 @@ function PriorityWhy({ lang, p }: { lang: Lang; p: PriorityContext | null }) {
   const named = (label: string, name: string | null | undefined, m: number) =>
     `${label}${name ? ` · ${name}` : ""} · ${at(m)}`;
   const rows: { label: string; v: number; risk?: boolean }[] = [{ label: t(lang, "prioBase"), v: p.base }];
+  if (p.size) {
+    const share = t(lang, "prioSizeShare").replace("{p}", String(Math.round(p.size.width_share * 100)));
+    const label = `${t(lang, `prioSize_${p.size.class}` as Key)} · ${share}${p.size.clipped ? ` (${t(lang, "prioSizeClipped")})` : ""}`;
+    rows.push({ label, v: p.bonus.size ?? 0 });
+  }
+  if (p.depth) rows.push({ label: t(lang, `prioDepth_${p.depth}` as Key), v: p.bonus.depth ?? 0 });
   if (p.road && p.bonus.road > 0) {
     rows.push({ label: named(t(lang, `prioRoad_${p.road.class}` as Key), p.road.name, p.road.m), v: p.bonus.road });
   }

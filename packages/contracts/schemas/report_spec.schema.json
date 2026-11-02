@@ -41,6 +41,7 @@
     "entities": {"$ref": "spec_llm_output.schema.json#/properties/entities"},
     "contains_personal_data": {"type": "boolean", "default": false},
     "risk_signals": {"type": "array", "uniqueItems": true, "description": "Union of the model's risk_signals and the keyword rules (signals.py). Feeds the case priority.", "items": {"enum": ["accident", "injury", "vehicle_damage", "blocks_traffic", "near_school", "near_hospital", "night_hazard", "flooding", "recurring"]}},
+    "measure": {"type": ["object", "null"], "additionalProperties": false, "description": "From the catalog: what to measure once the photo confirms the problem (measure.py). surface_prompt = SAM prompt for the surface the size is relative to; depth_cues = ask the depth cues.", "properties": {"surface_prompt": {"$ref": "#/$defs/prompt"}, "depth_cues": {"type": "boolean"}}},
     "source": {"enum": ["llm", "keywords", "catalog"], "description": "llm = model answer accepted; keywords = deterministic catalog keyword match (fallback, or model confidence < 0.40); catalog = category forced (sandbox sample, admin reprocess)."},
     "llm": {
       "type": ["object", "null"],

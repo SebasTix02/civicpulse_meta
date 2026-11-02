@@ -62,6 +62,33 @@
       "type": "array", "items": {"enum": ["impossible_gps"]},
       "description": "Moderation flags open on the report when the photo was checked; the report adds no support (consistency 0) until a moderator decides."
     },
+    "measure": {
+      "type": "object", "additionalProperties": false,
+      "description": "Only when the photo confirmed the problem and the spec asks for it (measure.py). Relative size and estimated depth, never in centimeters.",
+      "properties": {
+        "size": {
+          "type": "object", "additionalProperties": false, "required": ["status"],
+          "properties": {
+            "status": {"enum": ["ok", "no_road", "no_mask"]},
+            "prompt": {"type": "string"},
+            "width_share": {"type": "number", "minimum": 0, "maximum": 1, "description": "Pothole width / roadway width in the rows where the pothole is widest (same distance from the camera)."},
+            "area_share": {"type": "number", "minimum": 0, "maximum": 1, "description": "Share of the visible roadway area (skewed by perspective; informative only)."},
+            "clipped": {"type": "boolean", "description": "The roadway runs off both sides of the photo: width_share is a maximum and adds no priority."},
+            "size_class": {"enum": ["small", "medium", "large"]}
+          }
+        },
+        "depth": {
+          "type": "object", "additionalProperties": false, "required": ["level"],
+          "properties": {
+            "level": {"enum": ["low", "medium", "high", null]},
+            "cues": {"type": "array", "items": {"enum": ["base_layer_visible", "steep_edges", "water_inside", "surface_only"]}},
+            "text": {"type": "integer", "minimum": -1, "maximum": 1, "description": "+1 the text says deep, -1 shallow."},
+            "confidence": {"type": ["number", "null"]},
+            "model": {"type": ["string", "null"]}
+          }
+        }
+      }
+    },
     "people_count": {"type": ["integer", "null"], "minimum": 0, "description": "From count_prompts; null when the domain does not count."},
     "anonymization": {
       "type": "object", "additionalProperties": false,

@@ -11,6 +11,8 @@
    agree. If no crop was confirmed it looks at the whole photo once.
 4. decide_intake() turns that into intake_status. A photo never rejects a report: "not found"
    means "not verifiable with this photo", and a classifier that is down never confirms anything.
+5. Confirmed, and the spec has `measure` (potholes): one more SAM prompt for the road gives the
+   relative size, and one Muse call on the wide crop gives the depth cues (civicpulse.measure).
 """
 
 from __future__ import annotations
@@ -27,9 +29,10 @@ import numpy as np
 from civicpulse.anonymize import Anonymized, load, to_jpeg
 from civicpulse.db import Db
 from civicpulse.fingerprint import phash, sha256
-from civicpulse.llm.prompts import crop_check_prompt, whole_image_check_prompt
+from civicpulse.llm.prompts import crop_check_prompt, depth_cues_prompt, whole_image_check_prompt
 from civicpulse.llm.router import AllProvidersFailed, LLMRouter, image_part
-from civicpulse.models import ClassifierVerdict, IntakeStatus
+from civicpulse.measure import estimate_depth, relative_size
+from civicpulse.models import ClassifierVerdict, DepthCues, IntakeStatus
 from civicpulse.sam.service import Detection, SAMService
 
 CANDIDATE_MIN_SCORE = 0.25  # low on purpose (plan §5.3): more proposals never risk the asymmetric rule
@@ -255,7 +258,35 @@ class VisionStage:
         intake["models"]["classifier"] = classifier_model
         intake["intake_status"] = decide_intake(spec, intake["candidates"], intake["whole_image_check"], classifier_on)
         intake["consistency_score"] = CONSISTENCY.get(intake["intake_status"], 0.5)
+        if spec.get("measure") and intake["intake_status"] == "REPORT_CONFIRMED_BY_PHOTO":
+            hit = next(c for c in intake["candidates"] if _confirmed(c))
+            intake["measure"] = self._measure(spec["measure"], regions[hit["candidate_id"] - 1], found, anon, rgb,
+                                              report.get("raw_text") or "")
         return intake, classifier_model
+
+    def _measure(self, cfg: dict, d: Detection, found: dict[str, list[Detection]], anon: Anonymized,
+                 rgb: np.ndarray, text: str) -> dict:
+        out: dict = {}
+        prompt = cfg.get("surface_prompt")
+        if prompt:
+            surfaces = found.get(prompt)
+            if surfaces is None:
+                surfaces = self._segment(anon, [prompt]).get(prompt, [])
+            out["size"] = relative_size(d, surfaces, anon.width, anon.height) | {"prompt": prompt}
+        if cfg.get("depth_cues"):
+            wide_jpeg, _ = outlined_crop(rgb, d, pad=0.75, min_side=480)
+            user = [{"type": "text", "text": "Confirmed pothole from the citizen report:"}, image_part(wide_jpeg)]
+            cues, confidence, model = None, None, None
+            try:
+                res = self.router.structured(depth_cues_prompt(), user, DepthCues, vision=True, max_tokens=200)
+                v: DepthCues = res.data  # type: ignore[assignment]
+                model, confidence = f"{res.provider}:{res.model}", v.confidence
+                if v.confidence >= 0.4:  # doubt: the text alone decides
+                    cues = v.model_dump()
+            except AllProvidersFailed:
+                pass
+            out["depth"] = estimate_depth(cues, text) | {"confidence": confidence, "model": model}
+        return out
 
     def _segment(self, anon: Anonymized, prompts: list[str]) -> dict[str, list[Detection]]:
         found = self.sam.segment(anon.jpeg, prompts, threshold=CANDIDATE_MIN_SCORE).detections

@@ -20,7 +20,8 @@
    "issue_can_be_global": false,
    "issue_description": "a hole or broken depression in the asphalt with visible depth, loose material or exposed base",
    "resolved_description": "the hole is filled: a flush asphalt patch or intact asphalt, with no depression",
-   "vlm_hints": "A fresh dark patch and a cast shadow look alike, and water inside a hole hides its depth. If unsure, answer uncertain."
+   "vlm_hints": "A fresh dark patch and a cast shadow look alike, and water inside a hole hides its depth. If unsure, answer uncertain.",
+   "measure": {"surface_prompt": "road", "depth_cues": true}
   },
   {
    "id": "road_cracks",

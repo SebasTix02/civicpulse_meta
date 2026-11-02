@@ -48,3 +48,13 @@ def test_parsed_spec_and_summary():
     grades = [grade(kw, "pothole", TEACHER), grade("nope", "pothole", TEACHER)]
     s = summarize(grades)
     assert s["n"] == 2 and s["json_valid"] == 0.5 and s["category"] == 0.5 and s["personal_data"] == 0.0
+
+
+def test_entities_in_the_wrong_shape_do_not_fail_the_spec():
+    as_list = {**TEACHER, "entities": [{"type": "location", "value": "pasaje Las Flores"},
+                                       {"type": "neighborhood", "value": "San Martin"}, {"type": "x", "value": "y"}]}
+    spec = SpecLLMOutput.model_validate(as_list)
+    assert spec.entities is not None and spec.entities.landmark == "pasaje Las Flores"
+    assert SpecLLMOutput.model_validate({**TEACHER, "entities": {"street": "Bolivar", "mood": "angry"}}).entities.street == "Bolivar"
+    assert SpecLLMOutput.model_validate({**TEACHER, "entities": "near the park"}).entities is None
+    assert SpecLLMOutput.model_validate({**TEACHER, "entities": {"time_bucket": "teatime"}}).entities is None

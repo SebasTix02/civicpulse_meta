@@ -9,7 +9,7 @@ from __future__ import annotations
 import re
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
 SAM_PROMPT = re.compile(r"^[a-z][a-z -]{0,39}$")
 
@@ -45,6 +45,10 @@ class Entities(BaseModel):
     people_affected_hint: int | None = Field(default=None, ge=0, le=100000)
 
 
+ENTITY_TYPES = {"street": "street", "road": "street", "avenue": "street", "landmark": "landmark", "location": "landmark",
+                "place": "landmark", "neighborhood": "landmark", "line": "line", "bus_line": "line", "route": "line"}
+
+
 class SpecLLMOutput(BaseModel):
     """Raw answer of the text model for stage `spec` (spec_llm_output.schema.json)."""
 
@@ -58,6 +62,26 @@ class SpecLLMOutput(BaseModel):
     photo_verifiable: bool
     confidence: float = Field(ge=0, le=1)
     contains_personal_data: bool
+
+    @field_validator("entities", mode="before")
+    @classmethod
+    def lenient_entities(cls, value: object) -> object:
+        # Optional hints: a wrong shape (models often send [{"type": "street", "value": ...}]) becomes
+        # what can be kept, or null, instead of failing the whole spec.
+        if isinstance(value, list):
+            keep: dict[str, str] = {}
+            for item in value:
+                if isinstance(item, dict) and isinstance(item.get("value"), str):
+                    key = ENTITY_TYPES.get(str(item.get("type", "")).lower())
+                    if key and key not in keep:
+                        keep[key] = item["value"]
+            value = keep
+        if not isinstance(value, dict):
+            return None
+        try:
+            return Entities.model_validate({k: value[k] for k in Entities.model_fields if k in value})
+        except ValidationError:
+            return None
 
     @field_validator("sam_prompts", mode="before")
     @classmethod

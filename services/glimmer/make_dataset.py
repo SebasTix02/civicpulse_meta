@@ -36,14 +36,15 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "services" / "orchestrator"))
 sys.path.insert(0, str(ROOT / "scripts"))
 
+from smoke_models import load_env
+
 from civicpulse.catalog import Catalog
 from civicpulse.config import _provider_chain
 from civicpulse.llm.prompts import spec_system
-from civicpulse.llm.router import AllProvidersFailed, LLMRouter, extract_json
+from civicpulse.llm.router import AllProvidersFailed, Breaker, LLMRouter, extract_json
 from civicpulse.models import SpecLLMOutput
 from civicpulse.redact import redact
 from civicpulse.spec_grade import compact
-from smoke_models import load_env
 
 OUT = ROOT / "data" / "glimmer"
 CACHE = OUT / "cache"
@@ -168,15 +169,22 @@ def main() -> int:
     for row in gens.values():
         for i, text in enumerate(row["reports"]):
             key = f"{row['key']}:{i}"
-            if key in labels:
-                continue
+            if key in labels and labels[key]["teacher"]:
+                continue  # rows that failed before are tried again
             safe, _ = redact(text)
-            try:
-                res = router.structured(system, safe, SpecLLMOutput)
-                spec = res.data.model_dump(mode="json")
-                err = None
-            except AllProvidersFailed as exc:
-                spec, err = None, str(exc)[:300]
+            spec, err = None, None
+            for attempt in range(3):
+                # One answer the schema rejects must not stop the rest: no circuit breaker here.
+                router.breakers[teacher.name] = Breaker()
+                try:
+                    spec = router.structured(system, safe, SpecLLMOutput).data.model_dump(mode="json")
+                    err = None
+                    break
+                except AllProvidersFailed as exc:
+                    err = str(exc)[:300]
+                    if "invalid_output" in err:
+                        break  # the teacher answered twice with a bad spec: skip this report
+                    time.sleep(3 * (attempt + 1))  # network or rate limit
             lab = {"key": key, "category": row["category"], "batch": row["batch"], "text": safe,
                    "teacher": spec, "error": err}
             append(label_path, lab)

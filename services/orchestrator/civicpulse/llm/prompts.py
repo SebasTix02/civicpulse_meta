@@ -14,6 +14,9 @@ Rules:
 - photo_verifiable: whether a photo could show this problem.
 - confidence: 0 to 1, how sure you are of the category.
 - contains_personal_data: true if the text has names, phone numbers, plates or ids.
+- entities: an object with only these optional keys, or null: line (bus line), landmark, street,
+  time_bucket (early_morning, peak_morning, midday, peak_evening, night or unknown),
+  people_affected_hint (a number).
 Answer with JSON only, no prose. Keys: category_id, domain_id, summary_en, severity, entities,
 sam_prompts, photo_verifiable, confidence, contains_personal_data.
 

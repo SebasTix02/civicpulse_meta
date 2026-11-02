@@ -40,7 +40,7 @@ citizen (PWA, es/en) ──► Supabase (Postgres + PostGIS + RLS, Storage, Auth
 | **SAM 3.1** | Meta Model API (fallback: official weights on a Modal GPU) | Where the problem is, counting people, anonymization |
 | **Muse Spark Open** | Baseten (hackathon credits; fallback hosts Fireworks / Modal Endpoints) | Text → spec, crop and before/after classification, briefs |
 | **Muse Spark 1.3** | Meta Model API | Second provider for the same prompts (Meta credits are kept for SAM 3.1) |
-| **Muse Glimmer** | Open weights on Modal, LoRA fine-tuned ([services/glimmer](services/glimmer)) | Last model fallback for text → spec, trained on Muse Spark Open's labels; after it, catalog keywords and human review |
+| **Muse Glimmer** | Open weights on Modal, LoRA fine-tuned ([services/glimmer](services/glimmer)) | Last model fallback for text → spec, trained on Muse Spark Open's labels: 52/52 categories right on held-out reports vs 94% base and 36% for keywords ([eval](docs/eval/glimmer_spec_eval.md)); after it, catalog keywords and human review |
 
 Muse Spark Open runs at `reasoning_effort=low` for every stage: these are short, well-defined tasks, and more thinking costs tokens without better answers (the same result Fireworks reported for Muse on easy benchmarks).
 

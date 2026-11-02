@@ -93,3 +93,10 @@ its contact sheet, then unzip `anon.zip` into `data/private/anon/`.
    shows history, never with names, phones or exact coordinates.
 
 Photos never go through the Meta API Contributor tier (it may use data for training).
+
+## Size and depth labels
+
+`label_size.py` writes `data/private/label_size.html`: the "before" photo of every `repaired` and
+`not_repaired` case, to label by hand the pothole size relative to the roadway width, the depth
+(low / medium / high), the urgency (1 to 3) and whether the whole street fits in the photo. Its CSV,
+`size_depth_labels.csv` (photo ids and labels only), is the reference for `scripts/eval_measure.py`.

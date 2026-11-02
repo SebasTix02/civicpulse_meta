@@ -40,9 +40,31 @@ citizen (PWA, es/en) ──► Supabase (Postgres + PostGIS + RLS, Storage, Auth
 | **SAM 3.1** | Meta Model API (fallback: official weights on a Modal GPU) | Where the problem is, counting people, anonymization |
 | **Muse Spark Open** | Baseten (hackathon credits; fallback hosts Fireworks / Modal Endpoints) | Text → spec, crop and before/after classification, briefs |
 | **Muse Spark 1.3** | Meta Model API | Second provider for the same prompts (Meta credits are kept for SAM 3.1) |
-| **Muse Glimmer** | Open weights on Modal, LoRA fine-tuned ([services/glimmer](services/glimmer)) | Last model fallback for text → spec, trained on Muse Spark Open's labels: 52/52 categories right on held-out reports vs 94% base and 36% for keywords ([eval](docs/eval/glimmer_spec_eval.md)); after it, catalog keywords and human review |
+| **Muse Glimmer** | Open weights on Modal, LoRA fine-tuned ([services/glimmer](services/glimmer)) | Specialist for text → spec, trained and measured but not served live (see below), trained on Muse Spark Open's labels: 52/52 categories right on held-out reports vs 94% base and 36% for keywords ([eval](docs/eval/glimmer_spec_eval.md)); after it, catalog keywords and human review |
 
 Muse Spark Open runs at `reasoning_effort=low` for every stage: these are short, well-defined tasks, and more thinking costs tokens without better answers (the same result Fireworks reported for Muse on easy benchmarks).
+
+### Why tuned Glimmer is a fallback and not the first choice
+
+Text → spec, the stage Glimmer was tuned for. Measured numbers come from our runs; the rest is
+marked as an estimate.
+
+| Option | Category right | Cost per spec | Cost while idle | First answer | Notes |
+|---|---|---|---|---|---|
+| **Muse Spark Open on Baseten** (first today) | 92% agreement with the intended category on 154 synthetic reports (first labeling run) | about USD 0.0036 (1,511 tokens in, 411 out, measured) | 0 | about 3.5 s | Pay per token, nothing to run |
+| Muse Spark 1.3, Meta Model API (second) | not measured on this set | Meta credits, list USD 1.25 / M input | 0 | about 15 s (hidden reasoning) | Credits kept for SAM 3.1 |
+| **Tuned Muse Glimmer on Modal**, scales to zero | **52 / 52** held-out reports (base Glimmer 94%) | GPU time only while it runs | 0 | minutes (estimate: 60 GB of weights load on a cold H100) | Too slow to start for the router's 90 s timeout |
+| Tuned Muse Glimmer on Modal, always on | same | about USD 4 per H100 hour (estimate) | about USD 96 per day | seconds | Cheaper than Baseten only above about 1,100 specs per hour |
+| Catalog keywords (last link) | 36% | 0 | 0 | instant | Then a person reviews |
+
+The 52 held-out reports were kept only where the teacher agreed with the intended category, so they
+are easier than real reports. Training it cost about USD 4 of Baseten labels plus one H100 on Modal
+(13 minutes of training).
+
+When a city runs CivicPulse at volume, or has to keep reports on its own servers, tuned Glimmer
+becomes the better first choice: open weights, no data leaves the city, and it matches its teacher on this
+task. At pilot volume (a few hundred reports a day), paying per token is far cheaper than an always-on
+GPU.
 
 ## Results on real data
 

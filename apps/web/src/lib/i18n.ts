@@ -459,6 +459,15 @@ const dict = {
     en: "The sandbox is not connected in this deployment.",
   },
   sbReportText: { es: "Qué pasa", en: "What is wrong" },
+  voiceStart: { es: "Dictar en vez de escribir", en: "Dictate instead of typing" },
+  voiceStop: { es: "Terminar", en: "Done" },
+  voiceWorking: { es: "Pasando tu voz a texto…", en: "Turning your voice into text…" },
+  voicePrivacy: {
+    es: "Tu voz se envía a Meta (Muse Voice Transcribe) solo para pasarla a texto; no guardamos el audio. Revisa el texto antes de enviar.",
+    en: "Your voice goes to Meta (Muse Voice Transcribe) only to turn it into text; we do not keep the audio. Check the text before sending.",
+  },
+  voiceNoMic: { es: "No pudimos usar el micrófono. Revisa el permiso del navegador o escribe el reporte.", en: "We could not use the microphone. Check the browser permission or type the report." },
+  voiceEmpty: { es: "No se entendió nada. Habla más cerca del teléfono o escribe el reporte.", en: "Nothing came through. Speak closer to the phone or type the report." },
 } satisfies Record<string, Record<Lang, string>>;
 
 export type Key = keyof typeof dict;

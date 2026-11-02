@@ -7,6 +7,7 @@ import { t, type Lang } from "@/lib/i18n";
 import { photoIssue, resizeToJpeg, type PhotoIssue } from "@/lib/photoQuality";
 import { browserClient } from "@/lib/supabase";
 import { BackIcon } from "@/app/icons";
+import { VoiceButton } from "@/app/VoiceButton";
 import { LocationPicker, distanceM, PIN_MAX_M, type LatLon } from "./LocationPicker";
 import { MyReports } from "./MyReports";
 import { ReportStatus } from "./ReportStatus";
@@ -91,6 +92,19 @@ export function ReportForm({ lang }: { lang: Lang }) {
   function retake() {
     choose(null);
     setInputKey((k) => k + 1); // a fresh input, so the same camera flow opens again
+  }
+
+  // The same anonymous citizen session the report will use: dictation counts against this device.
+  async function citizenToken(): Promise<string> {
+    const supabase = browserClient();
+    let { data } = await supabase.auth.getSession();
+    if (!data.session) {
+      const { error: signInError } = await supabase.auth.signInAnonymously();
+      if (signInError) throw signInError;
+      ({ data } = await supabase.auth.getSession());
+    }
+    if (!data.session) throw new Error("not_signed_in");
+    return data.session.access_token;
   }
 
   async function submit() {
@@ -228,6 +242,7 @@ export function ReportForm({ lang }: { lang: Lang }) {
           <textarea id="report-text" rows={4} maxLength={2000} value={text} placeholder={t(lang, "reportTextPlaceholder")}
             onChange={(e) => setText(e.target.value)} />
           <div className="hint">{t(lang, "reportTextHint")}</div>
+          <VoiceButton lang={lang} getToken={citizenToken} onText={(said) => setText((old) => (old.trim() ? `${old.trim()} ${said}` : said))} />
         </div>
 
         <div className="field">

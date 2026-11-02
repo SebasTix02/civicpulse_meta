@@ -51,6 +51,7 @@ servers:
 tags:
   - name: webhooks
   - name: ops
+  - name: citizen
 paths:
   /webhooks/supabase:
     post:
@@ -157,6 +158,41 @@ paths:
         '401': {description: Wrong ops secret}
         '404': {description: Row not found}
 
+  /transcribe:
+    post:
+      tags: [citizen]
+      operationId: transcribe
+      summary: Voice report clip to text (Muse Voice Transcribe), for the citizen to edit before sending
+      description: |
+        Called through the web app's /api/transcribe proxy with the citizen's own Supabase session
+        token. The audio is not stored. Each clip counts against take_voice_quota (migration 21:
+        per device and global per day, at most 60 s).
+      security:
+        - citizenSession: []
+      requestBody:
+        required: true
+        content:
+          audio/wav:
+            schema: {type: string, format: binary, description: 'RIFF/WAVE, PCM 16-bit, mono, 16 or 24 kHz, at most 2.5 MB'}
+      responses:
+        '200':
+          description: Transcript
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [text, seconds, left]
+                properties:
+                  text: {type: string}
+                  seconds: {type: number}
+                  left: {type: integer, description: 'Clips left today for this device'}
+        '401': {description: 'not_signed_in'}
+        '413': {description: 'voice_too_long'}
+        '422': {description: 'bad_audio or voice_too_long'}
+        '429': {description: 'voice_quota_exceeded or voice_daily_cap'}
+        '502': {description: 'voice_unavailable'}
+        '503': {description: 'voice_not_configured or quota_unavailable'}
+
   /healthz:
     get:
       tags: [ops]
@@ -203,6 +239,11 @@ components:
       type: http
       scheme: bearer
       description: ORCHESTRATOR_OPS_SECRET, different from the webhook secret.
+    citizenSession:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: The citizen's (or sandbox visitor's) Supabase access token, checked by the database.
 
   schemas:
     DatabaseWebhookPayload:

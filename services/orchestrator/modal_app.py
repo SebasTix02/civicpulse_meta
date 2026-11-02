@@ -135,7 +135,7 @@ def sweeper() -> dict:
 @app.function(secrets=secrets, schedule=modal.Period(minutes=10), timeout=60)
 def healthcheck() -> dict:
     """Writes app_config.provider_health for get_demo_status() (civicpulse/health.py), free checks only;
-    then deletes expired sandbox sessions."""
+    then deletes expired sandbox sessions and old voice quota rows."""
     from datetime import UTC, datetime
 
     from civicpulse.config import get_settings
@@ -151,4 +151,8 @@ def healthcheck() -> dict:
         health["sandbox_cleanup"] = cleanup(db)
     except Exception as exc:  # noqa: BLE001 - never fail the health write over it
         print(f"sandbox cleanup failed: {type(exc).__name__}: {exc}")
+    try:  # voice quota rows older than the 24-hour window (migration 21)
+        health["voice_rows_deleted"] = db.rpc("voice_usage_cleanup", {})
+    except Exception as exc:  # noqa: BLE001
+        print(f"voice cleanup failed: {type(exc).__name__}: {exc}")
     return health

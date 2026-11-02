@@ -26,7 +26,7 @@ citizen (PWA, es/en) ──► Supabase (Postgres + PostGIS + RLS, Storage, Auth
                                                                  asymmetric decision
 ```
 
-1. **Report.** A citizen describes the problem in any language and takes a live photo. No account: an anonymous session is the device identity.
+1. **Report.** A citizen describes the problem in any language, typing or dictating it (Muse Voice Transcribe; the audio is not kept), and takes a live photo. No account: an anonymous session is the device identity.
 2. **Understand.** Muse Spark turns the text into an English spec (category, severity, what it looks like) merged with a curated catalog of 21 civic categories.
 3. **See.** SAM 3.1 segments what the spec describes; Muse Spark checks each crop. A photo never rejects a report; it only adds evidence. Faces and plates are blurred before anything is public.
 4. **Agree.** Reports cluster in space; weighted consensus (device trust, distinct devices, reused-photo and GPS checks) validates a cluster.
@@ -40,6 +40,7 @@ citizen (PWA, es/en) ──► Supabase (Postgres + PostGIS + RLS, Storage, Auth
 | **SAM 3.1** | Meta Model API (fallback: official weights on a Modal GPU) | Where the problem is, counting people, anonymization |
 | **Muse Spark Open** | Baseten (hackathon credits; fallback hosts Fireworks / Modal Endpoints) | Text → spec, crop and before/after classification, briefs |
 | **Muse Spark 1.3** | Meta Model API | Second provider for the same prompts (Meta credits are kept for SAM 3.1) |
+| **Muse Voice Transcribe** | Meta Model API | Voice reports: a clip of up to 60 s becomes text the citizen reviews before sending; daily quota per device |
 | **Muse Glimmer** | Open weights on Modal, LoRA fine-tuned ([services/glimmer](services/glimmer)) | Specialist for text → spec, trained and measured but not served live (see below), trained on Muse Spark Open's labels: 52/52 categories right on held-out reports vs 94% base and 36% for keywords ([eval](docs/eval/glimmer_spec_eval.md)); after it, catalog keywords and human review |
 
 Muse Spark Open runs at `reasoning_effort=low` for every stage: these are short, well-defined tasks, and more thinking costs tokens without better answers (the same result Fireworks reported for Muse on easy benchmarks).

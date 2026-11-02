@@ -58,3 +58,4 @@ Everything else. Log, newest last:
 - Closure: the AFTER check outlines the repair patch next to the hole, with its own shape; re-evaluation of the aligned sets.
 - README: results on real data and four real repair pairs.
 - Muse Glimmer: LoRA fine-tune for stage `spec` (`services/glimmer`), with synthetic reports labeled by Muse Spark Open and a deterministic grader.
+- Voice reports: dictation in the report and sandbox forms with Muse Voice Transcribe (orchestrator `/transcribe`, daily quota in migration 21, audio never stored).

@@ -6,7 +6,9 @@ import hmac
 from collections.abc import Callable
 from typing import Any
 
-from fastapi import FastAPI, Header, HTTPException
+import httpx
+from fastapi import FastAPI, Header, HTTPException, Request
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from civicpulse.config import Settings, get_settings
@@ -47,7 +49,8 @@ def route(payload: DatabaseWebhookPayload) -> tuple[str, str] | None:
     return None
 
 
-def create_app(spawn: Callable[[str, str], None], settings: Settings | None = None) -> FastAPI:
+def create_app(spawn: Callable[[str, str], None], settings: Settings | None = None,
+               voice_http: httpx.Client | None = None) -> FastAPI:
     """`spawn(job, key)` starts the job in the background (Modal Function.spawn in production)."""
     settings = settings or get_settings()
     app = FastAPI(title="CivicPulse orchestrator", version="0.1.0")
@@ -72,6 +75,34 @@ def create_app(spawn: Callable[[str, str], None], settings: Settings | None = No
             raise HTTPException(400, "report_id or resolution_id required")
         spawn(kind, key)
         return {"accepted": True, "job": kind, "key": key}
+
+    voice_client = voice_http or httpx.Client(timeout=httpx.Timeout(60.0, connect=5.0))
+    keywords: list[str] = []
+    try:
+        from civicpulse.catalog import Catalog
+        from civicpulse.voice import keywords_from_catalog
+
+        keywords = keywords_from_catalog(Catalog.load(settings.catalog_path).categories)
+    except (OSError, ValueError, KeyError):
+        pass
+
+    @app.post("/transcribe")
+    async def transcribe(request: Request, authorization: str | None = Header(default=None)):
+        """Citizen's voice clip (WAV) -> text, for them to read and edit before sending. Not stored."""
+        from civicpulse.voice import VoiceError, check_wav, take_quota
+        from civicpulse.voice import transcribe as run
+
+        if not authorization or not authorization.startswith("Bearer "):
+            return JSONResponse({"error": "not_signed_in"}, status_code=401)
+        data = await request.body()
+        try:
+            clip = check_wav(data)
+            left = take_quota(settings.supabase_url, settings.supabase_service_key,
+                              authorization.removeprefix("Bearer "), clip.seconds, voice_client)
+            text = run(data, voice_client, keywords)
+        except VoiceError as exc:
+            return JSONResponse({"error": exc.code}, status_code=exc.status)
+        return {"text": text, "seconds": clip.seconds, "left": left}
 
     @app.get("/healthz")
     def healthz():

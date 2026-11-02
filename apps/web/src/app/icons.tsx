@@ -48,3 +48,11 @@ export function WarnIcon({ size = 16 }: P) {
     </svg>
   );
 }
+
+export function MicIcon({ size = 18 }: P) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+      <rect x="7" y="2" width="6" height="10" rx="3" /><path d="M4 9a6 6 0 0012 0M10 15v3" />
+    </svg>
+  );
+}

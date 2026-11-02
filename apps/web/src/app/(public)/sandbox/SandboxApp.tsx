@@ -9,6 +9,7 @@ import { publicStorageBase, sandboxClient } from "@/lib/supabase";
 import { BriefText, inLang, type Brief } from "@/app/BriefText";
 import { CENTER } from "@/app/ClusterMap";
 import { BackIcon } from "@/app/icons";
+import { VoiceButton } from "@/app/VoiceButton";
 import { Lightbox, PhotoFrame, type Shot } from "@/app/Lightbox";
 import { Timeline, ago, timelineStep } from "../report/ReportStatus";
 import { PinMap, type LatLon } from "./PinMap";
@@ -312,6 +313,13 @@ function SbReportForm({ lang, sample, file, ensureSession, onBack, onSent }: {
           <label htmlFor="sb-text">{t(lang, "sbReportText")} <span className="opt">({t(lang, "optional")})</span></label>
           <textarea id="sb-text" rows={3} maxLength={2000} value={text} placeholder={t(lang, "reportTextPlaceholder")}
             onChange={(e) => setText(e.target.value)} />
+          <VoiceButton lang={lang} onText={(said) => setText((old) => (old.trim() ? `${old.trim()} ${said}` : said))}
+            getToken={async () => {
+              await ensureSession();
+              const { data } = await sandboxClient().auth.getSession();
+              if (!data.session) throw new Error("not_signed_in");
+              return data.session.access_token;
+            }} />
         </div>
         <div className="field">
           <div className="label">{t(lang, "sbPinTitle")}</div>

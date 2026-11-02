@@ -47,13 +47,15 @@ citizen (PWA, es/en) ──► Supabase (Postgres + PostGIS + RLS, Storage, Auth
 Closure check on anonymized before/after pothole repairs from a public entity in Ambato, labeled
 by hand, plus synthetic negatives (`scripts/eval_closure.py --gps`, 84 runs, about USD 1.63 of
 Meta credits, 2026-11-01). Full table and the comparison with the previous run:
-[docs/eval/closure_eval_2026-11-01.md](docs/eval/closure_eval_2026-11-01.md).
+[docs/eval/closure_eval_2026-11-01.md](docs/eval/closure_eval_2026-11-01.md). After the AFTER crop started outlining the
+repair patch itself, the aligned sets were run again (44 runs, about USD 0.86): still 0 / 24 false
+"resolved" ([docs/eval/closure_eval_2026-11-02.md](docs/eval/closure_eval_2026-11-02.md)).
 
 | | Result |
 |---|---|
 | False "resolved" on cases that are not fixed (goal 0) | **0 / 44** |
 | Another place's repair, said near by GPS (worst case) | 0 / 20 candidates |
-| Real repairs sent to a human as "looks fixed" | 5 / 20 |
+| Real repairs sent to a human as "looks fixed" | 5 / 20 (4 / 20 on the re-run of 2026-11-02) |
 | The rest of the real repairs | "cannot verify" (other angle, blur): a human decides |
 
 The AI never closes a case: at best it marks a candidate, and a person approves it.

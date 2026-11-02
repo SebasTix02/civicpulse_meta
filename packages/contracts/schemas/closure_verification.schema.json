@@ -107,6 +107,22 @@
             "minItems": 4,
             "maxItems": 4
           },
+          "repair_box_xyxy": {
+            "description": "Box of the repair SAM found next to this region in the aligned AFTER (its own shape), or null",
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                },
+                "minItems": 4,
+                "maxItems": 4
+              }
+            ]
+          },
           "local_alignment": {
             "type": "object",
             "additionalProperties": false,

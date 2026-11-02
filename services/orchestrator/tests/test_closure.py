@@ -320,3 +320,27 @@ def test_local_refinement_follows_the_road_when_the_facades_move_differently():
     fixed = warp_to_before(after, C @ reg.H, (H, W))
     err = lambda img: float(np.abs(img[360:560, 280:520].astype(int) - before[360:560, 280:520].astype(int)).mean())
     assert err(fixed) < 0.3 * err(aligned), (err(fixed), err(aligned))
+
+
+def test_a_patch_with_another_shape_next_to_the_hole_is_the_repair(monkeypatch):
+    """The patch is larger and off the hole's pixels: it is still this region's repair, and the
+    AFTER crop outlines the patch itself."""
+    before, after = anon(scene()), anon(shifted(scene()))
+    x1, y1, x2, y2 = moved(HOLE)
+    patch = [x1 + 70, y1 - 10, x2 + 90, y2 + 20]   # wider, shifted right, overlaps a little
+    sam = FakeSAM({before.jpeg: {"pothole": [(0.8, HOLE)]}, after.jpeg: {"asphalt patch": [(0.7, patch)]}})
+    r, seen = router([pair("issue_present", 0.9, "no_issue", 0.9)], monkeypatch)
+    res = verify_pair(before, after, SPEC, sam, r)
+    check = res.verification["region_checks"][0]
+    assert check["repair_box_xyxy"] is not None and check["repair_box_xyxy"][2] > HOLE[2] + 60
+    assert check["resolved_evidence_coverage"] >= 0.5  # 30 % of the hole's pixels, plus the margin
+    assert "repair found at that spot" in seen[0]["messages"][0]["content"]
+    assert res.verification["ai_status"] == "RESOLVED_CANDIDATE_REQUIRES_HUMAN_REVIEW"
+
+
+def test_a_patch_far_from_the_hole_is_not_its_repair(monkeypatch):
+    before, after = anon(scene()), anon(shifted(scene()))
+    sam = FakeSAM({before.jpeg: {"pothole": [(0.8, HOLE)]}, after.jpeg: {"asphalt patch": [(0.7, [20, 20, 120, 90])]}})
+    r, _ = router([pair("issue_present", 0.9, "uncertain", 0.5)], monkeypatch)
+    check = verify_pair(before, after, SPEC, sam, r).verification["region_checks"][0]
+    assert check["repair_box_xyxy"] is None and check["resolved_evidence_coverage"] == 0.0

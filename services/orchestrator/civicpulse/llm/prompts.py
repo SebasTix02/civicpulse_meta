@@ -63,8 +63,13 @@ def whole_image_check_prompt(spec: dict) -> str:
             + 'Answer ONLY with JSON: {"label": "...", "confidence": 0.0, "reason": "short phrase, say where"}')
 
 
-def pair_check_prompt(spec: dict, aligned: bool = True) -> str:
-    where = ("Image 1 is BEFORE, image 2 is AFTER, aligned to the same place; judge only the magenta outline. "
+def pair_check_prompt(spec: dict, aligned: bool = True, repair_outline: bool = False) -> str:
+    where = ("Image 1 is BEFORE with the reported problem outlined in magenta. Image 2 is AFTER, aligned to the same "
+             "place; its magenta outline is the repair found at that spot. A repair rarely has the exact shape of "
+             "the original problem (a patch is often larger, square or slightly shifted): judge whether the problem "
+             "outlined in image 1 is gone and covered by that repair. "
+             if aligned and repair_outline else
+             "Image 1 is BEFORE, image 2 is AFTER, aligned to the same place; judge only the magenta outline. "
              if aligned else
              "Image 1 is BEFORE with the reported problem outlined in magenta. Image 2 is AFTER, taken at the same "
              "place according to GPS but from another angle; its magenta outline is what looks like the repair. "

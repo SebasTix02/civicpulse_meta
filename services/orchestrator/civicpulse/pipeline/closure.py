@@ -115,6 +115,29 @@ def _iou(a: np.ndarray, b: np.ndarray) -> float:
     return float((a & b).sum() / union) if union else 0.0
 
 
+def _grow(mask: np.ndarray, px: int) -> np.ndarray:
+    k = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * px + 1, 2 * px + 1))
+    return cv2.dilate(mask, k)
+
+
+def _near_repair(region: np.ndarray, repair: np.ndarray) -> tuple[np.ndarray | None, int]:
+    """The repair component (in the BEFORE frame) that touches the region grown by a margin of a
+    quarter of the region's size (at least 15 px): alignment is never pixel exact and a patch is
+    larger or shifted. The one with the most overlap wins; None when there is none."""
+    margin = max(15, round(0.25 * float(np.sqrt(region.sum()))))
+    if not repair.any():
+        return None, margin
+    near = _grow(region, margin)
+    n, labels = cv2.connectedComponents(repair)
+    best, best_overlap = None, 0
+    for k in range(1, n):
+        comp = (labels == k).astype(np.uint8)
+        overlap = int((comp & near).sum())
+        if overlap > best_overlap:
+            best, best_overlap = comp, overlap
+    return best, margin
+
+
 def _crop_box(mask: np.ndarray, pad: float = 0.35, min_side: int = 320) -> list[int]:
     ys, xs = np.nonzero(mask)
     h, w = mask.shape
@@ -275,22 +298,31 @@ def verify_pair(before: Anonymized, after: Anonymized, spec: dict, sam: SAMServi
         visible, issue_after, repair_after, confuser_after, aligned = (
             frames(C @ reg.H) if C is not None else (visible_g, issue_g, repair_g, confuser_g, aligned_g))
         conf_in, rep_in = confuser_after & mask, repair_after & mask
+        # A repair rarely has the hole's exact shape or pixels: the patch SAM finds next to the region
+        # (touching it once grown by a margin) is the repair of this region.
+        patch, margin = _near_repair(mask, repair_after)
+        coverage = max(_share(mask, repair_after), _share(mask, _grow(patch, margin)) if patch is not None else 0.0)
         m = {"region_visible_after": round(_share(mask, visible), 3),
              "remaining_issue_ratio": round(_share(mask, issue_after), 3),
-             "resolved_evidence_coverage": round(_share(mask, repair_after), 3),
+             "resolved_evidence_coverage": round(coverage, 3),
              "confuser_region_coverage": round(_share(mask, confuser_after), 3),
              "confuser_matches_resolved_iou": round(_iou(conf_in, rep_in), 3) if conf_in.any() else 0.0}
         box = _crop_box(mask)
         check = {"region_id": i, "prompt": d.prompt, "initial_confidence": round(d.score, 3),
                  "initial_area_px": int(mask.sum()), "crop_box_xyxy": box, **m, "classifier": None,
                  "local_alignment": {"refined": C is not None, "ecc": None if cc is None else round(cc, 3)},
+                 "repair_box_xyxy": _crop_box(patch, pad=0.0, min_side=1) if patch is not None else None,
                  "figure_paths": {"before": None, "after_aligned": None}}
         verdict = None
         geometry_decides = decide_region(m, None) in ("NOT_VERIFIABLE_REGION_NOT_VISIBLE", "PERSISTENT_ISSUE")
         if not geometry_decides and router is not None:  # no classifier call when SAM already decides
-            before_jpeg, after_jpeg = _outlined(brgb, mask, box), _outlined(aligned, mask, box)
+            before_jpeg = _outlined(brgb, mask, box)
+            # AFTER: the repair's own outline when SAM found it there, else where the region was.
+            after_jpeg = (_outlined(aligned, patch, _crop_box(mask | patch)) if patch is not None
+                          else _outlined(aligned, mask, box))
             figures[f"r{i}_before"], figures[f"r{i}_after"] = before_jpeg, after_jpeg
-            check["classifier"], verdict, model = _ask_pair(router, spec, before_jpeg, after_jpeg)
+            check["classifier"], verdict, model = _ask_pair(router, spec, before_jpeg, after_jpeg,
+                                                            repair_outline=patch is not None)
             classifier_model = model or classifier_model
         check["status"] = decide_region(m, verdict)
         statuses.append(check["status"])
@@ -361,12 +393,12 @@ def _regions(found: dict[str, list[Detection]], prompts: list[str], w: int, h: i
 
 
 def _ask_pair(router: LLMRouter, spec: dict, before_jpeg: bytes, after_jpeg: bytes,
-              aligned: bool = True) -> tuple[dict, dict | None, str | None]:
+              aligned: bool = True, repair_outline: bool = False) -> tuple[dict, dict | None, str | None]:
     second = "Image 2, AFTER (aligned to the same place):" if aligned else "Image 2, AFTER (same place by GPS, another angle):"
     user = [{"type": "text", "text": "Image 1, BEFORE:"}, image_part(before_jpeg),
             {"type": "text", "text": second}, image_part(after_jpeg)]
     try:
-        res = router.structured(pair_check_prompt(spec, aligned), user, PairVerdict, vision=True, max_tokens=250)
+        res = router.structured(pair_check_prompt(spec, aligned, repair_outline), user, PairVerdict, vision=True, max_tokens=250)
     except AllProvidersFailed as exc:
         return {"model": None, "before": {"label": "uncertain", "confidence": 0.0},
                 "after": {"label": "uncertain", "confidence": 0.0}, "reason": None, "error": str(exc)[:300]}, None, None

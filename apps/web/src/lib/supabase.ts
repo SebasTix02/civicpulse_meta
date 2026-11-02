@@ -65,7 +65,12 @@ export type PublicCluster = {
   resolved_at: string | null;
   category_name?: { en?: string; es?: string } | null;
   photo_public_path?: string | null;
+  dist_to_official_stop_m?: number | null;
+  de_facto_stop?: boolean | null;
 };
+
+// Official bus stops (OpenStreetMap, migration 22), drawn under the cases on the public map.
+export type OfficialStop = { id: string; name: string | null; lat: number; lon: number };
 
 // Public bucket URL prefix for anonymized photos, or null when Supabase is not configured.
 export const publicStorageBase = url ? `${url}/storage/v1/object/public/public` : null;

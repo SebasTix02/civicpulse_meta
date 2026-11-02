@@ -5,8 +5,8 @@ import { useEffect, useMemo, useState } from "react";
 import { browserClient } from "@/lib/supabase";
 import { Lightbox, PhotoFrame, Thumbs, type Shot } from "./Lightbox";
 import { TIMELINE, t, type Lang } from "@/lib/i18n";
-import type { PublicCluster } from "@/lib/supabase";
-import { ClusterMap, STATUS_COLOR } from "./ClusterMap";
+import type { OfficialStop, PublicCluster } from "@/lib/supabase";
+import { ClusterMap, DE_FACTO_COLOR, STATUS_COLOR, STOP_COLOR } from "./ClusterMap";
 import { CameraIcon, CloseIcon } from "./icons";
 
 const DAY = 86_400_000;
@@ -77,6 +77,14 @@ function CaseSheet({ lang, c, photoBase, onClose }: { lang: Lang; c: PublicClust
           </>
         ) : null}
         {c.public_summary?.[lang] ?? c.public_summary?.en ? <p>{c.public_summary?.[lang] ?? c.public_summary?.en}</p> : null}
+        {c.de_facto_stop && c.dist_to_official_stop_m != null ? (
+          <div className="notice de-facto">
+            <b>{t(lang, "deFactoTitle")}</b>
+            <p>{t(lang, "deFactoBody").replace("{m}", String(Math.round(c.dist_to_official_stop_m)))}</p>
+          </div>
+        ) : c.domain_id === "transit" && c.dist_to_official_stop_m != null ? (
+          <p className="muted small">{t(lang, "nearestStop").replace("{m}", String(Math.round(c.dist_to_official_stop_m)))}</p>
+        ) : null}
         <div className="stats">
           <div><b>{c.report_count}</b><span>{t(lang, "panelReports")}</span></div>
           <div><b>{c.distinct_devices}</b><span>{t(lang, "caseNeighbours")}</span></div>
@@ -91,7 +99,9 @@ function CaseSheet({ lang, c, photoBase, onClose }: { lang: Lang; c: PublicClust
   );
 }
 
-export function HomeMap({ lang, clusters, photoBase }: { lang: Lang; clusters: PublicCluster[]; photoBase: string | null }) {
+export function HomeMap({ lang, clusters, stops = [], photoBase }: {
+  lang: Lang; clusters: PublicCluster[]; stops?: OfficialStop[]; photoBase: string | null;
+}) {
   const [category, setCategory] = useState<string | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
   const categories = useMemo(() => {
@@ -113,12 +123,16 @@ export function HomeMap({ lang, clusters, photoBase }: { lang: Lang; clusters: P
         </div>
       ) : null}
       <div className="map-shell">
-        <ClusterMap lang={lang} clusters={clusters} category={category} selected={selected} onSelect={setSelected} />
+        <ClusterMap lang={lang} clusters={clusters} stops={stops} category={category} selected={selected} onSelect={setSelected} />
         {clusters.length === 0 ? <div className="map-empty">{t(lang, "mapEmpty")}</div> : null}
         <div className="legend" aria-label={t(lang, "mapLegend")}>
           {Object.entries(STATUS_COLOR).map(([status, color]) => (
             <span key={status}><i style={{ background: color }} /> {TIMELINE.find((s) => s.id === status)?.[lang]}</span>
           ))}
+          {clusters.some((c) => c.de_facto_stop) ? (
+            <span><i className="ring" style={{ borderColor: DE_FACTO_COLOR }} /> {t(lang, "deFactoLegend")}</span>
+          ) : null}
+          {stops.length ? <span><i className="dot" style={{ background: STOP_COLOR }} /> {t(lang, "officialStopLegend")}</span> : null}
         </div>
         {current ? <CaseSheet lang={lang} c={current} photoBase={photoBase} onClose={() => setSelected(null)} /> : null}
       </div>
@@ -133,6 +147,7 @@ export function HomeMap({ lang, clusters, photoBase }: { lang: Lang; clusters: P
                 <span>
                   <b>{c.category_name?.[lang] ?? c.category_id}</b>
                   <StatusPill lang={lang} status={c.status} />
+                  {c.de_facto_stop ? <span className="pill de-facto">{t(lang, "deFactoLegend")}</span> : null}
                   <span className="muted small" style={{ display: "block", marginTop: 4 }}>
                     {c.report_count} {t(lang, "panelReports")} · {c.distinct_devices} {t(lang, "caseNeighbours")}
                   </span>

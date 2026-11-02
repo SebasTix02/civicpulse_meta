@@ -85,6 +85,7 @@ main { max-width: 1120px; margin: 0 auto; padding: 16px 16px 40px; }
 .notice { background: var(--accent-soft); border: 1px solid #c9d8f0; border-radius: 10px; padding: 12px 14px; margin: 10px 0; color: var(--fg); }
 .notice p:last-child { margin-bottom: 0; }
 .notice.warn { background: var(--warn-bg); border-color: var(--warn-line); color: var(--warn-fg); }
+.notice.de-facto { background: #fff4e5; border-color: #f0c48a; border-left: 4px solid #E07B00; color: var(--fg); }
 .notice.ok { background: var(--ok-bg); border-color: var(--ok-line); color: var(--ok-fg); }
 .notice b, .notice strong { display: block; font-size: 15px; margin-bottom: 2px; }
 .notice.inline b { display: inline; }
@@ -131,6 +132,7 @@ select { height: 40px; border: 1px solid var(--line-strong); background: var(--s
 .pill.soft { background: var(--accent-soft); color: var(--accent-hover); font-weight: 400; }
 .pill.outline { border-color: var(--line-strong); color: var(--fg); font-weight: 400; }
 .pill.new { color: var(--accent); font-weight: 600; padding: 0; }
+.pill.de-facto { background: #fff4e5; color: #8a4b00; border-color: #f0c48a; }
 .pill.new::before { content: ""; width: 8px; height: 8px; border-radius: 4px; background: var(--accent); }
 .badge { display: inline-block; margin-left: 8px; padding: 0 8px; border-radius: 999px; border: 1px solid var(--line-strong); font-size: 0.75rem; color: var(--muted); vertical-align: 1px; }
 .badge.new { border-color: var(--accent); color: var(--accent); }
@@ -155,6 +157,8 @@ a.cite { color: var(--accent); }
 .legend { position: absolute; left: 12px; bottom: 12px; z-index: 2; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; font-size: 12px; display: grid; gap: 4px; }
 .legend span { display: flex; align-items: center; gap: 8px; }
 .legend i { display: inline-block; width: 12px; height: 12px; border-radius: 6px; }
+.legend i.ring { background: transparent; border: 3px solid #E07B00; box-sizing: border-box; }
+.legend i.dot { width: 8px; height: 8px; border-radius: 4px; background: #4A4A45; margin: 0 2px; }
 .map-empty { position: absolute; left: 50%; top: 16px; transform: translateX(-50%); z-index: 2; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; font-size: 13px; color: var(--muted); white-space: nowrap; }
 .home-cta { display: flex; gap: 10px; margin: 12px 0; }
 .home-cta .primary { flex: 1; }

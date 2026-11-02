@@ -30,7 +30,7 @@ citizen (PWA, es/en) ──► Supabase (Postgres + PostGIS + RLS, Storage, Auth
 2. **Understand.** Muse Spark turns the text into an English spec (category, severity, what it looks like) merged with a curated catalog of 21 civic categories.
 3. **See.** SAM 3.1 segments what the spec describes; Muse Spark checks each crop. A photo never rejects a report; it only adds evidence. Faces and plates are blurred before anything is public.
 4. **Agree.** Reports cluster in space; weighted consensus (device trust, distinct devices, reused-photo and GPS checks) validates a cluster.
-5. **Route.** Validated clusters go to the responsible stakeholder with a brief that cites real reports and places.
+5. **Route.** Validated clusters go to the responsible stakeholder with a brief that cites real reports and places. Bus-stop cases are measured against the official stops (OpenStreetMap): people waiting more than 200 m from any stop show on the public map as a *de facto stop*, a hint for where the city should plan one.
 6. **Close.** An after photo is aligned to the before photo; SAM 3.1 and Muse Spark compare the same region. Doubt (shadow, water, occlusion, bad alignment) never becomes "resolved".
 
 ## Meta models
@@ -153,6 +153,7 @@ Copy `.env.example` to `.env` and fill in the keys. Production: Vercel (web), Su
 - Citizens are anonymous. Raw photos stay in a private bucket; only anonymized copies (faces and plates blurred, EXIF removed) can be public.
 - The Ambato pothole pairs are used with the data owner's permission. Names, phone numbers, source ids and exact coordinates never enter this repository; see [data/pothole_pairs/README.md](data/pothole_pairs/README.md).
 - The Meta Model API only receives anonymized photos and redacted text: people, faces and plates are blurred locally (SAM 3.1 open weights) before any API call.
+- Official bus stops: `python scripts/import_osm_stops.py` loads them from OpenStreetMap. Bus stops © OpenStreetMap contributors, available under the [ODbL](https://www.openstreetmap.org/copyright).
 
 ## License
 

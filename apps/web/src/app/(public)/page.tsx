@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { t } from "@/lib/i18n";
 import { currentLang } from "@/lib/lang-server";
-import { publicServerClient, publicStorageBase, type PublicCluster } from "@/lib/supabase";
+import { publicServerClient, publicStorageBase, type OfficialStop, type PublicCluster } from "@/lib/supabase";
 import { HomeMap } from "@/app/HomeMap";
 import { CameraIcon } from "@/app/icons";
 
@@ -15,6 +15,10 @@ export default async function Home() {
     ? await supabase.from("public_clusters").select("*").order("priority_score", { ascending: false }).limit(200)
     : { data: null, error: true };
   const clusters = (data ?? []) as PublicCluster[];
+  // Only needed when there are transit cases to compare with; an older database has no such view.
+  const stops = supabase && clusters.some((c) => c.domain_id === "transit")
+    ? (((await supabase.from("public_official_stops").select("id,name,lat,lon").limit(3000)).data ?? []) as OfficialStop[])
+    : [];
 
   return (
     <div className="home">
@@ -31,7 +35,7 @@ export default async function Home() {
       {error ? (
         <p className="notice warn after-map">{t(lang, "mapUnavailable")} <Link href="/demo">{t(lang, "navDemo")}</Link></p>
       ) : (
-        <HomeMap lang={lang} clusters={clusters} photoBase={publicStorageBase} />
+        <HomeMap lang={lang} clusters={clusters} stops={stops} photoBase={publicStorageBase} />
       )}
       <p className="muted small after-map"><a href="/api/clusters.geojson">GeoJSON</a></p>
     </div>

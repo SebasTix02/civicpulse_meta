@@ -24,7 +24,7 @@ VOL = "/vol"
 WEIGHTS = f"{VOL}/weights/Muse-Glimmer-30B"
 ADAPTER = f"{VOL}/adapters/civicpulse-spec"
 
-image = modal.Image.debian_slim(python_version="3.12").pip_install("vllm>=0.12", "huggingface_hub[hf_transfer]")
+image = modal.Image.debian_slim(python_version="3.12").pip_install("vllm>=0.12")
 app = modal.App("civicpulse-glimmer-serve", image=image)
 vol = modal.Volume.from_name("civicpulse-glimmer", create_if_missing=False)
 

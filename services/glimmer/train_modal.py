@@ -35,9 +35,10 @@ TARGET = r"^(?!.*(vision|visual|projector|mm_|patch|merger)).*\.(q_proj|k_proj|v
 
 image = (
     modal.Image.debian_slim(python_version="3.12")
-    .pip_install("torch>=2.8", "transformers>=5.15", "accelerate>=1.10", "peft>=0.17", "huggingface_hub[hf_transfer]>=0.34",
+    .pip_install("torch>=2.8", "torchvision", "pillow>=10", "transformers>=5.15", "accelerate>=1.10", "peft>=0.17",
+                 "huggingface_hub>=0.34",
                  "pydantic>=2.8", "httpx>=0.27", "pyyaml>=6", "fastapi>=0.115", "meta-sam-parser>=0.1")
-    .env({"HF_HUB_ENABLE_HF_TRANSFER": "1", "TOKENIZERS_PARALLELISM": "false"})
+    .env({"HF_XET_HIGH_PERFORMANCE": "1", "TOKENIZERS_PARALLELISM": "false"})
     .add_local_python_source("civicpulse")
 )
 app = modal.App("civicpulse-glimmer-train", image=image)

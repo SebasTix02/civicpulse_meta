@@ -84,10 +84,11 @@ def probe() -> dict:
     targets = [n for n in names if re.fullmatch(TARGET, n)]
     row = [{"role": "system", "content": "SYSTEM"}, {"role": "user", "content": "USER"},
            {"role": "assistant", "content": '{"category_id":"pothole"}'}]
-    return {"versions": {"torch": torch.__version__, "transformers": transformers.__version__, "peft": peft.__version__},
+    # Plain types only: torch.__version__ is a torch class the local side cannot unpickle.
+    return json.loads(json.dumps({"versions": {"torch": str(torch.__version__), "transformers": transformers.__version__, "peft": peft.__version__},
             "linear_layers": len(names), "lora_targets": len(targets), "first_targets": targets[:6],
             "skipped_examples": [n for n in names if n not in set(targets)][:12],
-            "prompt": _render(proc, row[:2], True), "full": _render(proc, row, False)}
+            "prompt": _render(proc, row[:2], True), "full": _render(proc, row, False)}, default=str))
 
 
 def _load():
@@ -189,7 +190,7 @@ def train(train_rows: list[dict], holdout: list[dict], epochs: int = 2, lr: floa
         base = _generate(proc, tok, model, holdout, max_new=1024)  # the base model may think first
     tuned = _generate(proc, tok, model, holdout, max_new=400)
     stats["eval_seconds"] = round(time.time() - started)
-    return {"stats": stats, "base": base, "tuned": tuned}
+    return json.loads(json.dumps({"stats": stats, "base": base, "tuned": tuned}, default=str))
 
 
 def _read(path: Path) -> list[dict]:

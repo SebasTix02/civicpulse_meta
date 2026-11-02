@@ -136,7 +136,7 @@ We checked size and depth against hand labels on 70 anonymized "before" photos o
 |---|---|
 | Urgency by hand vs the photo bonus (rank correlation) | **0.42**. Before this change every photo added the same, 0 |
 | Photos rated urgent that land in the top third | **14 / 20** (by chance about 7) |
-| Mean photo bonus by urgency 1 / 2 / 3 | 0.17 / 0.41 / 0.68 |
+| Mean photo bonus by urgency 1 / 2 / 3 | 0.12 / 0.23 / 0.49 (depth at half weight, migration 29) |
 | Size class, street fully in the photo (what adds priority) | 11 / 18 exact, 16 / 18 within one class |
 | Depth level | 13 / 35 exact, 31 / 35 within one level: weak, close to chance on the exact level |
 | Same size class when the photo is taken "a step closer" (zoomed 85%) | 27 / 34, median width change 0.034 |
@@ -144,7 +144,9 @@ We checked size and depth against hand labels on 70 anonymized "before" photos o
 
 What this means: one photo cannot measure a pothole, but as a signal for ordering it helps.
 Urgent potholes rise to the top more than twice as often as chance. Size is the more reliable
-half, and only when the whole street is in the shot; depth agrees only roughly. In this eval
+half, and only when the whole street is in the shot; depth agrees only roughly, so since
+migration 29 it weighs half (medium +0.25, high +0.5). The ordering is the same at both weights
+(0.42 and 14 / 20), and without depth it drops to 0.28 and 8 / 20: depth is rough, but it still helps. In this eval
 SAM's single "pothole" prompt found the hole in 39 of 70 photos. The pipeline uses more prompts
 and asks the classifier first, and it measures only photos where the classifier confirmed the
 pothole.

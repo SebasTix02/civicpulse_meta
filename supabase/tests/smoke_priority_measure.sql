@@ -1,4 +1,4 @@
--- Smoke test for size and depth in the case priority (migration 28) on plain Postgres + local_shim.sql.
+-- Smoke test for size and depth in the case priority (migrations 28 and 29: depth high 0.5, medium 0.25) on plain Postgres + local_shim.sql.
 \set ON_ERROR_STOP 1
 begin;
 set local search_path = public, extensions;
@@ -31,15 +31,15 @@ begin
   -- The unclipped measure wins over the larger clipped one; the deepest level counts.
   assert ctx -> 'size' ->> 'class' = 'medium' and not (ctx -> 'size' ->> 'clipped')::boolean, ctx::text;
   assert ctx ->> 'depth' = 'high', ctx::text;
-  assert (ctx -> 'bonus' ->> 'size')::numeric = 0.5 and (ctx -> 'bonus' ->> 'depth')::numeric = 1.0, ctx::text;
-  assert (select round(priority_score::numeric, 2) from clusters where id = c1) = 5.5;
+  assert (ctx -> 'bonus' ->> 'size')::numeric = 0.5 and (ctx -> 'bonus' ->> 'depth')::numeric = 0.5, ctx::text;
+  assert (select round(priority_score::numeric, 2) from clusters where id = c1) = 5.0;
 
   -- Only the clipped photo left: shown, adds nothing; depth falls to medium.
   update reports set moderation_status = 'hidden' where id = 'd8000000-0000-4000-8000-000000000002';
   update clusters set report_count = 1 where id = c1;
   ctx := (select priority_context from clusters where id = c1);
   assert (ctx -> 'size' ->> 'clipped')::boolean and (ctx -> 'bonus' ->> 'size')::numeric = 0, ctx::text;
-  assert (select round(priority_score::numeric, 2) from clusters where id = c1) = 4.5;
+  assert (select round(priority_score::numeric, 2) from clusters where id = c1) = 4.25;
   assert (ctx ->> 'base')::numeric = 4.0;
 end $$;
 rollback;

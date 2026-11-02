@@ -54,7 +54,7 @@ ANON = ROOT / "data" / "private" / "anon"
 LABELS = ROOT / "data" / "pothole_pairs" / "size_depth_labels.csv"
 OUT = ROOT / "data" / "private" / "measure_eval.csv"
 SIZES, DEPTHS = ("small", "medium", "large"), ("low", "medium", "high")
-WEIGHTS = {"size": {"small": 0, "medium": 0.5, "large": 1.0}, "depth": {"low": 0, "medium": 0.5, "high": 1.0}}
+WEIGHTS = {"size": {"small": 0, "medium": 0.5, "large": 1.0}, "depth": {"low": 0, "medium": 0.25, "high": 0.5}}  # migration 29
 EST_TOKENS_IN, EST_TOKENS_OUT = 1500, 120
 FIELDS = ["photo", "label_size", "label_depth", "urgency", "road_fits", "pothole_score", "size_status",
           "width_share", "area_share", "clipped", "size_class", "depth_level", "depth_cues", "depth_confidence",

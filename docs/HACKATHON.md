@@ -60,3 +60,4 @@ Everything else. Log, newest last:
 - Muse Glimmer: LoRA fine-tune for stage `spec` (`services/glimmer`), with synthetic reports labeled by Muse Spark Open and a deterministic grader.
 - Voice reports: dictation in the report and sandbox forms with Muse Voice Transcribe (orchestrator `/transcribe`, daily quota in migration 21, audio never stored).
 - De facto bus stops: official stops from OpenStreetMap (migration 22, `scripts/import_osm_stops.py`); a validated waiting or crowding case more than 200 m from any stop gets an orange ring on the public map, and the stops show from zoom 13.
+- First OSM import: 759 nodes (195 named) over the canton. Migration 23: de facto only up to 1 km (farther is probably unmapped), re-imports replace the set; the script merges nodes closer than 15 m. The map says "mapped stop", not "official stop".

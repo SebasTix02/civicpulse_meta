@@ -10,6 +10,8 @@ import { ClusterMap, DE_FACTO_COLOR, STATUS_COLOR, STOP_COLOR } from "./ClusterM
 import { CameraIcon, CloseIcon } from "./icons";
 
 const DAY = 86_400_000;
+// Beyond this the nearest mapped stop says more about OSM coverage than about the street (app_config de_facto_rules.max_dist_m).
+const UNMAPPED_M = 1000;
 
 function photoOf(c: PublicCluster, base: string | null) {
   return c.photo_public_path && base ? `${base}/${c.photo_public_path.replace(/^public\//, "")}` : null;
@@ -82,6 +84,8 @@ function CaseSheet({ lang, c, photoBase, onClose }: { lang: Lang; c: PublicClust
             <b>{t(lang, "deFactoTitle")}</b>
             <p>{t(lang, "deFactoBody").replace("{m}", String(Math.round(c.dist_to_official_stop_m)))}</p>
           </div>
+        ) : c.domain_id === "transit" && c.dist_to_official_stop_m != null && c.dist_to_official_stop_m > UNMAPPED_M ? (
+          <p className="muted small">{t(lang, "nearestStopFar")}</p>
         ) : c.domain_id === "transit" && c.dist_to_official_stop_m != null ? (
           <p className="muted small">{t(lang, "nearestStop").replace("{m}", String(Math.round(c.dist_to_official_stop_m)))}</p>
         ) : null}

@@ -517,6 +517,7 @@ const dict = {
   officialStopLegend: { es: "Parada mapeada (OpenStreetMap)", en: "Mapped stop (OpenStreetMap)" },
   voiceStart: { es: "Dictar en vez de escribir", en: "Dictate instead of typing" },
   voiceStop: { es: "Terminar", en: "Done" },
+  voiceCancel: { es: "Cancelar", en: "Cancel" },
   voiceWorking: { es: "Pasando tu voz a texto…", en: "Turning your voice into text…" },
   voicePrivacy: {
     es: "Tu voz se envía a Meta (Muse Voice Transcribe) solo para pasarla a texto; no guardamos el audio. Revisa el texto antes de enviar.",

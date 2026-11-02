@@ -2,11 +2,11 @@
 -- `set search_path` does not carry over.
 set search_path = public, extensions;
 
--- City and stakeholders for the hackathon demo. The boundary is an APPROXIMATE bounding box
--- of the Ambato canton; replace it with the official GIS boundary (day 1 task).
+-- City and stakeholders for the hackathon demo. The boundary is an APPROXIMATE box of the urban
+-- area and its parishes; scripts/import_city_boundary.py replaces it with the canton polygon.
 insert into cities (id, name, boundary, default_lang, timezone, is_enabled, sandbox_enabled)
 values ('ambato', 'Ambato',
-        extensions.st_multi(extensions.st_makeenvelope(-78.80, -1.42, -78.45, -1.08, 4326))::extensions.geography,
+        extensions.st_multi(extensions.st_makeenvelope(-78.72, -1.33, -78.55, -1.17, 4326))::extensions.geography,
         'es', 'America/Guayaquil', true, true)
 on conflict (id) do update set boundary = excluded.boundary;
 

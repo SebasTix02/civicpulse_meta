@@ -12,6 +12,7 @@ import { BackIcon } from "@/app/icons";
 import { VoiceButton } from "@/app/VoiceButton";
 import { Lightbox, PhotoFrame, type Shot } from "@/app/Lightbox";
 import { Timeline, ago, timelineStep } from "../report/ReportStatus";
+import type { CityArea } from "@/lib/geo";
 import { PinMap, type Dot, type LatLon } from "./PinMap";
 
 export type Sample = {
@@ -71,6 +72,21 @@ type SbCase = {
 };
 type State = { session: { id: string; city_id: string; expires_at: string } | null; quota?: Quota; rules?: Rules; reports?: SbReport[]; cases?: SbCase[] };
 type View = { kind: "home" } | { kind: "report"; sample: Sample | null; file: File | null } | { kind: "track"; reportId: string };
+type Path = "quick" | "manual";
+
+// The path chosen in the form, kept per report so a reload does not ask again (a convenience only).
+const PATH_KEY = (id: string) => `cp-sb-path-${id}`;
+function savePath(id: string, p: Path) {
+  try { localStorage.setItem(PATH_KEY(id), p); } catch { /* private mode: the track page asks instead */ }
+}
+function loadPath(id: string): Path | null {
+  try {
+    const v = localStorage.getItem(PATH_KEY(id));
+    return v === "quick" || v === "manual" ? v : null;
+  } catch {
+    return null;
+  }
+}
 
 const CANDIDATE = "RESOLVED_CANDIDATE_REQUIRES_HUMAN_REVIEW";
 const POLL_MS = 4000;
@@ -103,7 +119,7 @@ function moving(r: SbReport | undefined, c: SbCase | undefined) {
 
 // C9: welcome with samples and quota, the report with a hand-placed pin, then the whole cycle on
 // one screen. The visitor's sandbox device is a second anonymous session (sandboxClient).
-export function SandboxApp({ lang, samples }: { lang: Lang; samples: Sample[] }) {
+export function SandboxApp({ lang, samples, area }: { lang: Lang; samples: Sample[]; area: CityArea | null }) {
   const [state, setState] = useState<State | null>(null);
   const [view, setView] = useState<View>({ kind: "home" });
   const [error, setError] = useState("");
@@ -142,9 +158,9 @@ export function SandboxApp({ lang, samples }: { lang: Lang; samples: Sample[] })
 
   if (view.kind === "report")
     return (
-      <SbReportForm lang={lang} sample={view.sample} file={view.file} ensureSession={ensureSession}
+      <SbReportForm lang={lang} sample={view.sample} file={view.file} area={area} ensureSession={ensureSession}
         onBack={() => setView({ kind: "home" })}
-        onSent={(id) => { setView({ kind: "track", reportId: id }); void refresh(); window.scrollTo({ top: 0 }); }} />
+        onSent={(id, path) => { savePath(id, path); setView({ kind: "track", reportId: id }); void refresh(); window.scrollTo({ top: 0 }); }} />
     );
 
   if (view.kind === "track") {
@@ -152,7 +168,7 @@ export function SandboxApp({ lang, samples }: { lang: Lang; samples: Sample[] })
     const kase = state?.cases?.find((c) => c.id === report?.cluster_id);
     return (
       <SbTrack lang={lang} reportId={view.reportId} report={report} kase={kase} quota={quota}
-        rules={state?.rules ?? DEFAULT_RULES}
+        rules={state?.rules ?? DEFAULT_RULES} area={area}
         sample={samples.find((s) => s.id === report?.sample_id) ?? null} refresh={refresh}
         onHome={() => { setView({ kind: "home" }); window.scrollTo({ top: 0 }); }} />
     );
@@ -258,10 +274,11 @@ function CameraCard({ lang, disabled, onClick }: { lang: Lang; disabled: boolean
 }
 
 // Report: the photo (sample or camera), suggested text and a hand-placed pin.
-function SbReportForm({ lang, sample, file, ensureSession, onBack, onSent }: {
-  lang: Lang; sample: Sample | null; file: File | null; ensureSession: () => Promise<void>;
-  onBack: () => void; onSent: (id: string) => void;
+function SbReportForm({ lang, sample, file, area, ensureSession, onBack, onSent }: {
+  lang: Lang; sample: Sample | null; file: File | null; area: CityArea | null; ensureSession: () => Promise<void>;
+  onBack: () => void; onSent: (id: string, path: Path) => void;
 }) {
+  const [path, setPath] = useState<Path>("quick");
   const [text, setText] = useState(sample ? name(lang, sample.suggested_text) : "");
   // Somewhere in central Ambato, so two tests of the same kind do not always land on each other.
   const [pin, setPin] = useState<LatLon>(() => ({
@@ -301,7 +318,7 @@ function SbReportForm({ lang, sample, file, ensureSession, onBack, onSent }: {
         });
         if (e3) throw e3;
       }
-      onSent(id);
+      onSent(id, path);
     } catch (e) {
       setError(errorMessage(lang, e));
       setBusy(false);
@@ -336,10 +353,22 @@ function SbReportForm({ lang, sample, file, ensureSession, onBack, onSent }: {
         </div>
         <div className="field">
           <div className="label">{t(lang, "sbPinTitle")}</div>
-          <PinMap pin={pin} onPin={(p) => { setPin(p); setError(""); }} label={t(lang, "sbPinTitle")}
+          <PinMap pin={pin} onPin={(p) => { setPin(p); setError(""); }} label={t(lang, "sbPinTitle")} area={area}
             onOutside={() => setError(t(lang, "sbOutsideCity"))} />
           <div className="hint">{t(lang, "sbPinHint")}</div>
         </div>
+        <fieldset className="field sb-path-pick">
+          <legend className="label">{t(lang, "sbPathTitle")}</legend>
+          <div className="sb-paths">
+            {(["quick", "manual"] as const).map((p) => (
+              <label key={p} className={`sb-path${path === p ? " on" : ""}`}>
+                <input type="radio" name="sb-path" value={p} checked={path === p} onChange={() => setPath(p)} />
+                <b>{t(lang, p === "quick" ? "sbPathQuick" : "sbPathManual")}</b>
+                <span className="small muted">{t(lang, p === "quick" ? "sbPathQuickHint" : "sbPathManualHint")}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
         {error ? <p className="notice warn" role="alert">{error}</p> : null}
       </div>
       <div className="send-bar">
@@ -352,9 +381,9 @@ function SbReportForm({ lang, sample, file, ensureSession, onBack, onSent }: {
 }
 
 // The whole cycle for one report: check, neighbours, brief, accept, closure, review.
-function SbTrack({ lang, reportId, report, kase, sample, quota, rules, refresh, onHome }: {
+function SbTrack({ lang, reportId, report, kase, sample, quota, rules, area, refresh, onHome }: {
   lang: Lang; reportId: string; report: SbReport | undefined; kase: SbCase | undefined; sample: Sample | null;
-  quota: Quota; rules: Rules; refresh: () => Promise<void>; onHome: () => void;
+  quota: Quota; rules: Rules; area: CityArea | null; refresh: () => Promise<void>; onHome: () => void;
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -363,7 +392,8 @@ function SbTrack({ lang, reportId, report, kase, sample, quota, rules, refresh, 
   const [viewing, setViewing] = useState<{ shots: Shot[]; i: number } | null>(null);
   const [inputKey, setInputKey] = useState(0);
   const fileInput = useRef<HTMLInputElement>(null);
-  const [manual, setManual] = useState(false);
+  const [path, setPath] = useState<Path | null>(() => loadPath(reportId));
+  const asked = useRef(false);
   const keepPolling = moving(report, kase);
 
   useEffect(() => {
@@ -372,9 +402,18 @@ function SbTrack({ lang, reportId, report, kase, sample, quota, rules, refresh, 
     return () => clearInterval(id);
   }, [keepPolling, refresh]);
 
-  // Once the report is on the map the visitor picks how neighbours confirm it: the quick path
-  // (three good neighbours at once) or each neighbour placed by hand (UX flows §3.4).
+  // How neighbours confirm the report (UX flows §3.4), chosen in the form: the quick path asks for
+  // three good neighbours as soon as the report is on the map; "like on the street" opens the map
+  // to place each one. A report without a stored choice asks on this page.
   const quick = () => act(() => sandboxClient().rpc("sandbox_simulate_neighbours", { p_report_id: reportId }));
+  const placedAny = (report?.neighbours?.length ?? 0) > 0;
+  useEffect(() => {
+    if (path !== "quick" || asked.current || report?.status !== "clustered" || !kase) return;
+    if (kase.status !== "candidate" || kase.simulated_reports > 0 || placedAny) return;
+    asked.current = true;
+    void quick();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- quick only reads stable values
+  }, [path, report?.status, kase, placedAny]);
 
   async function act(fn: () => PromiseLike<{ error: unknown }>) {
     setBusy(true);
@@ -454,11 +493,9 @@ function SbTrack({ lang, reportId, report, kase, sample, quota, rules, refresh, 
       </div>
       {report.status === "failed" ? <p className="notice warn">{t(lang, "reportCheckFailed")}</p> : null}
 
-      <Timeline lang={lang} step={step} failed={report.status === "failed"} />
-
       {report.status === "clustered" && kase ? (
-        (report.neighbours?.length ?? 0) > 0 || manual ? (
-          <SbNeighbours lang={lang} report={report} kase={kase} rules={rules} busy={busy} act={act} />
+        placedAny || path === "manual" ? (
+          <SbNeighbours lang={lang} report={report} kase={kase} rules={rules} area={area} busy={busy} act={act} />
         ) : kase.simulated_reports > 0 ? (
           <div className="notice ok" role="status">
             <b>{t(lang, "sbNeighbours")}</b>
@@ -469,19 +506,20 @@ function SbTrack({ lang, reportId, report, kase, sample, quota, rules, refresh, 
           <div className="card">
             <h2>{t(lang, "sbPathTitle")}</h2>
             <div className="sb-paths">
-              <button className="sb-path" disabled={busy} onClick={() => void quick()}>
+              <button className="sb-path" disabled={busy} onClick={() => { savePath(reportId, "quick"); setPath("quick"); }}>
                 <b>{t(lang, "sbPathQuick")}</b>
                 <span className="small muted">{t(lang, "sbPathQuickHint")}</span>
               </button>
-              <button className="sb-path" disabled={busy} onClick={() => setManual(true)}>
+              <button className="sb-path" disabled={busy} onClick={() => { savePath(reportId, "manual"); setPath("manual"); }}>
                 <b>{t(lang, "sbPathManual")}</b>
                 <span className="small muted">{t(lang, "sbPathManualHint")}</span>
               </button>
             </div>
-            {busy ? <p className="muted small" role="status">{t(lang, "sbNeighboursWaiting")}</p> : null}
           </div>
-        ) : null
+        ) : path === "quick" ? <p className="notice" role="status"><b>{t(lang, "sbNeighboursWaiting")}</b></p> : null
       ) : !checked && report.status !== "failed" ? <p className="muted small">{t(lang, "sbWaitingMap")}</p> : null}
+
+      <Timeline lang={lang} step={step} failed={report.status === "failed"} />
 
       {d ? (
         <div className="card">
@@ -652,8 +690,8 @@ function beside(p: LatLon): LatLon {
 
 // "Like on the street": each simulated neighbour placed by hand, with the kind of device it is.
 // The case and its numbers come from the database, which applies the real consensus rules.
-function SbNeighbours({ lang, report, kase, rules, busy, act }: {
-  lang: Lang; report: SbReport; kase: SbCase; rules: Rules; busy: boolean;
+function SbNeighbours({ lang, report, kase, rules, area, busy, act }: {
+  lang: Lang; report: SbReport; kase: SbCase; rules: Rules; area: CityArea | null; busy: boolean;
   act: (fn: () => PromiseLike<{ error: unknown }>) => Promise<void>;
 }) {
   const me: LatLon = { lat: report.lat, lon: report.lon };
@@ -683,7 +721,7 @@ function SbNeighbours({ lang, report, kase, rules, busy, act }: {
         <>
           <p className="muted small">{t(lang, "sbManualHint").replace("{r}", String(radius))}</p>
           <PinMap pin={pin} onPin={(p) => { setPin(p); setOutside(false); }} onOutside={() => setOutside(true)}
-            label={t(lang, "sbManualTitle")} dots={dots} ring={{ center: me, radius_m: radius }} color="#E07B00" zoom={17} />
+            label={t(lang, "sbManualTitle")} area={area} dots={dots} ring={{ center: me, radius_m: radius }} color="#E07B00" zoom={17} />
           {outside ? <p className="notice warn small">{t(lang, "sbOutsideCity")}</p> : null}
           <div className="sb-legend small">
             <span><i style={{ background: YOU_COLOR }} /> {t(lang, "sbYourPin")}</span>

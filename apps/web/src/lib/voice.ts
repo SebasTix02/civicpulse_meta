@@ -71,9 +71,10 @@ export function encodeWav(samples: Float32Array, rate: number): Blob {
   return new Blob([buf], { type: "audio/wav" });
 }
 
-export async function transcribe(wav: Blob, accessToken: string): Promise<string> {
+export async function transcribe(wav: Blob, accessToken: string, signal?: AbortSignal): Promise<string> {
   const res = await fetch("/api/transcribe", {
     method: "POST",
+    signal,
     headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "audio/wav" },
     body: wav,
   });

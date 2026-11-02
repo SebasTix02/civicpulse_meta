@@ -416,3 +416,9 @@ button.card.inbox:hover { border-color: var(--line-strong); }
 .sb-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 8px 0 0; color: var(--muted, #5f5f5a); }
 .sb-legend span { display: inline-flex; align-items: center; gap: 6px; }
 .sb-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 5px; }
+.voice .voice-cancel { margin-left: 12px; }
+.sb-path-pick { border: 0; padding: 0; margin: 14px 0 0; }
+.sb-path-pick legend { padding: 0; margin-bottom: 6px; }
+label.sb-path { position: relative; }
+label.sb-path input { position: absolute; top: 12px; right: 12px; }
+.sb-path.on { border-color: var(--accent); background: var(--accent-soft); box-shadow: 0 0 0 1px var(--accent); }

@@ -19,6 +19,7 @@ type InboxRow = {
   note: string | null;
   brief: Brief;
   priority_score: number;
+  priority_context: PriorityContext | null;
   latest_resolution: Resolution | null;
   can_submit_resolution: boolean;
   cluster: {
@@ -30,6 +31,83 @@ type InboxRow = {
     status: string;
   };
 };
+// clusters.priority_context (migration 27): every reason behind the score.
+type PriorityContext = {
+  base: number;
+  road: { class: string; name: string | null; m: number } | null;
+  bus_route: { name: string | null; ref: string; m: number } | null;
+  near: { kind: "schools" | "hospitals" | "markets"; name: string | null; m: number; bonus: number }[];
+  centre_m: number | null;
+  in_centre: boolean;
+  signals: string[];
+  bonus: { road: number; bus_route: number; near: number; centre: number; signals: number };
+};
+
+const ROAD_KEYS = ["trunk", "primary", "secondary", "tertiary"];
+
+function sig(lang: Lang, s: string): string {
+  return t(lang, `sig_${s}` as Key);
+}
+
+/** Short tags for the inbox: the place first, then what the reports say. */
+function priorityTags(lang: Lang, p: PriorityContext | null): { text: string; risk?: boolean }[] {
+  if (!p) return [];
+  const out: { text: string; risk?: boolean }[] = [];
+  if (p.road && ROAD_KEYS.includes(p.road.class)) out.push({ text: t(lang, `prioRoad_${p.road.class}` as Key) });
+  if (p.bus_route) out.push({ text: t(lang, "prioBus") });
+  for (const n of p.near ?? []) out.push({ text: t(lang, `prioNear_${n.kind}` as Key) });
+  if (p.in_centre) out.push({ text: t(lang, "prioCentre") });
+  for (const s of p.signals ?? []) out.push({ text: sig(lang, s), risk: true });
+  return out;
+}
+
+function PriorityTags({ lang, p }: { lang: Lang; p: PriorityContext | null }) {
+  const tags = priorityTags(lang, p);
+  if (!tags.length) return null;
+  return (
+    <div className="prio-tags">
+      {tags.slice(0, 4).map((x) => <span key={x.text} className={x.risk ? "risk" : undefined}>{x.text}</span>)}
+      {tags.length > 4 ? <span>+{tags.length - 4}</span> : null}
+    </div>
+  );
+}
+
+function PriorityWhy({ lang, p }: { lang: Lang; p: PriorityContext | null }) {
+  if (!p) return null;
+  const at = (m: number) => t(lang, "prioAt").replace("{m}", String(m));
+  const pts = (v: number) => `+${v.toFixed(1)}`;
+  const named = (label: string, name: string | null | undefined, m: number) =>
+    `${label}${name ? ` · ${name}` : ""} · ${at(m)}`;
+  const rows: { label: string; v: number; risk?: boolean }[] = [{ label: t(lang, "prioBase"), v: p.base }];
+  if (p.road && p.bonus.road > 0) {
+    rows.push({ label: named(t(lang, `prioRoad_${p.road.class}` as Key), p.road.name, p.road.m), v: p.bonus.road });
+  }
+  if (p.bus_route) {
+    rows.push({ label: named(t(lang, "prioBus"), p.bus_route.name || p.bus_route.ref, p.bus_route.m), v: p.bonus.bus_route });
+  }
+  for (const n of p.near ?? []) rows.push({ label: named(t(lang, `prioNear_${n.kind}` as Key), n.name, n.m), v: n.bonus });
+  if (p.in_centre) rows.push({ label: t(lang, "prioCentre"), v: p.bonus.centre });
+  if (p.signals?.length) {
+    rows.push({ label: `${t(lang, "prioText")}: ${p.signals.map((s) => sig(lang, s)).join(", ")}`, v: p.bonus.signals, risk: true });
+  }
+  const noMap = !p.road && !p.bus_route && !(p.near ?? []).length;
+  return (
+    <>
+      <h3 className="small" style={{ margin: "14px 0 0" }}>{t(lang, "prioWhy")}</h3>
+      <ul className="prio-why">
+        {rows.map((r, i) => (
+          <li key={i} className={r.risk ? "risk" : undefined}>
+            <span>{r.label}</span>
+            {i === 0 ? <b>{r.v.toFixed(2)}</b> : r.v > 0 ? <b>{pts(r.v)}</b> : <b className="muted">·</b>}
+          </li>
+        ))}
+        {p.road === null && !noMap ? <li><span className="muted">{t(lang, "prioLocal")}</span><b className="muted">·</b></li> : null}
+      </ul>
+      {noMap ? <p className="muted small" style={{ margin: "6px 0 0" }}>{t(lang, "prioNoMap")}</p> : null}
+    </>
+  );
+}
+
 type RegionCheck = {
   region_id: number;
   status: string;
@@ -490,6 +568,7 @@ function Case({ lang, row, onBack, onChanged }: { lang: Lang; row: InboxRow; onB
               <div><b>{row.cluster.distinct_devices}</b><span>{t(lang, "caseNeighbours")}</span></div>
               <div><b>{row.cluster.report_count}</b><span>{t(lang, "panelReports")}</span></div>
             </div>
+            <PriorityWhy lang={lang} p={row.priority_context} />
             <p className="small" style={{ marginTop: 12 }}>
               {t(lang, "panelReceived")} {fmtDate(lang, row.dispatched_at)}<br />
               <a href={osm} target="_blank" rel="noreferrer">{t(lang, "panelOnMap")} ↗</a>
@@ -523,6 +602,7 @@ function InboxTable({ lang, rows, onOpen }: { lang: Lang; rows: InboxRow[]; onOp
                     {r.cluster.category_name[lang]}
                     {r.is_sandbox ? <span className="badge sandbox">{t(lang, "panelSandbox")}</span> : null}
                   </div>
+                  <PriorityTags lang={lang} p={r.priority_context} />
                 </td>
                 <td>{r.cluster.report_count} {t(lang, "panelReports")}</td>
                 <td>{r.cluster.distinct_devices}</td>
@@ -545,6 +625,7 @@ function InboxTable({ lang, rows, onOpen }: { lang: Lang; rows: InboxRow[]; onOp
               <span className={r.dispatch_status === "sent" ? "pill new" : "pill outline"}>{t(lang, `panelStatus_${r.dispatch_status}` as Key)}</span>
             </span>
             <b>{inLang(r.brief, lang).title}</b>
+            <PriorityTags lang={lang} p={r.priority_context} />
             <span className="muted small">
               {t(lang, "panelPriority")} {r.priority_score.toFixed(2)} · {r.cluster.report_count} {t(lang, "panelReports")} ·{" "}
               {r.cluster.distinct_devices} {t(lang, "caseNeighbours")} · {fmtDate(lang, r.dispatched_at)}

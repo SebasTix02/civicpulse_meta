@@ -79,4 +79,5 @@ class Catalog:
             "vlm_hints": cat.get("vlm_hints"),
             "confidence": llm.confidence,
             "contains_personal_data": llm.contains_personal_data,
+            "risk_signals": list(llm.risk_signals),
         }

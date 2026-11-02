@@ -17,8 +17,11 @@ Rules:
 - entities: an object with only these optional keys, or null: line (bus line), landmark, street,
   time_bucket (early_morning, peak_morning, midday, peak_evening, night or unknown),
   people_affected_hint (a number).
+- risk_signals: a list with only those of these that the text states, or []: accident (a crash or
+  fall happened), injury (someone was hurt), vehicle_damage, blocks_traffic, near_school,
+  near_hospital, night_hazard (hard to see at night), flooding, recurring (came back or reported before).
 Answer with JSON only, no prose. Keys: category_id, domain_id, summary_en, severity, entities,
-sam_prompts, photo_verifiable, confidence, contains_personal_data.
+sam_prompts, photo_verifiable, confidence, contains_personal_data, risk_signals.
 
 Catalog:
 {catalog}"""

@@ -63,6 +63,11 @@
     "contains_personal_data": {
       "description": "True if the text includes names, phone numbers, plates or other personal data. The orchestrator then never shows raw_text outside the device that wrote it.",
       "type": "boolean"
+    },
+    "risk_signals": {
+      "description": "What the text states that raises the priority. Optional; unknown values are dropped.",
+      "type": "array", "maxItems": 9, "uniqueItems": true,
+      "items": {"enum": ["accident", "injury", "vehicle_damage", "blocks_traffic", "near_school", "near_hospital", "night_hazard", "flooding", "recurring"]}
     }
   },
   "examples": [

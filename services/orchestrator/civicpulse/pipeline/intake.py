@@ -21,6 +21,7 @@ from civicpulse.llm.prompts import spec_system
 from civicpulse.llm.router import AllProvidersFailed, LLMRouter
 from civicpulse.models import SpecLLMOutput
 from civicpulse.redact import redact
+from civicpulse.signals import keyword_signals, merge_signals
 
 if TYPE_CHECKING:  # vision needs OpenCV (extra "vision"); the spec stage does not
     from civicpulse.pipeline.vision import VisionStage
@@ -38,6 +39,12 @@ class SpecOutcome:
 
 
 def build_spec(text: str, catalog: Catalog, router: LLMRouter) -> SpecOutcome:
+    out = _build_spec(text, catalog, router)
+    out.spec["risk_signals"] = merge_signals(out.spec.get("risk_signals", []), keyword_signals(text))
+    return out
+
+
+def _build_spec(text: str, catalog: Catalog, router: LLMRouter) -> SpecOutcome:
     """Text -> validated spec merged with the catalog. Falls back to keywords if every
     provider fails, or if the model is unsure and the keywords found a category."""
     started = time.monotonic()

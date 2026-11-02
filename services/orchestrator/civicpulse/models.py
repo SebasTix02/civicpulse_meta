@@ -49,6 +49,10 @@ ENTITY_TYPES = {"street": "street", "road": "street", "avenue": "street", "landm
                 "place": "landmark", "neighborhood": "landmark", "line": "line", "bus_line": "line", "route": "line"}
 
 
+RISK_SIGNALS = ("accident", "injury", "vehicle_damage", "blocks_traffic", "near_school", "near_hospital",
+                "night_hazard", "flooding", "recurring")
+
+
 class SpecLLMOutput(BaseModel):
     """Raw answer of the text model for stage `spec` (spec_llm_output.schema.json)."""
 
@@ -62,6 +66,15 @@ class SpecLLMOutput(BaseModel):
     photo_verifiable: bool
     confidence: float = Field(ge=0, le=1)
     contains_personal_data: bool
+    risk_signals: list[str] = Field(default_factory=list, max_length=len(RISK_SIGNALS))
+
+    @field_validator("risk_signals", mode="before")
+    @classmethod
+    def known_signals(cls, value: object) -> object:
+        # Optional: unknown or repeated signals are dropped instead of failing the whole spec.
+        if not isinstance(value, list):
+            return []
+        return list(dict.fromkeys(str(v).strip().lower() for v in value if str(v).strip().lower() in RISK_SIGNALS))
 
     @field_validator("entities", mode="before")
     @classmethod

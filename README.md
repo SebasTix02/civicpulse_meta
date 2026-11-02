@@ -154,6 +154,7 @@ Copy `.env.example` to `.env` and fill in the keys. Production: Vercel (web), Su
 - The Ambato pothole pairs are used with the data owner's permission. Names, phone numbers, source ids and exact coordinates never enter this repository; see [data/pothole_pairs/README.md](data/pothole_pairs/README.md).
 - The Meta Model API only receives anonymized photos and redacted text: people, faces and plates are blurred locally (SAM 3.1 open weights) before any API call.
 - City boundary: `python scripts/import_city_boundary.py` loads the Ambato canton polygon from OpenStreetMap (Nominatim); every report, real or sandbox, must fall inside it.
+- Street context for case priority: `python scripts/import_osm_context.py` loads major roads, bus routes, schools, hospitals and markets from OpenStreetMap.
 - Official bus stops: `python scripts/import_osm_stops.py` loads them from OpenStreetMap. Bus stops © OpenStreetMap contributors, available under the [ODbL](https://www.openstreetmap.org/copyright).
 
 ## License

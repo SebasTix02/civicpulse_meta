@@ -446,3 +446,12 @@ table.adm-table tr:last-child td { border-bottom: 0; }
 table.adm-table tr.retired td:not(:last-child) { opacity: .6; }
 .adm-history { margin: 0; padding: 12px 12px 12px 32px; display: grid; gap: 8px; font-size: 14px; }
 .adm-history code { font-size: 12px; }
+
+/* ---------- Priority reasons (migration 27) ---------- */
+.prio-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.prio-tags span { padding: 0 8px; border-radius: 999px; background: var(--line-soft); color: var(--fg-2); font-size: 0.72rem; line-height: 1.6; white-space: nowrap; }
+.prio-tags span.risk { background: var(--warn-bg); color: var(--warn-fg); }
+.prio-why { margin: 12px 0 0; padding: 0; list-style: none; font-size: 0.85rem; }
+.prio-why li { display: flex; justify-content: space-between; gap: 8px; padding: 4px 0; border-top: 1px solid var(--line); }
+.prio-why li b { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.prio-why li.risk span { color: var(--warn-fg); }

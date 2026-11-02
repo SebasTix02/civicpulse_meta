@@ -27,3 +27,6 @@ supabase/.temp/
 supabase/.branches/
 
 .DS_Store
+
+# Glimmer fine-tune: raw generation cache (train/holdout jsonl are committed)
+data/glimmer/cache/

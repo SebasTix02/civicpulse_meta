@@ -16,8 +16,10 @@ leaves the layer as it was). At the end refresh_city_priorities recomputes every
 the bonuses and their weights are in app_config.priority_rules. Residential streets are not
 loaded: "no major road within 25 m" means a local street.
 
-Overpass is sometimes down (502/504): the script tries a second mirror. Run layers one at a time
-with --layers if a big query times out.
+Overpass is sometimes down (502/504): the script retries and tries other mirrors. A layer that still
+fails is skipped (the others are loaded, and that layer keeps what it had); run it again later with
+--layers. Bus routes are fetched as relation member lists plus the ways inside the box, not as full
+relation geometry, which for intercity lines was too heavy for Overpass.
 
 Data © OpenStreetMap contributors, ODbL. Uses SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY from .env.
 """
@@ -27,6 +29,7 @@ from __future__ import annotations
 import argparse
 import os
 import sys
+import time
 from pathlib import Path
 
 import httpx
@@ -39,7 +42,11 @@ from civicpulse.db import Db
 
 from smoke_models import load_env
 
-MIRRORS = ("https://overpass-api.de/api/interpreter", "https://overpass.kumi.systems/api/interpreter")
+MIRRORS = (
+    "https://overpass-api.de/api/interpreter",
+    "https://overpass.private.coffee/api/interpreter",
+    "https://overpass.kumi.systems/api/interpreter",
+)
 HEADERS = {"User-Agent": "CivicPulse hackathon (github.com/SebasTix02/civicpulse_meta)"}
 BBOX = (-1.33, -78.72, -1.17, -78.55)  # south, west, north, east: same box as the city boundary seed
 BATCH = 200
@@ -47,7 +54,7 @@ ROAD_CLASSES = ("trunk", "primary", "secondary", "tertiary")
 
 QUERIES = {
     "roads": 'way["highway"~"^(trunk|primary|secondary|tertiary)(_link)?$"]({bbox}); out geom;',
-    "transit_routes": 'relation["route"="bus"]({bbox}); out geom;',
+    "transit_routes": 'relation["route"="bus"]({bbox})->.r; .r out body; way(r.r)({bbox}); out geom;',
     "schools": 'nwr["amenity"~"^(school|college|kindergarten|university)$"]({bbox}); out center;',
     "hospitals": '(nwr["amenity"~"^(hospital|clinic)$"]({bbox}); nwr["healthcare"~"^(hospital|clinic|centre)$"]({bbox}););'
                  " out center;",
@@ -55,19 +62,22 @@ QUERIES = {
 }
 
 
-def fetch(client: httpx.Client, layer: str) -> list[dict]:
+def fetch(client: httpx.Client, layer: str) -> list[dict] | None:
+    """Overpass elements, or None when every mirror failed twice."""
     s, w, n, e = BBOX
-    query = f"[out:json][timeout:120];{QUERIES[layer].format(bbox=f'{s},{w},{n},{e}')}"
-    last: Exception | None = None
-    for url in MIRRORS:
-        try:
-            resp = client.post(url, data={"data": query})
-            resp.raise_for_status()
-            return resp.json().get("elements", [])
-        except (httpx.HTTPError, ValueError) as exc:
-            print(f"  {layer}: {url} failed ({exc}), trying the next mirror", file=sys.stderr)
-            last = exc
-    raise SystemExit(f"Overpass unavailable for {layer}: {last}")
+    query = f"[out:json][timeout:180];{QUERIES[layer].format(bbox=f'{s},{w},{n},{e}')}"
+    for attempt in (1, 2):
+        for url in MIRRORS:
+            try:
+                resp = client.post(url, data={"data": query})
+                resp.raise_for_status()
+                return resp.json().get("elements", [])
+            except (httpx.HTTPError, ValueError) as exc:
+                print(f"  {layer}: {url} failed ({str(exc).splitlines()[0]})", file=sys.stderr)
+        if attempt == 1:
+            print(f"  {layer}: every mirror failed, retrying in 20 s", file=sys.stderr)
+            time.sleep(20)
+    return None
 
 
 def _line(geometry: list[dict] | None) -> list[list[float]] | None:
@@ -86,6 +96,8 @@ def to_rows(layer: str, elements: list[dict]) -> list[dict]:
     """Overpass elements -> replace_geo_layer rows: {ref, name, props, geojson}."""
     rows: list[dict] = []
     seen: set[str] = set()
+    # Bus routes come as relations (member ids) plus the member ways with their geometry.
+    ways = {el["id"]: ln for el in elements if el.get("type") == "way" and (ln := _line(el.get("geometry")))}
     for el in elements:
         ref = f"{el.get('type')}/{el.get('id')}"
         if ref in seen:
@@ -99,7 +111,8 @@ def to_rows(layer: str, elements: list[dict]) -> list[dict]:
                 continue
             row = {"props": {"class": klass}, "geojson": {"type": "LineString", "coordinates": line}}
         elif layer == "transit_routes":
-            lines = [ln for m in el.get("members") or [] if m.get("type") == "way" and (ln := _line(m.get("geometry")))]
+            lines = [ln for m in el.get("members") or [] if m.get("type") == "way"
+                     and (ln := _line(m.get("geometry")) or ways.get(m.get("ref")))]
             if el.get("type") != "relation" or not lines:
                 continue
             row = {"props": {"ref": tags.get("ref") or ""}, "geojson": {"type": "MultiLineString", "coordinates": lines}}
@@ -127,9 +140,15 @@ def main() -> int:
         return 2
 
     fetched: dict[str, list[dict]] = {}
-    with httpx.Client(timeout=httpx.Timeout(180.0, connect=10.0), headers=HEADERS) as client:
+    failed: list[str] = []
+    with httpx.Client(timeout=httpx.Timeout(200.0, connect=10.0), headers=HEADERS) as client:
         for layer in layers:
-            rows = to_rows(layer, fetch(client, layer))
+            elements = fetch(client, layer)
+            if elements is None:
+                print(f"{layer}: Overpass unavailable, skipped (run again later with --layers {layer})")
+                failed.append(layer)
+                continue
+            rows = to_rows(layer, elements)
             named = sum(1 for r in rows if r["name"])
             extra = ""
             if layer == "roads":
@@ -137,8 +156,8 @@ def main() -> int:
                 extra = " (" + ", ".join(f"{k} {v}" for k, v in counts.items()) + ")"
             print(f"{layer}: {len(rows)} features, {named} with a name{extra}")
             fetched[layer] = rows
-    if args.dry_run:
-        return 0
+    if args.dry_run or not fetched:
+        return 1 if failed and not fetched else 0
 
     load_env()
     url, key = os.environ.get("SUPABASE_URL"), os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
@@ -159,6 +178,8 @@ def main() -> int:
         print(f"{layer}: wrote {written}, replaced {removed} from the previous import")
     n = db.rpc("refresh_city_priorities", {"p_city": args.city})
     print(f"priorities recomputed for {n} cases")
+    if failed:
+        print(f"skipped: {', '.join(failed)}. Retry with --layers {','.join(failed)}")
     return 0
 
 

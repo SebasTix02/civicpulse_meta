@@ -96,6 +96,8 @@ const CODES: Record<string, Msg> = {
     es: "El sandbox llegó a su límite de hoy. Mientras tanto, mira la demo grabada.",
     en: "The sandbox reached today's limit. Meanwhile, watch the recorded demo.",
   },
+  reason_required: { es: "Elige un motivo para ocultar el reporte.", en: "Choose a reason to hide the report." },
+  category_required: { es: "La categoría «Otro» no se puede retirar.", en: "The “Other” category cannot be retired." },
   sandbox_neighbours_exceeded: {
     es: "Ya pusiste el máximo de vecinos para este reporte.",
     en: "You already placed the most neighbours allowed for this report.",

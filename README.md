@@ -122,7 +122,7 @@ Try these same pairs in the judges' sandbox at `/sandbox`. There, neighbours con
 
 | Path | What |
 |---|---|
-| `apps/web` | Next.js PWA: public map, `/report`, `/sandbox`, `/panel`, open GeoJSON feed. UI in Spanish and English |
+| `apps/web` | Next.js PWA: public map, `/report`, `/sandbox`, `/panel` (responsible parties), `/panel/admin` (moderation queue and catalog), open GeoJSON feed. UI in Spanish and English |
 | `services/orchestrator` | Python: webhook API, LLMRouter, SAMService, intake pipeline, closure decision, Modal app |
 | `supabase` | Migrations (schema, RLS, RPCs, storage), seeds, SQL tests |
 | `packages/catalog` | Civic category catalog (seed of the `categories` table) |

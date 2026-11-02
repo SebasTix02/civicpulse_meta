@@ -26,6 +26,7 @@ if TYPE_CHECKING:  # vision needs OpenCV (extra "vision"); the spec stage does n
     from civicpulse.pipeline.vision import VisionStage
 
 KEYWORD_PREFERRED_BELOW = 0.40
+STATUS_TTL_S = 60.0  # how long the category statuses read from the database are reused
 
 
 @dataclass
@@ -45,7 +46,7 @@ def build_spec(text: str, catalog: Catalog, router: LLMRouter) -> SpecOutcome:
     try:
         res = router.structured(spec_system(catalog.categories), safe_text, SpecLLMOutput)
         llm: SpecLLMOutput = res.data  # type: ignore[assignment]
-        if llm.category_id not in catalog.categories:
+        if llm.category_id not in catalog.active_ids():
             llm = llm.model_copy(update={"category_id": "other"})
         if llm.confidence < KEYWORD_PREFERRED_BELOW and keyword_cat:
             llm = llm.model_copy(update={"category_id": keyword_cat})
@@ -65,6 +66,20 @@ def build_spec(text: str, catalog: Catalog, router: LLMRouter) -> SpecOutcome:
 class IntakePipeline:
     def __init__(self, db: Db, catalog: Catalog, router: LLMRouter, vision: VisionStage | None = None):
         self.db, self.catalog, self.router, self.vision = db, catalog, router, vision
+        self._statuses_at = float("-inf")
+
+    def current_catalog(self) -> Catalog:
+        """The packaged catalog with the statuses set in the admin panel, refreshed every minute.
+        If the database cannot be read, the last known statuses (or the packaged ones) are used."""
+        now = time.monotonic()
+        if now - self._statuses_at >= STATUS_TTL_S:
+            try:
+                rows = self.db.select("categories", {"select": "id,status"})
+                self.catalog = self.catalog.with_statuses({r["id"]: r["status"] for r in rows})
+                self._statuses_at = now
+            except Exception:  # noqa: BLE001 - a status read must never stop a report
+                self._statuses_at = now - STATUS_TTL_S / 2  # retry in half the time
+        return self.catalog
 
     def run(self, report_id: str) -> str:
         report = self.db.select_one("reports", id=report_id)
@@ -100,7 +115,7 @@ class IntakePipeline:
             return
         raw = report["raw_text"] or ""
         redacted, _ = redact(raw)
-        out = build_spec(raw, self.catalog, self.router)
+        out = build_spec(raw, self.current_catalog(), self.router)
         domain = self._domain_for(out.spec["category_id"])
         moved = self.db.compare_and_set("reports", report["id"], "received", {
             "status": "spec_ready",

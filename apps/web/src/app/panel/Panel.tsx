@@ -75,13 +75,13 @@ function fmtDate(lang: Lang, iso: string) {
   return new Date(iso).toLocaleString(lang === "es" ? "es-EC" : "en-US", { dateStyle: "medium", timeStyle: "short" });
 }
 
-function photoUrl(path: string | null) {
+export function photoUrl(path: string | null) {
   if (!path) return null;
   const [bucket, ...rest] = path.split("/");
   return browserClient().storage.from(bucket).getPublicUrl(rest.join("/")).data.publicUrl;
 }
 
-function Login({ lang }: { lang: Lang }) {
+export function Login({ lang }: { lang: Lang }) {
   const [email, setEmail] = useState("");
   const [state, setState] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [error, setError] = useState("");
@@ -563,6 +563,7 @@ export function Panel({ lang }: { lang: Lang }) {
   const [tab, setTab] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
   const [email, setEmail] = useState("");
+  const [admin, setAdmin] = useState(false);
 
   const load = useCallback(async () => {
     const supabase = browserClient();
@@ -570,8 +571,16 @@ export function Panel({ lang }: { lang: Lang }) {
     const user = session.session?.user;
     if (!user || user.is_anonymous) return setPhase("login");
     setEmail(user.email ?? "");
-    const { data: mine } = await supabase.from("my_stakeholders").select("id");
-    if (!mine?.length) return setPhase("norole");
+    const [{ data: mine }, { data: access }] = await Promise.all([
+      supabase.from("my_stakeholders").select("id"),
+      supabase.rpc("admin_access", { p_city: "ambato" }),
+    ]);
+    const isAdmin = !!(access?.moderate || access?.catalog);
+    setAdmin(isAdmin);
+    if (!mine?.length) {
+      if (isAdmin) return window.location.assign("/panel/admin");
+      return setPhase("norole");
+    }
     const { data } = await supabase.from("panel_inbox").select("*").order("priority_score", { ascending: false });
     setRows((data as InboxRow[]) ?? []);
     setPhase("ready");
@@ -610,6 +619,7 @@ export function Panel({ lang }: { lang: Lang }) {
         <span className="muted small">{t(lang, "panelSorted")}</span>
         <span className="spacer" />
         <span className="who">{actors.join(", ")}{email ? ` · ${email}` : ""}</span>
+        {admin ? <a className="link" href="/panel/admin">{t(lang, "admTitle")}</a> : null}
         <button className="link" onClick={() => void load()}>{t(lang, "panelRefresh")}</button>
         <button className="link" onClick={signOut}>{t(lang, "panelSignOut")}</button>
       </div>

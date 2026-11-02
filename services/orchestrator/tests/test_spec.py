@@ -61,3 +61,37 @@ def test_all_providers_down_uses_keywords(monkeypatch):
     out = build_spec("hay un bache", CATALOG, router)
     assert out.provider == "keywords" and out.spec["category_id"] == "pothole"
     assert out.spec["contains_personal_data"] is True
+
+
+def test_retired_category_is_not_offered_or_matched(monkeypatch):
+    retired = CATALOG.with_statuses({"pothole": "retired", "other": "retired"})
+    assert retired.categories["other"]["status"] == "active", "other always stays active"
+    assert "pothole" not in retired.active_ids()
+    assert retired.keyword_match("Hay un bache enorme") is None
+    router, _calls = router_with([(200, GOOD)], monkeypatch)
+    out = build_spec("Hay un bache enorme", retired, router)
+    assert out.spec["category_id"] == "other"
+    assert CATALOG.categories["pothole"].get("status", "active") == "active", "the packaged catalog is not changed"
+
+
+def test_pipeline_reads_statuses_once_a_minute():
+    from civicpulse.pipeline.intake import IntakePipeline
+
+    class Db:
+        calls = 0
+
+        def select(self, table, params):
+            Db.calls += 1
+            assert table == "categories"
+            return [{"id": "pothole", "status": "retired"}]
+
+    pipe = IntakePipeline(Db(), CATALOG, router=None)  # type: ignore[arg-type]
+    assert "pothole" not in pipe.current_catalog().active_ids()
+    pipe.current_catalog()
+    assert Db.calls == 1
+
+    class Down:
+        def select(self, table, params):
+            raise RuntimeError("db down")
+
+    assert "pothole" in IntakePipeline(Down(), CATALOG, router=None).current_catalog().active_ids()  # type: ignore[arg-type]

@@ -422,3 +422,27 @@ button.card.inbox:hover { border-color: var(--line-strong); }
 label.sb-path { position: relative; }
 label.sb-path input { position: absolute; top: 12px; right: 12px; }
 .sb-path.on { border-color: var(--accent); background: var(--accent-soft); box-shadow: 0 0 0 1px var(--accent); }
+/* Moderation panel (/panel/admin) */
+button.danger { display: inline-flex; align-items: center; justify-content: center; min-height: 40px; padding: 0 16px; border-radius: var(--radius); font: 600 15px var(--font); cursor: pointer; background: #b3261e; color: #fff; border: 0; }
+button.danger:hover:not(:disabled) { background: #8c1d17; }
+.adm-queue { display: grid; gap: 12px; }
+.adm-item { padding: 14px; }
+.adm-head { display: flex; gap: 12px; align-items: flex-start; }
+.adm-head .thumb { width: 88px; height: 88px; border-radius: 8px; object-fit: cover; background: var(--placeholder); flex: none; display: block; }
+.adm-body { flex: 1; min-width: 0; }
+.adm-title { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
+.adm-text { margin: 6px 0; overflow-wrap: anywhere; }
+.adm-pills { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
+.pill.flag { background: var(--warn-bg); color: var(--warn-fg); border-color: var(--warn-line); }
+.adm-actions { margin-top: 10px; gap: 8px; }
+.adm-actions button.secondary, .adm-hide button.secondary { min-height: 40px; font-size: 15px; padding: 0 16px; }
+.adm-hide { margin-top: 10px; display: grid; gap: 8px; }
+.adm-hide select, .adm-hide input { width: 100%; }
+.table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+table.adm-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+table.adm-table th { text-align: left; font-weight: 500; font-size: 13px; color: var(--muted); padding: 10px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+table.adm-table td { padding: 10px 12px; border-bottom: 1px solid var(--line-soft); vertical-align: top; }
+table.adm-table tr:last-child td { border-bottom: 0; }
+table.adm-table tr.retired td:not(:last-child) { opacity: .6; }
+.adm-history { margin: 0; padding: 12px 12px 12px 32px; display: grid; gap: 8px; font-size: 14px; }
+.adm-history code { font-size: 12px; }

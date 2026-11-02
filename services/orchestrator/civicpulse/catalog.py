@@ -29,13 +29,21 @@ class Catalog:
     def active_ids(self) -> list[str]:
         return [cid for cid, c in self.categories.items() if c.get("status", "active") == "active"]
 
+    def with_statuses(self, statuses: dict[str, str]) -> Catalog:
+        """The same catalog with each category's status as the database has it (the admin panel
+        activates and retires categories there). Categories the database does not list keep theirs;
+        "other" always stays active, it is where everything unmatched goes."""
+        cats = {cid: c | {"status": "active" if cid == "other" else statuses.get(cid, c.get("status", "active"))}
+                for cid, c in self.categories.items()}
+        return Catalog(version=self.version, categories=cats)
+
     def keyword_match(self, text: str) -> str | None:
         """Last link of the router for text: whole-word keyword match, any language in the catalog.
         Ties go to the lowest keyword_priority, then the longest keyword."""
         folded = _fold(text)
         best: tuple[int, int, str] | None = None
         for cid, cat in self.categories.items():
-            if cid == "other":
+            if cid == "other" or cat.get("status", "active") != "active":
                 continue
             for words in cat.get("keywords", {}).values():
                 for kw in words:

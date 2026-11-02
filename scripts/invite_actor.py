@@ -5,11 +5,15 @@
     python scripts/invite_actor.py jefe@example.com --stakeholder RRT --role stakeholder_admin
     python scripts/invite_actor.py you@example.com --revoke --stakeholder SBX
     python scripts/invite_actor.py you@example.com --stakeholder SBX --link https://civicpulse-meta.vercel.app
+    python scripts/invite_actor.py mod@example.com --role city_admin --city ambato   # moderation panel
+    python scripts/invite_actor.py cat@example.com --role catalog_editor             # catalog status
 
 Uses SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY from .env (never printed). It creates the
 Supabase Auth user (confirmed, no password: they sign in with the emailed link on /panel), the
 profiles row and the user_roles grant, and writes audit_log. --stakeholder matches the start of
-a stakeholder's name (RRT, WST, SBX) or its id. Running it twice changes nothing.
+a stakeholder's name (RRT, WST, SBX) or its id. Staff roles have no stakeholder: city_admin needs
+--city and opens /panel/admin (moderation queue); catalog_editor and super_admin are global.
+Running it twice changes nothing.
 
 --link prints a one-time sign-in link instead of relying on the email (Supabase's built-in email
 sends only a few per hour): open it in any browser. It signs that person in, so send it to them
@@ -32,6 +36,8 @@ from civicpulse.db import Db
 from smoke_models import load_env
 
 STAKEHOLDER_ROLES = ("stakeholder_agent", "stakeholder_admin")
+CITY_ROLES = ("city_admin",)
+GLOBAL_ROLES = ("catalog_editor", "super_admin")
 
 
 def find_user(db: Db, email: str) -> str | None:
@@ -66,11 +72,52 @@ def sign_in_link(db: Db, email: str, site: str) -> str:
     return out.get("action_link") or out["properties"]["action_link"]
 
 
+def staff(db: Db, args: argparse.Namespace) -> int:
+    """City or global roles: the moderation panel and the catalog (/panel/admin)."""
+    city = args.city if args.role in CITY_ROLES else None
+    if args.role in CITY_ROLES and not city:
+        print(f"--city is required for {args.role}", file=sys.stderr)
+        return 2
+    if args.stakeholder:
+        print(f"{args.role} is not tied to a stakeholder; drop --stakeholder", file=sys.stderr)
+        return 2
+    scope = {"city_id": f"eq.{city}"} if city else {"city_id": "is.null"}
+    where = f" of {city}" if city else ""
+    user_id = find_user(db, args.email)
+    if args.revoke:
+        if not user_id:
+            print("no such user", file=sys.stderr)
+            return 2
+        db.update_where("user_roles", {"revoked_at": datetime.now(UTC).isoformat()}, {
+            "user_id": f"eq.{user_id}", "role_id": f"eq.{args.role}", "revoked_at": "is.null"} | scope)
+        db.insert("audit_log", {"city_id": city, "action": "role.revoke", "entity": "user_roles",
+                                "entity_id": f"{user_id}:{args.role}"})
+        print(f"revoked {args.role}{where} from {args.email}")
+        return 0
+    created = user_id is None
+    user_id = user_id or create_user(db, args.email)
+    if not db.select("profiles", {"select": "user_id", "user_id": f"eq.{user_id}"}):
+        db.insert("profiles", {"user_id": user_id, "display_name": args.name or args.email.split("@")[0]})
+    active = db.select("user_roles", {"select": "id", "user_id": f"eq.{user_id}", "role_id": f"eq.{args.role}",
+                                      "revoked_at": "is.null"} | scope)
+    if active:
+        print(f"{args.email} already is {args.role}{where}")
+    else:
+        db.insert("user_roles", {"user_id": user_id, "role_id": args.role, "city_id": city})
+        db.insert("audit_log", {"city_id": city, "action": "role.grant", "entity": "user_roles",
+                                "entity_id": f"{user_id}:{args.role}", "after": {"role": args.role}})
+        print(f"{'created and ' if created else ''}granted {args.role}{where} to {args.email}. They sign in at /panel/admin.")
+    if args.link:
+        print(f"\none-time sign-in link (private, expires within the hour):\n{sign_in_link(db, args.email, args.link)}")
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("email")
-    ap.add_argument("--stakeholder", required=True, help="start of the name (RRT, WST, SBX) or the id")
-    ap.add_argument("--role", default="stakeholder_agent", choices=STAKEHOLDER_ROLES)
+    ap.add_argument("--stakeholder", help="start of the name (RRT, WST, SBX) or the id; stakeholder roles only")
+    ap.add_argument("--role", default="stakeholder_agent", choices=STAKEHOLDER_ROLES + CITY_ROLES + GLOBAL_ROLES)
+    ap.add_argument("--city", help="city id for city_admin, e.g. ambato")
     ap.add_argument("--name", help="display name in the panel (default: the part before @)")
     ap.add_argument("--revoke", action="store_true")
     ap.add_argument("--link", metavar="SITE_URL", help="also print a sign-in link for this site, no email sent")
@@ -81,6 +128,11 @@ def main() -> int:
         print("SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY missing in .env", file=sys.stderr)
         return 2
     db = Db(url, key)
+    if args.role not in STAKEHOLDER_ROLES:
+        return staff(db, args)
+    if not args.stakeholder:
+        print("--stakeholder is required for stakeholder roles", file=sys.stderr)
+        return 2
 
     matches = [s for s in db.select("stakeholders", {"select": "id,name,city_id,is_sandbox"})
                if s["id"] == args.stakeholder or s["name"].lower().startswith(args.stakeholder.lower())]

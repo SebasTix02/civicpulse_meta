@@ -25,3 +25,36 @@ Everything else. Log, newest last:
 - Orchestrator: Muse-only LLMRouter with circuit breaker and JSON-retry, spec stage with keyword fallback, asymmetric closure decision (with tests), webhook API, Modal app.
 - PWA (es/en): live-camera report flow wired to Supabase (anonymous session, GPS, nonce, resize + EXIF strip, upload, submit), public cluster list, open GeoJSON feed.
 - Data: anonymized index of the Ambato pothole repair pairs; private downloader; Colab notebook that anonymizes every photo with SAM 3.1 open weights (people and plates blurred, metadata dropped) before any API sees it.
+
+### Day 2 (Oct 28)
+
+- Vision stage: local anonymization on the CPU, SAM 3.1 grounding through the Meta Model API, Muse Spark crop check, and a second wider view before a report is confirmed.
+- Pipeline: sweeper for stuck reports, live report status for the citizen, spatial clustering with weighted consensus, routing of validated clusters to the stakeholders that cover them.
+- Moderation signals: reused photos (hash + perceptual hash) and impossible travel between a device's reports.
+- Simulator v1 (consensus scenarios with simulated devices) and five bus-stop categories in the catalog.
+- Data: hand labels for every real before/after pothole pair (five labels, 629 pairs) and a robustness test of the vision stage on degraded photos.
+
+### Day 3 (Oct 29)
+
+- Photo-quality warning in the PWA (dark, overexposed, blurry) before sending.
+- Stakeholder brief for each dispatch, citing real reports and places, translated to the reader's language.
+- Stakeholder panel: invite-only sign-in, inbox, case view.
+- Closure: the crew's repair photo is verified (SAM 3.1 on both photos, alignment, Muse Spark comparison) and a person approves it; a GPS path for photos taken from another angle, with a same-place question.
+- Fictitious test stakeholders (RRT, WST, SBX) instead of real institutions.
+
+### Day 4 (Oct 30)
+
+- Replay demo: record a real run and play it back without Supabase; health cron for honest demo levels; public map of the cases.
+- PWA and panel: readable errors, "my reports", the wireframe design, whole photos with a viewer, camera button on phones.
+
+### Days 5–6 (Oct 31 – Nov 1)
+
+- Public area and actors' panel split.
+- Judges' sandbox at `/sandbox`: anonymous sessions, sample photos, simulated neighbours, the full cycle with daily quotas and cleanup.
+- Closure: local re-alignment around each region; evaluation on real pairs with a Markdown report (`docs/eval/`).
+
+### Day 7 (Nov 2)
+
+- Closure: the AFTER check outlines the repair patch next to the hole, with its own shape; re-evaluation of the aligned sets.
+- README: results on real data and four real repair pairs.
+- Muse Glimmer: LoRA fine-tune for stage `spec` (`services/glimmer`), with synthetic reports labeled by Muse Spark Open and a deterministic grader.

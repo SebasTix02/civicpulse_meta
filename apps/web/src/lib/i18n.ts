@@ -422,6 +422,50 @@ const dict = {
     es: "{d} dispositivos, apoyo {s}. En la ciudad real hacen falta 3 dispositivos y apoyo 1,2.",
     en: "{d} devices, support {s}. In the real city it takes 3 devices and support 1.2.",
   },
+  sbOutsideCity: {
+    es: "El piloto es solo en Ambato: pon el pin dentro del cantón.",
+    en: "The pilot is only in Ambato: place the pin inside the canton.",
+  },
+  sbPathTitle: { es: "¿Cómo confirman los vecinos?", en: "How do neighbours confirm it?" },
+  sbPathQuick: { es: "Camino rápido", en: "Quick path" },
+  sbPathQuickHint: {
+    es: "3 vecinos simulados confirman al lado de tu pin y el caso se valida. Ideal para ver el ciclo completo.",
+    en: "3 simulated neighbours confirm next to your pin and the case is validated. Best to see the whole cycle.",
+  },
+  sbPathManual: { es: "Como en la calle", en: "Like on the street" },
+  sbPathManualHint: {
+    es: "Tú pones cada vecino en el mapa y eliges cómo es. Así ves por qué un caso se valida o no.",
+    en: "You place each neighbour on the map and choose what kind it is. You see why a case is validated or not.",
+  },
+  sbManualTitle: { es: "Pon a los vecinos", en: "Place the neighbours" },
+  sbManualHint: {
+    es: "Toca el mapa donde reporta cada vecino. El círculo es el radio del caso ({r} m): fuera de él, el reporte abre otro caso.",
+    en: "Tap the map where each neighbour reports. The circle is the case radius ({r} m): outside it, the report opens another case.",
+  },
+  sbProgress: {
+    es: "{d} de {md} dispositivos · apoyo {s} de {ms}",
+    en: "{d} of {md} devices · support {s} of {ms}",
+  },
+  sbKind_neighbour: { es: "Vecino con su celular", en: "Neighbour with their own phone" },
+  sbKind_neighbour_hint: { es: "Su propia red y una foto que muestra el problema.", en: "Own network and a photo that shows the problem." },
+  sbKind_same_network: { es: "Celular en tu misma Wi‑Fi", en: "Phone on your Wi‑Fi" },
+  sbKind_same_network_hint: {
+    es: "Cuenta como dispositivo, pero comparte el apoyo contigo: una casa llena de celulares vale como uno.",
+    en: "Counts as a device, but shares support with you: a house full of phones counts as one.",
+  },
+  sbKind_unclear_photo: { es: "Foto que no muestra nada", en: "Photo that shows nothing" },
+  sbKind_unclear_photo_hint: {
+    es: "Su propio celular, pero la IA no ve el problema en la foto: suma muy poco.",
+    en: "Own phone, but the AI does not see the problem in the photo: adds very little.",
+  },
+  sbAddNeighbour: { es: "Agregar vecino aquí ({n})", en: "Add neighbour here ({n})" },
+  sbYourPin: { es: "Tu reporte", en: "Your report" },
+  sbJoined: { es: "se sumó a tu caso, a {m} m", en: "joined your case, {m} m away" },
+  sbSeparate: { es: "abrió otro caso, a {m} m: fuera del radio", en: "opened another case, {m} m away: outside the radius" },
+  sbManualValidated: {
+    es: "Con {d} dispositivos y apoyo {s} el caso se validó, con las mismas reglas que la ciudad real.",
+    en: "With {d} devices and support {s} the case was validated, with the same rules as the real city.",
+  },
   sbWaitingMap: {
     es: "Cuando la foto esté revisada y el reporte en el mapa, llegan los vecinos simulados.",
     en: "Once the photo is checked and the report is on the map, the simulated neighbours arrive.",

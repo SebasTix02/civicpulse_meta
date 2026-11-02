@@ -3,37 +3,101 @@
 import "maplibre-gl/dist/maplibre-gl.css";
 import * as maplibregl from "maplibre-gl";
 import { useEffect, useRef } from "react";
-import { STYLE, initMaplibre } from "@/app/ClusterMap";
+import { CITY_BOUNDS, STYLE, initMaplibre } from "@/app/ClusterMap";
 
 export type LatLon = { lat: number; lon: number };
+export type Dot = LatLon & { color: string; title?: string };
 
-// Sandbox pin (UX flows §3.4): placed by hand, no GPS. Tap the map or drag the pin.
-export function PinMap({ pin, onPin, label }: { pin: LatLon; onPin: (p: LatLon) => void; label: string }) {
+export function inCity(p: LatLon) {
+  const [[w, s], [e, n]] = CITY_BOUNDS;
+  return p.lon >= w && p.lon <= e && p.lat >= s && p.lat <= n;
+}
+
+/** A circle of radius_m around a point, as a polygon (64 sides is smooth at street zoom). */
+function circle(c: LatLon, radiusM: number): GeoJSON.Feature<GeoJSON.Polygon> {
+  const pts: [number, number][] = [];
+  const dLat = radiusM / 111_320;
+  const dLon = radiusM / (111_320 * Math.cos((c.lat * Math.PI) / 180));
+  for (let i = 0; i <= 64; i++) {
+    const a = (i / 64) * 2 * Math.PI;
+    pts.push([c.lon + dLon * Math.cos(a), c.lat + dLat * Math.sin(a)]);
+  }
+  return { type: "Feature", properties: {}, geometry: { type: "Polygon", coordinates: [pts] } };
+}
+
+// Sandbox pin (UX flows §3.4): placed by hand, no GPS. Tap the map or drag the pin; it stays inside
+// the pilot city. Optional: fixed dots (the visitor's report, neighbours already placed) and a ring
+// (the case radius), for placing simulated neighbours.
+export function PinMap({ pin, onPin, label, onOutside, dots = [], ring, color = "#b35a00", zoom = 15 }: {
+  pin: LatLon; onPin: (p: LatLon) => void; label: string; onOutside?: () => void;
+  dots?: Dot[]; ring?: { center: LatLon; radius_m: number }; color?: string; zoom?: number;
+}) {
   const box = useRef<HTMLDivElement>(null);
+  const map = useRef<maplibregl.Map | null>(null);
   const marker = useRef<maplibregl.Marker | null>(null);
-  const move = useRef(onPin);
-  move.current = onPin;
+  const fixed = useRef<maplibregl.Marker[]>([]);
+  const cb = useRef({ onPin, onOutside });
+  cb.current = { onPin, onOutside };
 
   useEffect(() => {
     if (!box.current) return;
     initMaplibre();
-    const map = new maplibregl.Map({ container: box.current, style: STYLE, center: [pin.lon, pin.lat], zoom: 15,
-      attributionControl: { compact: true } });
-    map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
-    const m = new maplibregl.Marker({ draggable: true, color: "#b35a00" }).setLngLat([pin.lon, pin.lat]).addTo(map);
-    m.on("dragend", () => {
-      const p = m.getLngLat();
-      move.current({ lat: p.lat, lon: p.lng });
-    });
-    map.on("click", (e) => {
-      m.setLngLat(e.lngLat);
-      move.current({ lat: e.lngLat.lat, lon: e.lngLat.lng });
-    });
-    map.on("load", () => map.resize());
-    marker.current = m;
-    return () => map.remove();
+    const m = new maplibregl.Map({ container: box.current, style: STYLE, center: [pin.lon, pin.lat], zoom,
+      maxBounds: CITY_BOUNDS, attributionControl: { compact: true } });
+    m.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+    const mk = new maplibregl.Marker({ draggable: true, color }).setLngLat([pin.lon, pin.lat]).addTo(m);
+    let last: LatLon = pin;
+    const place = (p: LatLon) => {
+      if (!inCity(p)) {
+        mk.setLngLat([last.lon, last.lat]);
+        cb.current.onOutside?.();
+        return;
+      }
+      last = p;
+      mk.setLngLat([p.lon, p.lat]);
+      cb.current.onPin(p);
+    };
+    mk.on("dragend", () => { const p = mk.getLngLat(); place({ lat: p.lat, lon: p.lng }); });
+    m.on("click", (e) => place({ lat: e.lngLat.lat, lon: e.lngLat.lng }));
+    m.on("load", () => m.resize());
+    map.current = m;
+    marker.current = mk;
+    return () => { m.remove(); map.current = null; };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- the map is built once; the pin moves itself
   }, []);
+
+  // Fixed dots, redrawn when they change.
+  const dotsKey = JSON.stringify(dots);
+  useEffect(() => {
+    const m = map.current;
+    if (!m) return;
+    fixed.current.forEach((x) => x.remove());
+    fixed.current = dots.map((d) => {
+      const el = document.createElement("span");
+      el.className = "map-dot";
+      el.style.background = d.color;
+      if (d.title) el.title = d.title;
+      return new maplibregl.Marker({ element: el }).setLngLat([d.lon, d.lat]).addTo(m);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed on the serialized dots
+  }, [dotsKey]);
+
+  // The case radius.
+  const ringKey = ring ? `${ring.center.lat},${ring.center.lon},${ring.radius_m}` : "";
+  useEffect(() => {
+    const m = map.current;
+    if (!m || !ring) return;
+    const draw = () => {
+      const data = circle(ring.center, ring.radius_m);
+      const src = m.getSource("ring") as maplibregl.GeoJSONSource | undefined;
+      if (src) return src.setData(data);
+      m.addSource("ring", { type: "geojson", data });
+      m.addLayer({ id: "ring-fill", type: "fill", source: "ring", paint: { "fill-color": "#1f6feb", "fill-opacity": 0.08 } });
+      m.addLayer({ id: "ring-line", type: "line", source: "ring", paint: { "line-color": "#1f6feb", "line-width": 2, "line-dasharray": [2, 2] } });
+    };
+    if (m.isStyleLoaded()) draw(); else m.once("load", draw);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed on the ring's values
+  }, [ringKey]);
 
   return <div ref={box} className="mini-map pin-map" role="application" aria-label={label} />;
 }

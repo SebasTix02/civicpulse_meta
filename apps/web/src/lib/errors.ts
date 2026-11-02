@@ -96,6 +96,11 @@ const CODES: Record<string, Msg> = {
     es: "El sandbox llegó a su límite de hoy. Mientras tanto, mira la demo grabada.",
     en: "The sandbox reached today's limit. Meanwhile, watch the recorded demo.",
   },
+  sandbox_neighbours_exceeded: {
+    es: "Ya pusiste el máximo de vecinos para este reporte.",
+    en: "You already placed the most neighbours allowed for this report.",
+  },
+  invalid_neighbour_kind: { es: "Ese tipo de vecino no existe.", en: "That kind of neighbour does not exist." },
   report_not_ready: { es: "El reporte todavía no está en el mapa.", en: "The report is not on the map yet." },
   sample_not_in_case: {
     es: "Esta muestra no abrió este caso: usa la foto del arreglo de su propio par o tu cámara.",

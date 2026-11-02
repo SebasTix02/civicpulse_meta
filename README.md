@@ -116,7 +116,7 @@ the BEFORE photo from the report and the AFTER photo from the repair crew.
 ![bach_0051 before and after](docs/img/eval/bach_0051_pair.jpg)
 ![bach_0051 region check](docs/img/eval/bach_0051_check.jpg)
 
-Try these same pairs in the judges' sandbox at `/sandbox`.
+Try these same pairs in the judges' sandbox at `/sandbox`. There, neighbours confirm a report in one of two ways: the quick path (three good simulated neighbours) or by hand, placing each neighbour on the map as a phone of its own, a phone on the visitor's Wi‑Fi or a photo that shows nothing, so the consensus rules can be seen at work. Pins stay inside the pilot city.
 
 ## Repository
 

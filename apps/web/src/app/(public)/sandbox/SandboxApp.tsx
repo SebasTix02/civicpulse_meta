@@ -12,7 +12,7 @@ import { BackIcon } from "@/app/icons";
 import { VoiceButton } from "@/app/VoiceButton";
 import { Lightbox, PhotoFrame, type Shot } from "@/app/Lightbox";
 import { Timeline, ago, timelineStep } from "../report/ReportStatus";
-import { PinMap, type LatLon } from "./PinMap";
+import { PinMap, type Dot, type LatLon } from "./PinMap";
 
 export type Sample = {
   id: string;
@@ -40,7 +40,13 @@ type SbReport = {
   cluster_status: string | null;
   photo_public_path: string | null;
   sample_id: string | null;
+  lat: number;
+  lon: number;
+  neighbours?: Neighbour[];
 };
+type NeighbourKind = "neighbour" | "same_network" | "unclear_photo";
+type Neighbour = { id: string; lat: number; lon: number; kind: NeighbourKind; cluster_id: string | null; distance_m: number };
+type Rules = { radius_m: Record<string, number>; min_devices: number; min_support: number; manual_neighbours: number };
 type RegionCheck = { region_id: number; figure_paths?: { before?: string | null; after_aligned?: string | null } };
 type SbResolution = {
   id: string;
@@ -55,6 +61,7 @@ type SbResolution = {
 type SbCase = {
   id: string;
   status: string;
+  domain_id: string;
   report_count: number;
   distinct_devices: number;
   weighted_support: number;
@@ -62,11 +69,16 @@ type SbCase = {
   dispatch: { stakeholder_name: string; status: string; brief: Brief | null } | null;
   resolution: SbResolution | null;
 };
-type State = { session: { id: string; city_id: string; expires_at: string } | null; quota?: Quota; reports?: SbReport[]; cases?: SbCase[] };
+type State = { session: { id: string; city_id: string; expires_at: string } | null; quota?: Quota; rules?: Rules; reports?: SbReport[]; cases?: SbCase[] };
 type View = { kind: "home" } | { kind: "report"; sample: Sample | null; file: File | null } | { kind: "track"; reportId: string };
 
 const CANDIDATE = "RESOLVED_CANDIDATE_REQUIRES_HUMAN_REVIEW";
 const POLL_MS = 4000;
+const KINDS: NeighbourKind[] = ["neighbour", "same_network", "unclear_photo"];
+const DEFAULT_RULES: Rules = { radius_m: { default: 40, transit: 80 }, min_devices: 3, min_support: 1.2, manual_neighbours: 6 };
+const YOU_COLOR = "#1f6feb";
+const JOINED_COLOR = "#2e7d32";
+const APART_COLOR = "#8a8a85";
 const DEFAULT_QUOTA: Quota = { camera_reports_left: 5, camera_closures_left: 2, samples_left: 10, global_reports_open: true, global_closures_open: true };
 
 /** public/<name> -> public URL (anonymized copies and samples only). */
@@ -140,6 +152,7 @@ export function SandboxApp({ lang, samples }: { lang: Lang; samples: Sample[] })
     const kase = state?.cases?.find((c) => c.id === report?.cluster_id);
     return (
       <SbTrack lang={lang} reportId={view.reportId} report={report} kase={kase} quota={quota}
+        rules={state?.rules ?? DEFAULT_RULES}
         sample={samples.find((s) => s.id === report?.sample_id) ?? null} refresh={refresh}
         onHome={() => { setView({ kind: "home" }); window.scrollTo({ top: 0 }); }} />
     );
@@ -323,7 +336,8 @@ function SbReportForm({ lang, sample, file, ensureSession, onBack, onSent }: {
         </div>
         <div className="field">
           <div className="label">{t(lang, "sbPinTitle")}</div>
-          <PinMap pin={pin} onPin={setPin} label={t(lang, "sbPinTitle")} />
+          <PinMap pin={pin} onPin={(p) => { setPin(p); setError(""); }} label={t(lang, "sbPinTitle")}
+            onOutside={() => setError(t(lang, "sbOutsideCity"))} />
           <div className="hint">{t(lang, "sbPinHint")}</div>
         </div>
         {error ? <p className="notice warn" role="alert">{error}</p> : null}
@@ -338,9 +352,9 @@ function SbReportForm({ lang, sample, file, ensureSession, onBack, onSent }: {
 }
 
 // The whole cycle for one report: check, neighbours, brief, accept, closure, review.
-function SbTrack({ lang, reportId, report, kase, sample, quota, refresh, onHome }: {
+function SbTrack({ lang, reportId, report, kase, sample, quota, rules, refresh, onHome }: {
   lang: Lang; reportId: string; report: SbReport | undefined; kase: SbCase | undefined; sample: Sample | null;
-  quota: Quota; refresh: () => Promise<void>; onHome: () => void;
+  quota: Quota; rules: Rules; refresh: () => Promise<void>; onHome: () => void;
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -349,7 +363,7 @@ function SbTrack({ lang, reportId, report, kase, sample, quota, refresh, onHome 
   const [viewing, setViewing] = useState<{ shots: Shot[]; i: number } | null>(null);
   const [inputKey, setInputKey] = useState(0);
   const fileInput = useRef<HTMLInputElement>(null);
-  const asked = useRef(false);
+  const [manual, setManual] = useState(false);
   const keepPolling = moving(report, kase);
 
   useEffect(() => {
@@ -358,15 +372,9 @@ function SbTrack({ lang, reportId, report, kase, sample, quota, refresh, onHome 
     return () => clearInterval(id);
   }, [keepPolling, refresh]);
 
-  // Once the report is on the map, the simulated neighbours confirm it (UX flows §3.4).
-  useEffect(() => {
-    if (asked.current || report?.status !== "clustered" || !kase || kase.simulated_reports > 0) return;
-    asked.current = true;
-    void sandboxClient().rpc("sandbox_simulate_neighbours", { p_report_id: reportId }).then(({ error: e }) => {
-      if (e) setError(errorMessage(lang, e));
-      void refresh();
-    });
-  }, [report?.status, kase, reportId, lang, refresh]);
+  // Once the report is on the map the visitor picks how neighbours confirm it: the quick path
+  // (three good neighbours at once) or each neighbour placed by hand (UX flows §3.4).
+  const quick = () => act(() => sandboxClient().rpc("sandbox_simulate_neighbours", { p_report_id: reportId }));
 
   async function act(fn: () => PromiseLike<{ error: unknown }>) {
     setBusy(true);
@@ -448,16 +456,31 @@ function SbTrack({ lang, reportId, report, kase, sample, quota, refresh, onHome 
 
       <Timeline lang={lang} step={step} failed={report.status === "failed"} />
 
-      {report.status === "clustered" ? (
-        <div className={kase && kase.simulated_reports > 0 ? "notice ok" : "notice"} role="status">
-          {kase && kase.simulated_reports > 0 ? (
-            <>
-              <b>{t(lang, "sbNeighbours")}</b>
-              <p>{t(lang, "sbNeighboursDetail").replace("{d}", String(kase.distinct_devices))
-                .replace("{s}", kase.weighted_support.toLocaleString(lang === "es" ? "es-EC" : "en-US", { maximumFractionDigits: 2 }))}</p>
-            </>
-          ) : <b>{t(lang, "sbNeighboursWaiting")}</b>}
-        </div>
+      {report.status === "clustered" && kase ? (
+        (report.neighbours?.length ?? 0) > 0 || manual ? (
+          <SbNeighbours lang={lang} report={report} kase={kase} rules={rules} busy={busy} act={act} />
+        ) : kase.simulated_reports > 0 ? (
+          <div className="notice ok" role="status">
+            <b>{t(lang, "sbNeighbours")}</b>
+            <p>{t(lang, "sbNeighboursDetail").replace("{d}", String(kase.distinct_devices))
+              .replace("{s}", num(lang, kase.weighted_support))}</p>
+          </div>
+        ) : kase.status === "candidate" ? (
+          <div className="card">
+            <h2>{t(lang, "sbPathTitle")}</h2>
+            <div className="sb-paths">
+              <button className="sb-path" disabled={busy} onClick={() => void quick()}>
+                <b>{t(lang, "sbPathQuick")}</b>
+                <span className="small muted">{t(lang, "sbPathQuickHint")}</span>
+              </button>
+              <button className="sb-path" disabled={busy} onClick={() => setManual(true)}>
+                <b>{t(lang, "sbPathManual")}</b>
+                <span className="small muted">{t(lang, "sbPathManualHint")}</span>
+              </button>
+            </div>
+            {busy ? <p className="muted small" role="status">{t(lang, "sbNeighboursWaiting")}</p> : null}
+          </div>
+        ) : null
       ) : !checked && report.status !== "failed" ? <p className="muted small">{t(lang, "sbWaitingMap")}</p> : null}
 
       {d ? (
@@ -614,6 +637,85 @@ function SbTrack({ lang, reportId, report, kase, sample, quota, refresh, onHome 
       <button className="secondary block" onClick={onHome}>{kase?.status === "resolved" ? t(lang, "sbAgain") : t(lang, "sbBack")}</button>
 
       {viewing ? <Lightbox lang={lang} shots={viewing.shots} start={viewing.i} onClose={() => setViewing(null)} /> : null}
+    </div>
+  );
+}
+
+function num(lang: Lang, x: number) {
+  return x.toLocaleString(lang === "es" ? "es-EC" : "en-US", { maximumFractionDigits: 2 });
+}
+
+/** About 15 m east of p, so the first neighbour pin does not hide the report. */
+function beside(p: LatLon): LatLon {
+  return { lat: p.lat, lon: p.lon + 15 / (111_320 * Math.cos((p.lat * Math.PI) / 180)) };
+}
+
+// "Like on the street": each simulated neighbour placed by hand, with the kind of device it is.
+// The case and its numbers come from the database, which applies the real consensus rules.
+function SbNeighbours({ lang, report, kase, rules, busy, act }: {
+  lang: Lang; report: SbReport; kase: SbCase; rules: Rules; busy: boolean;
+  act: (fn: () => PromiseLike<{ error: unknown }>) => Promise<void>;
+}) {
+  const me: LatLon = { lat: report.lat, lon: report.lon };
+  const [pin, setPin] = useState<LatLon>(() => beside(me));
+  const [kind, setKind] = useState<NeighbourKind>("neighbour");
+  const [outside, setOutside] = useState(false);
+  const placed = report.neighbours ?? [];
+  const left = Math.max(0, rules.manual_neighbours - placed.length);
+  const radius = rules.radius_m[kase.domain_id] ?? rules.radius_m.default ?? 40;
+  const open = kase.status === "candidate";
+  const dots: Dot[] = [
+    { ...me, color: YOU_COLOR, title: t(lang, "sbYourPin") },
+    ...placed.map((n) => ({ lat: n.lat, lon: n.lon, color: n.cluster_id === kase.id ? JOINED_COLOR : APART_COLOR,
+                             title: t(lang, `sbKind_${n.kind}` as Key) })),
+  ];
+
+  return (
+    <div className="card">
+      <h2>{t(lang, "sbManualTitle")}</h2>
+      <p className={open ? "sb-progress" : "notice ok"} role="status">
+        {open
+          ? t(lang, "sbProgress").replace("{d}", String(kase.distinct_devices)).replace("{md}", String(rules.min_devices))
+              .replace("{s}", num(lang, kase.weighted_support)).replace("{ms}", num(lang, rules.min_support))
+          : t(lang, "sbManualValidated").replace("{d}", String(kase.distinct_devices)).replace("{s}", num(lang, kase.weighted_support))}
+      </p>
+      {open ? (
+        <>
+          <p className="muted small">{t(lang, "sbManualHint").replace("{r}", String(radius))}</p>
+          <PinMap pin={pin} onPin={(p) => { setPin(p); setOutside(false); }} onOutside={() => setOutside(true)}
+            label={t(lang, "sbManualTitle")} dots={dots} ring={{ center: me, radius_m: radius }} color="#E07B00" zoom={17} />
+          {outside ? <p className="notice warn small">{t(lang, "sbOutsideCity")}</p> : null}
+          <div className="sb-legend small">
+            <span><i style={{ background: YOU_COLOR }} /> {t(lang, "sbYourPin")}</span>
+            <span><i style={{ background: JOINED_COLOR }} /> {t(lang, "sbJoined").split(",")[0]}</span>
+            <span><i style={{ background: APART_COLOR }} /> {t(lang, "sbSeparate").split(",")[0]}</span>
+          </div>
+          <fieldset className="sb-kinds">
+            {KINDS.map((k) => (
+              <label key={k} className={kind === k ? "on" : ""}>
+                <input type="radio" name="sb-kind" value={k} checked={kind === k} onChange={() => setKind(k)} />
+                <span><b>{t(lang, `sbKind_${k}` as Key)}</b><span className="small muted">{t(lang, `sbKind_${k}_hint` as Key)}</span></span>
+              </label>
+            ))}
+          </fieldset>
+          <button className="primary" disabled={busy || left <= 0}
+            onClick={() => void act(() => sandboxClient().rpc("sandbox_add_neighbour", {
+              p_report_id: report.id, p_lat: pin.lat, p_lon: pin.lon, p_kind: kind,
+            }))}>
+            {t(lang, "sbAddNeighbour").replace("{n}", String(left))}
+          </button>
+        </>
+      ) : null}
+      {placed.length ? (
+        <ol className="sb-placed small">
+          {placed.map((n) => (
+            <li key={n.id}>
+              <b>{t(lang, `sbKind_${n.kind}` as Key)}</b>{" "}
+              <span className="muted">{t(lang, n.cluster_id === kase.id ? "sbJoined" : "sbSeparate").replace("{m}", String(Math.round(n.distance_m)))}</span>
+            </li>
+          ))}
+        </ol>
+      ) : null}
     </div>
   );
 }

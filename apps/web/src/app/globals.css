@@ -402,3 +402,17 @@ button.card.inbox:hover { border-color: var(--line-strong); }
 .voice .rec-dot { width: 10px; height: 10px; border-radius: 50%; background: #c62828; animation: rec-pulse 1s ease-in-out infinite; }
 @keyframes rec-pulse { 50% { opacity: 0.3; } }
 @media (prefers-reduced-motion: reduce) { .voice .rec-dot { animation: none; } }
+.map-dot { display: block; width: 14px; height: 14px; border-radius: 7px; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.35); }
+.sb-paths { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.sb-path { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; text-align: left; padding: 12px; border: 1px solid var(--line-strong); border-radius: 10px; background: var(--bg, #fff); color: var(--fg); cursor: pointer; }
+.sb-path:hover:not(:disabled) { border-color: var(--accent); }
+.sb-progress { font-weight: 600; margin: 4px 0 8px; }
+.sb-kinds { border: 0; padding: 0; margin: 10px 0; display: grid; gap: 6px; }
+.sb-kinds label { display: flex; gap: 8px; align-items: flex-start; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; cursor: pointer; }
+.sb-kinds label.on { border-color: var(--accent); background: var(--accent-soft); }
+.sb-kinds label > span { display: flex; flex-direction: column; gap: 2px; }
+.sb-placed { margin: 10px 0 0; padding-left: 20px; }
+@media (max-width: 480px) { .sb-paths { grid-template-columns: 1fr; } }
+.sb-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 8px 0 0; color: var(--muted, #5f5f5a); }
+.sb-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sb-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 5px; }

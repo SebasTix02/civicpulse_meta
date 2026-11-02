@@ -10,6 +10,9 @@ import type { OfficialStop, PublicCluster } from "@/lib/supabase";
 // no key. The rows come from the server (public_clusters), so the map needs no second request.
 export const STYLE = "https://tiles.openfreemap.org/styles/liberty";
 export const CENTER: [number, number] = [-78.6197, -1.2417]; // Ambato
+// The pilot city's boundary box (supabase/seed/ambato.sql). The database has the last word:
+// a report outside cities.boundary is refused with outside_service_area, in the sandbox too.
+export const CITY_BOUNDS: [[number, number], [number, number]] = [[-78.80, -1.42], [-78.45, -1.08]];
 // One colour per case status, the same in the legend, the pills and the panel (wireframes).
 export const STATUS_COLOR: Record<string, string> = {
   validated: "#1F5FBF",

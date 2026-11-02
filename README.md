@@ -60,6 +60,39 @@ repair patch itself, the aligned sets were run again (44 runs, about USD 0.86): 
 
 The AI never closes a case: at best it marks a candidate, and a person approves it.
 
+### Four real repairs, four honest answers
+
+All photos are anonymized (faces, people and close vehicles blurred, no metadata). Each pair is
+the BEFORE photo from the report and the AFTER photo from the repair crew.
+
+| Pair | What the system said | Why |
+|---|---|---|
+| **bach_0211** | Candidate, a human confirms | Photos aligned; the AFTER crop outlines the new asphalt patch next to the hole, with its own shape; Muse: no issue (0.96) |
+| **bach_0007** | Candidate, a human confirms | Shot from another angle, so no alignment; the AFTER GPS is close, SAM finds the patch, Muse says no issue and that both photos show the same place |
+| **bach_0209** | Cannot verify | Another angle and a weak match: the system will not guess, a human decides |
+| **bach_0051** | Cannot verify | Aligned, but something covers part of the region (confuser or occlusion) |
+
+**bach_0211**, before and after, then the region the classifier compared (left BEFORE, right AFTER):
+
+![bach_0211 before and after](docs/img/eval/bach_0211_pair.jpg)
+![bach_0211 region check](docs/img/eval/bach_0211_check.jpg)
+
+**bach_0007**, before and after, then the region check:
+
+![bach_0007 before and after](docs/img/eval/bach_0007_pair.jpg)
+![bach_0007 region check](docs/img/eval/bach_0007_check.jpg)
+
+**bach_0209**, before and after:
+
+![bach_0209 before and after](docs/img/eval/bach_0209_pair.jpg)
+
+**bach_0051**, before and after, then the region check:
+
+![bach_0051 before and after](docs/img/eval/bach_0051_pair.jpg)
+![bach_0051 region check](docs/img/eval/bach_0051_check.jpg)
+
+Try these same pairs in the judges' sandbox at `/sandbox`.
+
 ## Repository
 
 | Path | What |

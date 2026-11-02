@@ -118,6 +118,37 @@ the BEFORE photo from the report and the AFTER photo from the repair crew.
 
 Try these same pairs in the judges' sandbox at `/sandbox`. There, neighbours confirm a report in one of two ways: the quick path (three good simulated neighbours) or by hand, placing each neighbour on the map as a phone of its own, a phone on the visitor's Wi‑Fi or a photo that shows nothing, so the consensus rules can be seen at work. Pins stay inside the pilot city.
 
+### Case priority: pothole size and depth from one photo
+
+A case's priority adds the street context (major road, bus route, school, hospital or market
+nearby, city centre, from OpenStreetMap), the risk words in the reports (injury, accident, tyre
+damage, ...) and, when the photo confirms a pothole, its size and depth. Size is relative:
+SAM 3.1 also segments the road, and the pothole's width is divided by the roadway's width in the
+same rows, so the camera distance cancels out. Depth is low / medium / high from cues Muse Spark
+looks for (exposed base, steep edges, water), never centimetres. The panel shows every reason
+next to the score.
+
+We checked size and depth against hand labels on 70 anonymized "before" photos of real repairs
+(`scripts/eval_measure.py --stability`, about USD 0.57; full table in
+[docs/eval/measure_eval_2026-11-02.md](docs/eval/measure_eval_2026-11-02.md)):
+
+| | Result |
+|---|---|
+| Urgency by hand vs the photo bonus (rank correlation) | **0.42**. Before this change every photo added the same, 0 |
+| Photos rated urgent that land in the top third | **14 / 20** (by chance about 7) |
+| Mean photo bonus by urgency 1 / 2 / 3 | 0.17 / 0.41 / 0.68 |
+| Size class, street fully in the photo (what adds priority) | 11 / 18 exact, 16 / 18 within one class |
+| Depth level | 13 / 35 exact, 31 / 35 within one level: weak, close to chance on the exact level |
+| Same size class when the photo is taken "a step closer" (zoomed 85%) | 27 / 34, median width change 0.034 |
+| Street runs off both sides of the photo | 19 / 37: the width is only a maximum and adds nothing |
+
+What this means: one photo cannot measure a pothole, but as a signal for ordering it helps.
+Urgent potholes rise to the top more than twice as often as chance. Size is the more reliable
+half, and only when the whole street is in the shot; depth agrees only roughly. In this eval
+SAM's single "pothole" prompt found the hole in 39 of 70 photos. The pipeline uses more prompts
+and asks the classifier first, and it measures only photos where the classifier confirmed the
+pothole.
+
 ## Repository
 
 | Path | What |

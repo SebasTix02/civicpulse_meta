@@ -10,6 +10,7 @@ import { BackIcon } from "@/app/icons";
 import { VoiceButton } from "@/app/VoiceButton";
 import { LocationPicker, distanceM, PIN_MAX_M, type LatLon } from "./LocationPicker";
 import { MyReports } from "./MyReports";
+import { NearbyFixes } from "./NearbyFixes";
 import { ReportStatus } from "./ReportStatus";
 
 type Fix = LatLon & { accuracy: number };
@@ -210,7 +211,7 @@ export function ReportForm({ lang }: { lang: Lang }) {
         <input ref={fileInput} key={inputKey} type="file" accept="image/*" capture="environment" disabled={actor}
           className="file-hidden" tabIndex={-1} aria-hidden="true" onChange={(e) => choose(e.target.files?.[0] ?? null)} />
         {error ? <p className="notice warn" role="alert">{error}</p> : null}
-        {actor ? null : <MyReports lang={lang} />}
+        {actor ? null : <><MyReports lang={lang} /><NearbyFixes lang={lang} /></>}
       </>
     );
 

@@ -112,6 +112,30 @@ const CODES: Record<string, Msg> = {
   not_a_sandbox_device: { es: "Recarga la página para empezar una sesión de sandbox.", en: "Reload the page to start a sandbox session." },
   sandbox_session_not_found: { es: "Tu sesión de sandbox expiró. Empieza una nueva.", en: "Your sandbox session expired. Start a new one." },
   simulation_too_large: { es: "La simulación es demasiado grande.", en: "The simulation is too large." },
+  // Community closure (migration 30, UX flows §3.3 and §6).
+  too_far_from_case: {
+    es: "Estás lejos del caso. Acércate a menos de 150 m para tomar la foto del arreglo.",
+    en: "You are far from the case. Get within 150 m to take the photo of the fix.",
+  },
+  gps_too_inaccurate: {
+    es: "Tu ubicación no es precisa todavía. Espera unos segundos al aire libre.",
+    en: "Your location is not accurate yet. Wait a few seconds outdoors.",
+  },
+  cluster_not_found: { es: "Este caso ya no está en el mapa.", en: "This case is no longer on the map." },
+  no_before_photo: {
+    es: "Este caso no tiene una foto de antes para comparar.",
+    en: "This case has no before photo to compare with.",
+  },
+  self_review: { es: "No puedes revisar tu propia foto.", en: "You can't review your own photo." },
+  trust_too_low: {
+    es: "Aún no puedes revisar arreglos. Sigue reportando.",
+    en: "You can't review fixes yet. Keep reporting.",
+  },
+  already_reviewed: { es: "Ya revisaste este arreglo.", en: "You already reviewed this fix." },
+  ai_not_candidate: {
+    es: "La verificación automática no lo ve resuelto, así que no se puede confirmar por la comunidad.",
+    en: "Automatic verification doesn't see it as fixed, so the community can't confirm it.",
+  },
 };
 
 const NETWORK: Msg = { es: "Sin conexión. Revisa tu señal e inténtalo otra vez.", en: "Offline. Check your signal and try again." };

@@ -94,6 +94,10 @@ function CaseSheet({ lang, c, photoBase, onClose }: { lang: Lang; c: PublicClust
           <div><b>{c.distinct_devices}</b><span>{t(lang, "caseNeighbours")}</span></div>
           <div><b>{days === null ? "–" : `${days} ${t(lang, "daysShort")}`}</b><span>{t(lang, c.resolved_at ? "caseDaysToFix" : "caseDaysOpen")}</span></div>
         </div>
+        {c.status === "resolution_pending" ? <p className="muted small">{t(lang, "caseFixPending")}</p> : null}
+        {c.status === "validated" || c.status === "acknowledged" ? (
+          <Link href={`/fix/${c.id}`} className="primary block">{t(lang, "caseFixed")}</Link>
+        ) : null}
         {c.status !== "resolved" ? (
           <Link href="/report" className="secondary block">{t(lang, "caseMeToo")}</Link>
         ) : null}

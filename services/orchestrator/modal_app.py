@@ -155,4 +155,8 @@ def healthcheck() -> dict:
         health["voice_rows_deleted"] = db.rpc("voice_usage_cleanup", {})
     except Exception as exc:  # noqa: BLE001
         print(f"voice cleanup failed: {type(exc).__name__}: {exc}")
+    try:  # community closures the AI could not confirm, older than 7 days (migration 30, decision P7)
+        health["community_closures_expired"] = db.rpc("expire_community_resolutions", {})
+    except Exception as exc:  # noqa: BLE001
+        print(f"community closure expiry failed: {type(exc).__name__}: {exc}")
     return health

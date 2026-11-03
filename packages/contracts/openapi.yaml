@@ -502,6 +502,10 @@ paths:
       operationId: nearbyResolutionsToReview
       summary: Community closures near me that I can confirm or reject
       description: |
+        **As built (migration 30):** arguments `p_lat`, `p_lon`; radius from
+        `app_config.community_rules.review_radius_m` (300 m); returns
+        `{can_review, items[]}`; `can_review` also needs one visible report of the device on the map.
+
         For a device. Returns community resolutions with
         `ai_status = 'RESOLVED_CANDIDATE_REQUIRES_HUMAN_REVIEW'` and `outcome = 'open'`
         within `p_radius_m`, excluding ones the caller submitted or already reviewed, and only
@@ -533,6 +537,14 @@ paths:
       operationId: submitCommunityResolution
       summary: A citizen uploads the AFTER photo of a cluster (community path)
       description: |
+        **As built (migration 30):** real clusters only (the sandbox keeps `sandbox_submit_closure`), in
+        `validated` or `acknowledged`; GPS required (`p_gps_location`, `p_gps_accuracy_m` ≤ 50 m,
+        `gps_too_inaccurate`), within 150 m (`too_far_from_case`); 5 per device per day. A
+        `PERSISTENT_ISSUE` does not reject the closure or cost trust: like `NOT_VERIFIABLE_*` it waits
+        7 days for the stakeholder, then `expire_community_resolutions()` (orchestrator health cron, not
+        pg_cron) rejects it. A rejection sends the cluster back to the status it had
+        (`resolutions.prior_cluster_status`).
+
         Device only. Cluster must be real (or, for a sandbox device, in the same sandbox
         session) and in `validated`, `acknowledged` or `resolution_pending`. Caller must be
         within 150 m of the cluster centroid (`too_far_from_cluster`, 422). Spends a nonce
@@ -656,7 +668,9 @@ paths:
           `pending` too, so a check that never finishes does not block the case.
         - Approve also closes the stakeholder's `accepted` dispatches.
 
-        **Community path** (caller is a device):
+        **Community path** (caller is a device). As built (migration 30) this is a separate RPC,
+        `review_community_resolution(p_resolution_id, p_verdict)`, returning
+        `{approvals, rejections, needed, outcome, cluster_status}`:
         - Only counts when `ai_status = 'RESOLVED_CANDIDATE_REQUIRES_HUMAN_REVIEW'`
           (`ai_not_candidate`, 409); reviewer ≠ submitter; reviewer `trust` ≥ 0.5 (`trust_too_low`);
           one review per device.

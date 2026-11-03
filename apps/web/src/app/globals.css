@@ -455,3 +455,16 @@ table.adm-table tr.retired td:not(:last-child) { opacity: .6; }
 .prio-why li { display: flex; justify-content: space-between; gap: 8px; padding: 4px 0; border-top: 1px solid var(--line); }
 .prio-why li b { font-variant-numeric: tabular-nums; white-space: nowrap; }
 .prio-why li.risk span { color: var(--warn-fg); }
+
+/* ---------- Community closure (migration 30) ---------- */
+.fix-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0; }
+.fix-pair figure { margin: 0; }
+.fix-pair img, .fix-pair .thumb { display: block; width: 100%; aspect-ratio: 3 / 4; object-fit: cover; border-radius: 12px; background: var(--placeholder); }
+.fix-pair figcaption { font-size: 13px; color: var(--muted); margin-top: 4px; }
+.fix-capture { min-height: 0; aspect-ratio: 3 / 4; padding: 12px; background-size: cover; background-position: center; }
+.fix-capture .shutter { width: 56px; height: 56px; }
+.fix-capture .shutter span { width: 42px; height: 42px; }
+.fix-capture b { font-size: 15px; }
+.fix-review { border-top: 1px solid var(--line); padding-top: 12px; margin-top: 12px; }
+.fix-review:first-of-type { border-top: 0; margin-top: 0; padding-top: 0; }
+.fix-review .row { gap: 8px; flex-wrap: wrap; }

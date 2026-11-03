@@ -31,7 +31,7 @@ citizen (PWA, es/en) ──► Supabase (Postgres + PostGIS + RLS, Storage, Auth
 3. **See.** SAM 3.1 segments what the spec describes; Muse Spark checks each crop. A photo never rejects a report; it only adds evidence. Faces and plates are blurred before anything is public.
 4. **Agree.** Reports cluster in space; weighted consensus (device trust, distinct devices, reused-photo and GPS checks) validates a cluster.
 5. **Route.** Validated clusters go to the responsible stakeholder with a brief that cites real reports and places. Bus-stop cases are measured against the stops mapped in OpenStreetMap: people waiting 200 m to 1 km from the nearest stop show on the public map as a *de facto stop*, a hint for where the city should plan one. Farther than 1 km we only say the area has no mapped stops, because OSM is a community map, dense downtown and sparse in rural parishes, not the transit office's register.
-6. **Close.** An after photo is aligned to the before photo; SAM 3.1 and Muse Spark compare the same region. Doubt (shadow, water, occlusion, bad alignment) never becomes "resolved".
+6. **Close.** An after photo is aligned to the before photo; SAM 3.1 and Muse Spark compare the same region. Doubt (shadow, water, occlusion, bad alignment) never becomes "resolved". The photo can come from the crew or from any neighbour standing within 150 m of the case ("Fixed already?" on the map). A neighbour's fix closes the case only when the AI sees it as fixed and two other neighbours confirm it; the stakeholder can also decide it.
 
 ## Meta models
 

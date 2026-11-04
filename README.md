@@ -69,19 +69,29 @@ GPU.
 
 ## Results on real data
 
-Closure check on anonymized before/after pothole repairs from a public entity in Ambato, labeled
-by hand, plus synthetic negatives (`scripts/eval_closure.py --gps`, 84 runs, about USD 1.63 of
-Meta credits, 2026-11-01). Full table and the comparison with the previous run:
-[docs/eval/closure_eval_2026-11-01.md](docs/eval/closure_eval_2026-11-01.md). After the AFTER crop started outlining the
-repair patch itself, the aligned sets were run again (44 runs, about USD 0.86): still 0 / 24 false
-"resolved" ([docs/eval/closure_eval_2026-11-02.md](docs/eval/closure_eval_2026-11-02.md)).
+Every hand-labeled repair pair from a public entity in Ambato, anonymized, plus synthetic
+negatives, run on 2026-11-03 (`scripts/eval_closure.py --gps --pairs 68`, 256 runs, about USD 4.6
+of Meta credits plus Baseten). Full table: [docs/eval/closure_eval_2026-11-03.md](docs/eval/closure_eval_2026-11-03.md);
+earlier, smaller runs: [2026-11-01](docs/eval/closure_eval_2026-11-01.md), [2026-11-02](docs/eval/closure_eval_2026-11-02.md).
 
-| | Result |
+| Closure: is the street fixed? | Result |
 |---|---|
-| False "resolved" on cases that are not fixed (goal 0) | **0 / 44** |
-| Another place's repair, said near by GPS (worst case) | 0 / 20 candidates |
-| Real repairs sent to a human as "looks fixed" | 5 / 20 (4 / 20 on the re-run of 2026-11-02) |
-| The rest of the real repairs | "cannot verify" (other angle, blur): a human decides |
+| False "resolved" on cases that are not fixed (goal 0) | **0 / 130** |
+| Another place's repair, said near by GPS (worst case) | **0 / 63** candidates |
+| The BEFORE photo sent again as the AFTER | 0 / 63 resolved; 42 "problem persists" |
+| Real repairs sent to a human as "looks fixed" | 6 / 63 |
+| Real repairs the system could not verify (another angle, blur, region not visible) | 47 / 63: a human decides |
+| Real repairs said "problem persists" | 10 / 63 |
+
+The crews shot most AFTER photos from another angle, so the system declines to judge them. The
+public "already fixed?" page shows the BEFORE photo as a guide so that a neighbour can stand in the same spot.
+
+| Report: is there really a pothole in the photo? (two views, 63 pairs) | Result |
+|---|---|
+| Repaired streets wrongly confirmed as potholes | **0 / 62** |
+| Real potholes confirmed by the photo | 25 / 63 (40%) |
+| Real potholes sent to human review | 28 / 63 (44%) |
+| Real potholes missed (one of them an API error) | 10 / 63 (16%) |
 
 The AI never closes a case: at best it marks a candidate, and a person approves it.
 

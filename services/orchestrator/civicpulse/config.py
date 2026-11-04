@@ -33,7 +33,8 @@ class ProviderConfig:
 
 def _provider_chain() -> list[ProviderConfig]:
     """Muse-only chain. 2026-10-27: Muse Spark Open on Baseten first (hackathon credits, 2M
-    tokens/min; the key only works with muse-spark-open-1026), then Muse Spark 1.3 on the Meta
+    tokens/min; the key only works with muse-spark-open-1026), then the same model with a personal
+    Baseten key (2026-11-04, after the free credits), then Muse Spark 1.3 on the Meta
     Model API (its credits are kept for SAM 3.1), then other Muse Spark Open hosts and Muse
     Glimmer. Keywords are the last link and are not a provider. LLM_PROVIDER_ORDER overrides."""
     env = os.environ.get
@@ -42,6 +43,11 @@ def _provider_chain() -> list[ProviderConfig]:
     chain = [
         ProviderConfig("baseten_muse_spark_open", env("BASETEN_BASE", "https://inference.baseten.co/v1"),
                        env("BASETEN_MODEL", "meta-models/muse-spark-open-1026"), "BASETEN_API_KEY", **open_reasoning),
+        # 2026-11-04: the same model on sebas's own Baseten account (his card), used when the
+        # hackathon key fails (credits ended, rate limit, revoked). Skipped while the key is unset.
+        ProviderConfig("baseten_personal_muse_spark_open", env("BASETEN_BASE", "https://inference.baseten.co/v1"),
+                       env("BASETEN_PERSONAL_MODEL", env("BASETEN_MODEL", "meta-models/muse-spark-open-1026")),
+                       "BASETEN_PERSONAL_API_KEY", **open_reasoning),
         # Muse Spark 1.3 also spends hidden reasoning tokens (smoke test 2026-10-27: 64 of 64, empty answer)
         ProviderConfig("meta_muse_spark", env("META_API_BASE", "https://api.meta.ai/v1"),
                        env("META_MODEL", "muse-spark-1.3"), "META_MODEL_API_KEY",

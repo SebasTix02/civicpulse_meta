@@ -58,7 +58,7 @@ def test_personal_baseten_key_takes_over_when_hackathon_key_fails(monkeypatch):
     chain = _provider_chain()
     assert [p.name for p in chain[:3]] == ["baseten_muse_spark_open", "baseten_personal_muse_spark_open",
                                            "meta_muse_spark"]
-    assert chain[1].model == "meta-models/muse-spark-open-1026"
+    assert chain[1].model == "meta-models/muse-spark-open"
     seen = []
 
     def handler(request: httpx.Request):
